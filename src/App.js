@@ -10,6 +10,8 @@ function App() {
   const [password, setPassword] = useState("");
   const [cadastroUsername, setCadastroUsername] = useState("");
   const [cadastroPassword, setCadastroPassword] = useState("");
+  const [tipoUsuario, setTipoUsuario] = useState("cliente"); // tipo de usuário no cadastro
+  const [tipoLogado, setTipoLogado] = useState(""); // tipo de usuário logado
   const [filtroData, setFiltroData] = useState("");
   const [reservaEditada, setReservaEditada] = useState(null);
   const [isCadastro, setIsCadastro] = useState(false);
@@ -45,10 +47,16 @@ function App() {
   const handleLogin = (e) => {
     e.preventDefault();
     const usuarioSalvo = localStorage.getItem(username);
-    if (usuarioSalvo && usuarioSalvo === password) {
-      setIsLoggedIn(true);
+    if (usuarioSalvo) {
+      const dados = JSON.parse(usuarioSalvo);
+      if (dados.senha === password) {
+        setIsLoggedIn(true);
+        setTipoLogado(dados.tipo);
+      } else {
+        alert("Senha incorreta.");
+      }
     } else {
-      alert("Usuário ou senha incorretos.");
+      alert("Usuário não encontrado.");
     }
   };
 
@@ -66,7 +74,13 @@ function App() {
       alert("Este nome de usuário já está em uso.");
       return;
     }
-    localStorage.setItem(cadastroUsername, cadastroPassword);
+
+    const dadosUsuario = {
+      senha: cadastroPassword,
+      tipo: tipoUsuario,
+    };
+
+    localStorage.setItem(cadastroUsername, JSON.stringify(dadosUsuario));
     alert("Cadastro realizado com sucesso!");
     setIsCadastro(false);
   };
@@ -75,6 +89,7 @@ function App() {
     setIsLoggedIn(false);
     setUsername("");
     setPassword("");
+    setTipoLogado("");
   };
 
   const reservasFiltradas = reservas.filter((reserva) =>
@@ -93,6 +108,7 @@ function App() {
   return (
     <div className="App">
       <h1>Bem-vindo ao Restaurante Delícia</h1>
+
       {!isLoggedIn ? (
         isCadastro ? (
           <form onSubmit={handleCadastro}>
@@ -108,6 +124,13 @@ function App() {
               value={cadastroPassword}
               onChange={(e) => setCadastroPassword(e.target.value)}
             />
+            <select
+              value={tipoUsuario}
+              onChange={(e) => setTipoUsuario(e.target.value)}
+            >
+              <option value="cliente">Cliente</option>
+              <option value="admin">Administrador</option>
+            </select>
             <button type="submit">Cadastrar</button>
             <p>
               Já tem conta?{" "}
@@ -141,6 +164,7 @@ function App() {
         )
       ) : (
         <>
+          <p>Usuário logado: {username} ({tipoLogado})</p>
           <button onClick={handleLogout}>Sair</button>
           <input
             type="date"
@@ -162,8 +186,12 @@ function App() {
           />
           <ListaReservas
             reservas={reservasFiltradas}
-            excluirReserva={excluirReserva}
-            editarReserva={(reserva) => setReservaEditada(reserva)}
+            excluirReserva={tipoLogado === "admin" ? excluirReserva : null}
+            editarReserva={
+              tipoLogado === "admin"
+                ? (reserva) => setReservaEditada(reserva)
+                : null
+            }
           />
         </>
       )}
