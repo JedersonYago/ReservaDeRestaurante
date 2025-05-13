@@ -15,7 +15,7 @@ function App() {
   const [filtroData, setFiltroData] = useState("");
   const [reservaEditada, setReservaEditada] = useState(null);
   const [isCadastro, setIsCadastro] = useState(false);
-  const [mensagemSucesso, setMensagemSucesso] = useState(""); // ✅ novo estado
+  const [codigoAdmin, setCodigoAdmin] = useState(""); // novo estado
 
   useEffect(() => {
     const reservasSalvas = localStorage.getItem("reservas");
@@ -30,10 +30,7 @@ function App() {
 
   const adicionarReserva = (reserva) => {
     setReservas([...reservas, reserva]);
-    setMensagemSucesso("Reserva realizada com sucesso!"); // ✅ mensagem
-    setTimeout(() => {
-      setMensagemSucesso("");
-    }, 3000); // some em 3 segundos
+    alert("Reserva realizada com sucesso!");
   };
 
   const editarReserva = (novaReserva) => {
@@ -42,10 +39,6 @@ function App() {
     );
     setReservas(reservasAtualizadas);
     setReservaEditada(null);
-    setMensagemSucesso("Reserva atualizada com sucesso!"); // opcional
-    setTimeout(() => {
-      setMensagemSucesso("");
-    }, 3000);
   };
 
   const excluirReserva = (id) => {
@@ -84,6 +77,12 @@ function App() {
       return;
     }
 
+    // Validação de código para administrador
+    if (tipoUsuario === "admin" && codigoAdmin !== "SECRETO123") {
+      alert("Código de administrador inválido.");
+      return;
+    }
+
     const dadosUsuario = {
       senha: cadastroPassword,
       tipo: tipoUsuario,
@@ -92,6 +91,10 @@ function App() {
     localStorage.setItem(cadastroUsername, JSON.stringify(dadosUsuario));
     alert("Cadastro realizado com sucesso!");
     setIsCadastro(false);
+    setCadastroUsername("");
+    setCadastroPassword("");
+    setCodigoAdmin("");
+    setTipoUsuario("cliente");
   };
 
   const handleLogout = () => {
@@ -140,6 +143,15 @@ function App() {
               <option value="cliente">Cliente</option>
               <option value="admin">Administrador</option>
             </select>
+
+            {tipoUsuario === "admin" && (
+              <input
+                placeholder="Código de administrador"
+                value={codigoAdmin}
+                onChange={(e) => setCodigoAdmin(e.target.value)}
+              />
+            )}
+
             <button type="submit">Cadastrar</button>
             <p>
               Já tem conta?{" "}
@@ -188,10 +200,6 @@ function App() {
             <p>Total de reservas: {reservasFiltradas.length}</p>
             <p>Horário mais reservado: {horarioMaisReservado}</p>
           </div>
-
-          {mensagemSucesso && (
-            <div className="mensagem-sucesso">{mensagemSucesso}</div>
-          )}
 
           <FormularioReserva
             adicionarReserva={adicionarReserva}
