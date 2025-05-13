@@ -10,11 +10,12 @@ function App() {
   const [password, setPassword] = useState("");
   const [cadastroUsername, setCadastroUsername] = useState("");
   const [cadastroPassword, setCadastroPassword] = useState("");
-  const [tipoUsuario, setTipoUsuario] = useState("cliente"); // tipo de usuário no cadastro
-  const [tipoLogado, setTipoLogado] = useState(""); // tipo de usuário logado
+  const [tipoUsuario, setTipoUsuario] = useState("cliente");
+  const [tipoLogado, setTipoLogado] = useState("");
   const [filtroData, setFiltroData] = useState("");
   const [reservaEditada, setReservaEditada] = useState(null);
   const [isCadastro, setIsCadastro] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState(""); // ✅ novo estado
 
   useEffect(() => {
     const reservasSalvas = localStorage.getItem("reservas");
@@ -29,6 +30,10 @@ function App() {
 
   const adicionarReserva = (reserva) => {
     setReservas([...reservas, reserva]);
+    setMensagemSucesso("Reserva realizada com sucesso!"); // ✅ mensagem
+    setTimeout(() => {
+      setMensagemSucesso("");
+    }, 3000); // some em 3 segundos
   };
 
   const editarReserva = (novaReserva) => {
@@ -37,6 +42,10 @@ function App() {
     );
     setReservas(reservasAtualizadas);
     setReservaEditada(null);
+    setMensagemSucesso("Reserva atualizada com sucesso!"); // opcional
+    setTimeout(() => {
+      setMensagemSucesso("");
+    }, 3000);
   };
 
   const excluirReserva = (id) => {
@@ -164,7 +173,9 @@ function App() {
         )
       ) : (
         <>
-          <p>Usuário logado: {username} ({tipoLogado})</p>
+          <p>
+            Usuário logado: {username} ({tipoLogado})
+          </p>
           <button onClick={handleLogout}>Sair</button>
           <input
             type="date"
@@ -177,6 +188,10 @@ function App() {
             <p>Total de reservas: {reservasFiltradas.length}</p>
             <p>Horário mais reservado: {horarioMaisReservado}</p>
           </div>
+
+          {mensagemSucesso && (
+            <div className="mensagem-sucesso">{mensagemSucesso}</div>
+          )}
 
           <FormularioReserva
             adicionarReserva={adicionarReserva}

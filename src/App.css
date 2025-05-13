@@ -159,3 +159,30 @@ form button {
 form button:hover {
   background-color: #218838;
 }
+
+.mensagem-sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: bold;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
