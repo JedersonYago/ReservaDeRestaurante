@@ -16,6 +16,9 @@ function App() {
   const [reservaEditada, setReservaEditada] = useState(null);
   const [isCadastro, setIsCadastro] = useState(false);
   const [codigoEmpresa, setCodigoEmpresa] = useState(""); // NOVO
+  const [dataInvalida, setDataInvalida] = useState(false); // Para armazenar o estado da data inválida
+
+  const hoje = new Date().toISOString().split("T")[0]; // Data atual no formato YYYY-MM-DD
 
   useEffect(() => {
     const reservasSalvas = localStorage.getItem("reservas");
@@ -28,11 +31,30 @@ function App() {
     localStorage.setItem("reservas", JSON.stringify(reservas));
   }, [reservas]);
 
+  // Função para verificar se a data selecionada é válida
+  const verificarData = (dataSelecionada) => {
+    if (dataSelecionada < hoje) {
+      setDataInvalida(true); // Marca a data como inválida
+      return false; // Retorna falso, pois a data não é válida
+    } else {
+      setDataInvalida(false); // Marca a data como válida
+      return true; // Retorna verdadeiro, pois a data é válida
+    }
+  };
+
   const adicionarReserva = (reserva) => {
+    if (!verificarData(reserva.data)) {
+      alert("Não é possível reservar para uma data anterior ao dia de hoje.");
+      return; // Não adiciona a reserva se a data for inválida
+    }
     setReservas([...reservas, reserva]);
   };
 
   const editarReserva = (novaReserva) => {
+    if (!verificarData(novaReserva.data)) {
+      alert("Não é possível editar para uma data anterior ao dia de hoje.");
+      return; // Não edita a reserva se a data for inválida
+    }
     const reservasAtualizadas = reservas.map((reserva) =>
       reserva.id === novaReserva.id ? novaReserva : reserva
     );
@@ -76,7 +98,7 @@ function App() {
       return;
     }
 
-    if (tipoUsuario === "admin" && codigoEmpresa !== "ADM2024") {
+    if (tipoUsuario === "admin" && codigoEmpresa !== "ADM2025") {
       alert("Código da empresa inválido para cadastro de administrador.");
       return;
     }
@@ -189,8 +211,16 @@ function App() {
           <input
             type="date"
             value={filtroData}
-            onChange={(e) => setFiltroData(e.target.value)}
+            onChange={(e) => {
+              const dataSelecionada = e.target.value;
+              setFiltroData(dataSelecionada);
+              verificarData(dataSelecionada); // Verifica se a data é válida
+            }}
+            min={hoje} // Impede datas passadas
           />
+          {dataInvalida && (
+            <p style={{ color: "red" }}>Não é possível selecionar uma data anterior ao dia de hoje.</p>
+          )}
 
           <div className="painel-resumo">
             <h3>Resumo do Dia</h3>
