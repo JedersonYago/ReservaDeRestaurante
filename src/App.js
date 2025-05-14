@@ -10,11 +10,12 @@ function App() {
   const [password, setPassword] = useState("");
   const [cadastroUsername, setCadastroUsername] = useState("");
   const [cadastroPassword, setCadastroPassword] = useState("");
-  const [tipoUsuario, setTipoUsuario] = useState("cliente"); // tipo de usuário no cadastro
-  const [tipoLogado, setTipoLogado] = useState(""); // tipo de usuário logado
+  const [tipoUsuario, setTipoUsuario] = useState("cliente");
+  const [tipoLogado, setTipoLogado] = useState("");
   const [filtroData, setFiltroData] = useState("");
   const [reservaEditada, setReservaEditada] = useState(null);
   const [isCadastro, setIsCadastro] = useState(false);
+  const [codigoEmpresa, setCodigoEmpresa] = useState(""); // NOVO
 
   useEffect(() => {
     const reservasSalvas = localStorage.getItem("reservas");
@@ -75,6 +76,11 @@ function App() {
       return;
     }
 
+    if (tipoUsuario === "admin" && codigoEmpresa !== "ADM2024") {
+      alert("Código da empresa inválido para cadastro de administrador.");
+      return;
+    }
+
     const dadosUsuario = {
       senha: cadastroPassword,
       tipo: tipoUsuario,
@@ -83,6 +89,9 @@ function App() {
     localStorage.setItem(cadastroUsername, JSON.stringify(dadosUsuario));
     alert("Cadastro realizado com sucesso!");
     setIsCadastro(false);
+    setCadastroUsername("");
+    setCadastroPassword("");
+    setCodigoEmpresa("");
   };
 
   const handleLogout = () => {
@@ -131,6 +140,15 @@ function App() {
               <option value="cliente">Cliente</option>
               <option value="admin">Administrador</option>
             </select>
+
+            {tipoUsuario === "admin" && (
+              <input
+                placeholder="Código da Empresa"
+                value={codigoEmpresa}
+                onChange={(e) => setCodigoEmpresa(e.target.value)}
+              />
+            )}
+
             <button type="submit">Cadastrar</button>
             <p>
               Já tem conta?{" "}
@@ -164,7 +182,9 @@ function App() {
         )
       ) : (
         <>
-          <p>Usuário logado: {username} ({tipoLogado})</p>
+          <p>
+            Usuário logado: {username} ({tipoLogado})
+          </p>
           <button onClick={handleLogout}>Sair</button>
           <input
             type="date"
