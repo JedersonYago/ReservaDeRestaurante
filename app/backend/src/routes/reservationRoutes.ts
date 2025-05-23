@@ -16,10 +16,10 @@ const router = Router();
 router.use(auth);
 
 // Rotas de reserva
-router.post("/", validate(reservationSchema), createReservation);
+router.post("/", auth, validate(reservationSchema), createReservation);
 router.get("/", getReservations);
 router.get("/:id", getReservationById);
-router.put("/:id", validate(reservationSchema), updateReservation);
-router.delete("/:id", deleteReservation);
+router.put("/:id", auth, validate(reservationSchema), updateReservation);
+router.delete("/:id", auth, deleteReservation);
 
 export default router;
