@@ -7,7 +7,7 @@ import { AuthRequest } from "../middlewares/auth";
 export const createReservation = async (req: AuthRequest, res: Response) => {
   try {
     const { data, hora, numeroPessoas } = req.body;
-    const clienteId = req.user?._id;
+    const clienteId = req.user?.id;
 
     // Verificar se já existe reserva para a mesma data/hora/mesa
     const reservaExistente = await Reservation.findOne({
@@ -47,6 +47,7 @@ export const createReservation = async (req: AuthRequest, res: Response) => {
 
     return res.status(201).json(reserva);
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: "Erro ao criar reserva" });
   }
 };
