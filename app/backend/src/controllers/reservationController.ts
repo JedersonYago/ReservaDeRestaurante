@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import Reservation from "../models/Reservation";
 import Table from "../models/Table";
 import { AuthRequest } from "../middlewares/auth";
@@ -28,11 +28,9 @@ export const createReservation = async (req: AuthRequest, res: Response) => {
     }).sort({ capacidade: 1 });
 
     if (!mesa) {
-      return res
-        .status(400)
-        .json({
-          error: "Não há mesas disponíveis para este número de pessoas",
-        });
+      return res.status(400).json({
+        error: "Não há mesas disponíveis para este número de pessoas",
+      });
     }
 
     const reserva = await Reservation.create({
@@ -47,9 +45,9 @@ export const createReservation = async (req: AuthRequest, res: Response) => {
     await reserva.populate("mesa");
     await reserva.populate("cliente", "-senha");
 
-    res.status(201).json(reserva);
+    return res.status(201).json(reserva);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao criar reserva" });
+    return res.status(500).json({ error: "Erro ao criar reserva" });
   }
 };
 
@@ -64,9 +62,9 @@ export const getReservations = async (req: AuthRequest, res: Response) => {
       .populate("cliente", "-senha")
       .sort({ data: 1, hora: 1 });
 
-    res.json(reservas);
+    return res.json(reservas);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao listar reservas" });
+    return res.status(500).json({ error: "Erro ao listar reservas" });
   }
 };
 
@@ -86,9 +84,9 @@ export const getReservationById = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: "Reserva não encontrada" });
     }
 
-    res.json(reserva);
+    return res.json(reserva);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar reserva" });
+    return res.status(500).json({ error: "Erro ao buscar reserva" });
   }
 };
 
@@ -126,7 +124,10 @@ export const updateReservation = async (req: AuthRequest, res: Response) => {
     // Se estiver alterando número de pessoas, verificar capacidade da mesa
     if (numeroPessoas) {
       const mesa = await Table.findById(reservaExistente.mesa);
-      if (numeroPessoas > mesa?.capacidade) {
+      if (!mesa) {
+        return res.status(404).json({ error: "Mesa não encontrada" });
+      }
+      if (numeroPessoas > mesa.capacidade) {
         return res
           .status(400)
           .json({ error: "Número de pessoas excede a capacidade da mesa" });
@@ -141,9 +142,9 @@ export const updateReservation = async (req: AuthRequest, res: Response) => {
       .populate("mesa")
       .populate("cliente", "-senha");
 
-    res.json(reserva);
+    return res.json(reserva);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao atualizar reserva" });
+    return res.status(500).json({ error: "Erro ao atualizar reserva" });
   }
 };
 
@@ -161,8 +162,8 @@ export const deleteReservation = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: "Reserva não encontrada" });
     }
 
-    res.json({ message: "Reserva excluída com sucesso" });
+    return res.json({ message: "Reserva excluída com sucesso" });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao excluir reserva" });
+    return res.status(500).json({ error: "Erro ao excluir reserva" });
   }
 };

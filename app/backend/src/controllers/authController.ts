@@ -35,7 +35,7 @@ export const register = async (req: Request, res: Response) => {
       { expiresIn: "1d" }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       user: {
         id: user._id,
         nome: user.nome,
@@ -46,7 +46,7 @@ export const register = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao registrar usuário" });
+    return res.status(500).json({ error: "Erro ao registrar usuário" });
   }
 };
 
@@ -73,7 +73,7 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "1d" }
     );
 
-    res.json({
+    return res.json({
       user: {
         id: user._id,
         nome: user.nome,
@@ -84,6 +84,6 @@ export const login = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao fazer login" });
+    return res.status(500).json({ error: "Erro ao fazer login" });
   }
 };

@@ -17,19 +17,19 @@ export const createTable = async (req: Request, res: Response) => {
       capacidade,
     });
 
-    res.status(201).json(table);
+    return res.status(201).json(table);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao criar mesa" });
+    return res.status(500).json({ error: "Erro ao criar mesa" });
   }
 };
 
 // Listar todas as mesas
-export const getAllTables = async (req: Request, res: Response) => {
+export const getAllTables = async (_req: Request, res: Response) => {
   try {
     const tables = await Table.find().sort({ numero: 1 });
-    res.json(tables);
+    return res.json(tables);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao listar mesas" });
+    return res.status(500).json({ error: "Erro ao listar mesas" });
   }
 };
 
@@ -40,9 +40,9 @@ export const getTableById = async (req: Request, res: Response) => {
     if (!table) {
       return res.status(404).json({ error: "Mesa não encontrada" });
     }
-    res.json(table);
+    return res.json(table);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar mesa" });
+    return res.status(500).json({ error: "Erro ao buscar mesa" });
   }
 };
 
@@ -72,9 +72,9 @@ export const updateTable = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Mesa não encontrada" });
     }
 
-    res.json(table);
+    return res.json(table);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao atualizar mesa" });
+    return res.status(500).json({ error: "Erro ao atualizar mesa" });
   }
 };
 
@@ -87,8 +87,8 @@ export const deleteTable = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Mesa não encontrada" });
     }
 
-    res.json({ message: "Mesa excluída com sucesso" });
+    return res.json({ message: "Mesa excluída com sucesso" });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao excluir mesa" });
+    return res.status(500).json({ error: "Erro ao excluir mesa" });
   }
 };

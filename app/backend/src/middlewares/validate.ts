@@ -20,6 +20,6 @@ export const validate = (schema: Schema) => {
       });
     }
 
-    next();
+    return next();
   };
 };

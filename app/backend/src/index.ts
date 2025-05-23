@@ -24,7 +24,7 @@ app.use("/api/tables", tableRoutes);
 app.use("/api/reservations", reservationRoutes);
 
 // Rota de teste
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.json({ message: "API do Sistema de Reservas de Restaurante" });
 });
 
