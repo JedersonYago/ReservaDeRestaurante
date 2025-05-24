@@ -4,6 +4,7 @@ import { connectDB } from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import tableRoutes from "./routes/tableRoutes";
 import reservationRoutes from "./routes/reservationRoutes";
+import configRoutes from "./routes/configRoutes";
 import {
   rateLimiter,
   corsOptions,
@@ -30,6 +31,7 @@ app.use(sanitizeData);
 app.use("/api/auth", authRoutes);
 app.use("/api/tables", tableRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/config", configRoutes);
 
 // Rota de teste
 app.get("/", (_req, res) => {
