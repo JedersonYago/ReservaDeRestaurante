@@ -1,10 +1,10 @@
 import { Response } from "express";
 import Reservation from "../models/Reservation";
 import Table from "../models/Table";
-import { AuthRequest } from "../middlewares/auth";
+import { Request } from "../types/custom";
 
 // Criar reserva
-export const createReservation = async (req: AuthRequest, res: Response) => {
+export const createReservation = async (req: Request, res: Response) => {
   try {
     const { data, hora, numeroPessoas } = req.body;
     const clienteId = req.user?.id;
@@ -53,7 +53,7 @@ export const createReservation = async (req: AuthRequest, res: Response) => {
 };
 
 // Listar reservas
-export const getReservations = async (req: AuthRequest, res: Response) => {
+export const getReservations = async (req: Request, res: Response) => {
   try {
     const isAdmin = req.user?.role === "admin";
     const query = isAdmin ? {} : { cliente: req.user?._id };
@@ -70,7 +70,7 @@ export const getReservations = async (req: AuthRequest, res: Response) => {
 };
 
 // Buscar reserva por ID
-export const getReservationById = async (req: AuthRequest, res: Response) => {
+export const getReservationById = async (req: Request, res: Response) => {
   try {
     const isAdmin = req.user?.role === "admin";
     const query = isAdmin
@@ -92,7 +92,7 @@ export const getReservationById = async (req: AuthRequest, res: Response) => {
 };
 
 // Atualizar reserva
-export const updateReservation = async (req: AuthRequest, res: Response) => {
+export const updateReservation = async (req: Request, res: Response) => {
   try {
     const { data, hora, numeroPessoas, status } = req.body;
     const isAdmin = req.user?.role === "admin";
@@ -150,7 +150,7 @@ export const updateReservation = async (req: AuthRequest, res: Response) => {
 };
 
 // Excluir reserva
-export const deleteReservation = async (req: AuthRequest, res: Response) => {
+export const deleteReservation = async (req: Request, res: Response) => {
   try {
     const isAdmin = req.user?.role === "admin";
     const query = isAdmin
