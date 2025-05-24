@@ -1,11 +1,12 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface IReservation extends Document {
-  data: Date;
-  hora: string;
+  data: string;
+  horario: string;
   numeroPessoas: number;
-  mesa: Types.ObjectId;
-  cliente: Types.ObjectId;
+  nome: string;
+  telefone: string;
+  email: string;
   status: "confirmada" | "cancelada" | "pendente";
   createdAt: Date;
   updatedAt: Date;
@@ -13,11 +14,12 @@ export interface IReservation extends Document {
 
 const ReservationSchema = new Schema<IReservation>(
   {
-    data: { type: Date, required: true },
-    hora: { type: String, required: true },
+    data: { type: String, required: true },
+    horario: { type: String, required: true },
     numeroPessoas: { type: Number, required: true },
-    mesa: { type: Schema.Types.ObjectId, ref: "Table", required: true },
-    cliente: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    nome: { type: String, required: true },
+    telefone: { type: String, required: true },
+    email: { type: String, required: true },
     status: {
       type: String,
       enum: ["confirmada", "cancelada", "pendente"],
