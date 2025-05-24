@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
+import { validateAdminCode } from "../config/admin";
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { nome, email, username, senha, role } = req.body;
+    const { nome, email, username, senha, role, adminCode } = req.body;
 
     // Verificar se usuário já existe
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
@@ -13,6 +14,13 @@ export const register = async (req: Request, res: Response) => {
       return res
         .status(400)
         .json({ error: "Email ou nome de usuário já existe" });
+    }
+
+    // Validar código de administrador se necessário
+    if (role === "admin" && !validateAdminCode(adminCode)) {
+      return res
+        .status(403)
+        .json({ error: "Código de administrador inválido" });
     }
 
     // Hash da senha

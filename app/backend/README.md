@@ -51,7 +51,7 @@ src/
 - `PUT /api/reservations/:id` - Atualizar reserva
 - `DELETE /api/reservations/:id` - Cancelar reserva
 
-## 🔒 Autenticação
+## 🔑 Autenticação
 
 A API utiliza JWT (JSON Web Tokens) para autenticação.:
 
@@ -67,3 +67,16 @@ Para executar os testes:
 ```bash
 npm test
 ```
+
+## 🔐 Segurança
+
+- Todas as senhas são hasheadas usando bcrypt
+- Tokens JWT para autenticação
+- Validação de dados com Joi
+- Proteção contra ataques com Helmet
+- Rate limiting para prevenir abusos
+- CORS configurado para origens específicas
+
+## 🔢 Código de Administrador
+
+Para criar uma conta de administrador, é necessário fornecer um código especial válido. Este código é definido na variável de ambiente `ADMIN_CODE`. Por padrão, o código é "ADMIN123456", mas deve ser alterado em produção.

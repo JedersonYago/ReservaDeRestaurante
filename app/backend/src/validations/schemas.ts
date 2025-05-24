@@ -45,6 +45,17 @@ export const userSchema = Joi.object({
   role: Joi.string().valid("cliente", "admin").default("cliente").messages({
     "any.only": "O papel deve ser cliente ou admin",
   }),
+  adminCode: Joi.string().when("role", {
+    is: "admin",
+    then: Joi.required().messages({
+      "any.required":
+        "Código de administrador é obrigatório para criar conta de admin",
+    }),
+    otherwise: Joi.forbidden().messages({
+      "any.unknown":
+        "Código de administrador não deve ser fornecido para contas de cliente",
+    }),
+  }),
 });
 
 // Esquema de validação para mesa
