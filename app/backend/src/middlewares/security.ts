@@ -37,6 +37,10 @@ export const authMiddleware = async (
     }
 
     const decoded = await verifyToken(token);
+    // Garante que o campo _id exista, mesmo que venha como id
+    if (decoded && !decoded._id && decoded.id) {
+      decoded._id = decoded.id;
+    }
     req.user = decoded as IUser;
     next();
   } catch (error) {
