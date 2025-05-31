@@ -11,7 +11,7 @@ export function useReservations() {
 
   const { data: reservations, isLoading } = useQuery({
     queryKey: ["reservations"],
-    queryFn: reservationService.list,
+    queryFn: reservationService.getAll,
   });
 
   const createReservation = useMutation({
@@ -37,7 +37,7 @@ export function useReservations() {
     },
   });
 
-  const cancelReservation = useMutation({
+  const { mutateAsync: cancelReservation } = useMutation({
     mutationFn: reservationService.cancel,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
@@ -55,6 +55,6 @@ export function useReservations() {
       createReservation.mutate(data),
     updateReservation: (id: string, data: UpdateReservationData) =>
       updateReservation.mutate({ id, data }),
-    cancelReservation: (id: string) => cancelReservation.mutate(id),
+    cancelReservation,
   };
 }
