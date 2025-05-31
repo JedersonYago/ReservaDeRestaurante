@@ -3,6 +3,7 @@ import { useReservations } from "../../hooks/useReservations";
 import styled from "styled-components";
 import { formatInTimeZone } from "date-fns-tz";
 import { ptBR } from "date-fns/locale";
+import { Button } from "../../components/Button";
 
 export function Reservations() {
   const navigate = useNavigate();
@@ -16,9 +17,9 @@ export function Reservations() {
     <Container>
       <Header>
         <h1>Minhas Reservas</h1>
-        <button onClick={() => navigate("/reservations/new")}>
+        <Button onClick={() => navigate("/reservations/new")}>
           Nova Reserva
-        </button>
+        </Button>
       </Header>
 
       <ReservationList>
@@ -37,22 +38,25 @@ export function Reservations() {
               </p>
               <p>Horário: {reservation.time}</p>
               <p>Pessoas: {reservation.numberOfPeople}</p>
-              <p>Status: {getStatusText(reservation.status)}</p>
+              <StatusBadge status={reservation.status}>
+                {getStatusText(reservation.status)}
+              </StatusBadge>
             </ReservationInfo>
 
             <ReservationActions>
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => navigate(`/reservations/${reservation.id}`)}
               >
                 Detalhes
-              </button>
+              </Button>
               {reservation.status === "pending" && (
-                <button
+                <Button
+                  variant="danger"
                   onClick={() => cancelReservation(reservation.id)}
-                  className="cancel"
                 >
                   Cancelar
-                </button>
+                </Button>
               )}
             </ReservationActions>
           </ReservationCard>
@@ -61,9 +65,9 @@ export function Reservations() {
         {reservations?.length === 0 && (
           <EmptyState>
             <p>Você ainda não tem reservas.</p>
-            <button onClick={() => navigate("/reservations/new")}>
+            <Button onClick={() => navigate("/reservations/new")}>
               Fazer uma reserva
-            </button>
+            </Button>
           </EmptyState>
         )}
       </ReservationList>
@@ -96,19 +100,6 @@ const Header = styled.header`
   h1 {
     color: #333;
   }
-
-  button {
-    background: #007bff;
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-
-    &:hover {
-      background: #0056b3;
-    }
-  }
 `;
 
 const ReservationList = styled.div`
@@ -140,30 +131,40 @@ const ReservationInfo = styled.div`
   flex: 1;
 `;
 
+const StatusBadge = styled.span<{ status: string }>`
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+
+  ${({ status }) => {
+    switch (status) {
+      case "pending":
+        return `
+          background: #fff3cd;
+          color: #856404;
+        `;
+      case "confirmed":
+        return `
+          background: #d4edda;
+          color: #155724;
+        `;
+      case "cancelled":
+        return `
+          background: #f8d7da;
+          color: #721c24;
+        `;
+      default:
+        return "";
+    }
+  }}
+`;
+
 const ReservationActions = styled.div`
   display: flex;
   gap: 1rem;
-
-  button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    background: #007bff;
-    color: white;
-
-    &:hover {
-      background: #0056b3;
-    }
-
-    &.cancel {
-      background: #dc3545;
-
-      &:hover {
-        background: #c82333;
-      }
-    }
-  }
 `;
 
 const EmptyState = styled.div`
@@ -176,19 +177,6 @@ const EmptyState = styled.div`
   p {
     color: #666;
     margin-bottom: 1rem;
-  }
-
-  button {
-    background: #007bff;
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-
-    &:hover {
-      background: #0056b3;
-    }
   }
 `;
 
