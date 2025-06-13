@@ -1,6 +1,6 @@
 # Frontend - Sistema de Reservas de Restaurante
 
-Este é o Frontend do sistema de reservas de restaurante, desenvolvido com React, TypeScript
+Este é o Frontend do sistema de reservas de restaurante, desenvolvido com React, TypeScript (...)
 
 ## 🚀 Tecnologias Utilizadas
 
