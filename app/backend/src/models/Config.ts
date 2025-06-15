@@ -1,54 +1,75 @@
 import { Schema, model, Document } from "mongoose";
+import { DEFAULT_CONFIG, VALIDATION_LIMITS } from "../config/constants";
+import { VALIDATION_PATTERNS } from "../config/validationPatterns";
 
 export interface IConfig extends Document {
-  maxReservationsPerTime: number;
+  maxReservationsPerUser: number; // Número máximo de reservas por usuário
+  reservationLimitHours: number; // Período em horas para o limite
   minIntervalBetweenReservations: number;
   openingHour: string;
   closingHour: string;
-  timeSlots: number;
   updatedBy: Schema.Types.ObjectId;
   updatedAt: Date;
+  // Flags de ativação
+  isReservationLimitEnabled: boolean; // Limite de reservas por período
+  isIntervalEnabled: boolean;
+  isOpeningHoursEnabled: boolean;
 }
 
 const ConfigSchema = new Schema<IConfig>(
   {
-    maxReservationsPerTime: {
+    maxReservationsPerUser: {
       type: Number,
       required: true,
-      min: 1,
-      max: 20,
-      default: 5,
+      min: VALIDATION_LIMITS.maxReservationsPerUser.min,
+      max: VALIDATION_LIMITS.maxReservationsPerUser.max,
+      default: DEFAULT_CONFIG.maxReservationsPerUser,
+    },
+    reservationLimitHours: {
+      type: Number,
+      required: true,
+      min: VALIDATION_LIMITS.reservationLimitHours.min,
+      max: VALIDATION_LIMITS.reservationLimitHours.max,
+      default: DEFAULT_CONFIG.reservationLimitHours,
     },
     minIntervalBetweenReservations: {
       type: Number,
       required: true,
-      min: 15,
-      max: 120,
-      default: 30,
+      min: VALIDATION_LIMITS.minIntervalBetweenReservations.min,
+      max: VALIDATION_LIMITS.minIntervalBetweenReservations.max,
+      default: DEFAULT_CONFIG.minIntervalBetweenReservations,
     },
     openingHour: {
       type: String,
       required: true,
-      pattern: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-      default: "11:00",
+      pattern: VALIDATION_PATTERNS.TIME,
+      default: DEFAULT_CONFIG.openingHour,
     },
     closingHour: {
       type: String,
       required: true,
-      pattern: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-      default: "23:00",
+      pattern: VALIDATION_PATTERNS.TIME,
+      default: DEFAULT_CONFIG.closingHour,
     },
-    timeSlots: {
-      type: Number,
-      required: true,
-      min: 15,
-      max: 120,
-      default: 60,
-    },
+
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    // Flags de ativação
+    isReservationLimitEnabled: {
+      type: Boolean,
+      default: DEFAULT_CONFIG.isReservationLimitEnabled,
+    },
+    isIntervalEnabled: {
+      type: Boolean,
+      default: DEFAULT_CONFIG.isIntervalEnabled,
+    },
+
+    isOpeningHoursEnabled: {
+      type: Boolean,
+      default: DEFAULT_CONFIG.isOpeningHoursEnabled,
     },
   },
   { timestamps: true }
