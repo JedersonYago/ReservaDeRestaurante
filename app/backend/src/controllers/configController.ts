@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Config from "../models/Config";
+import { DEFAULT_CONFIG } from "../config/constants";
 import {
   validateTimeSlot,
   validateTimeInterval,
@@ -12,18 +13,13 @@ export const getConfig = async (req: Request, res: Response) => {
     if (!config) {
       // Se não existir configuração, criar uma com valores padrão
       const defaultConfig = await Config.create({
-        maxReservationsPerTime: 5,
-        minIntervalBetweenReservations: 30,
-        openingHour: "11:00",
-        closingHour: "23:00",
-        timeSlots: 60,
+        ...DEFAULT_CONFIG,
         updatedBy: req.user?._id || "000000000000000000000000", // ID padrão se não houver usuário
       });
       return res.json(defaultConfig);
     }
     return res.json(config);
   } catch (error) {
-    console.error("Erro ao buscar configurações:", error);
     return res.status(500).json({
       error: "Erro ao buscar configurações",
       details: error instanceof Error ? error.message : "Erro desconhecido",
@@ -34,12 +30,21 @@ export const getConfig = async (req: Request, res: Response) => {
 // Atualizar configurações
 export const updateConfig = async (req: Request, res: Response) => {
   try {
+    // Log para debug
+    console.log(
+      "📝 Recebendo dados de configuração:",
+      JSON.stringify(req.body, null, 2)
+    );
+
     const {
-      maxReservationsPerTime,
+      maxReservationsPerUser,
+      reservationLimitHours,
       minIntervalBetweenReservations,
       openingHour,
       closingHour,
-      timeSlots,
+      isReservationLimitEnabled,
+      isIntervalEnabled,
+      isOpeningHoursEnabled,
     } = req.body;
 
     if (!req.user?._id) {
@@ -48,60 +53,69 @@ export const updateConfig = async (req: Request, res: Response) => {
       });
     }
 
-    // Validar horários
-    if (
-      !(await validateTimeSlot(openingHour)) ||
-      !(await validateTimeSlot(closingHour))
-    ) {
-      return res.status(400).json({
-        error: "Horários de funcionamento inválidos",
-      });
-    }
+    // Validar horários apenas se estiverem ativos
+    if (isOpeningHoursEnabled) {
+      if (
+        !(await validateTimeSlot(openingHour)) ||
+        !(await validateTimeSlot(closingHour))
+      ) {
+        return res.status(400).json({
+          error: "Horários de funcionamento inválidos",
+        });
+      }
 
-    // Validar intervalo
-    if (
-      !(await validateTimeInterval(openingHour)) ||
-      !(await validateTimeInterval(closingHour))
-    ) {
-      return res.status(400).json({
-        error: "Horários devem estar em intervalos válidos",
-      });
-    }
+      // Validar intervalo
+      if (
+        !(await validateTimeInterval(openingHour)) ||
+        !(await validateTimeInterval(closingHour))
+      ) {
+        return res.status(400).json({
+          error: "Horários devem estar em intervalos válidos",
+        });
+      }
 
-    // Validar ordem dos horários
-    const [openingHours, openingMinutes] = openingHour.split(":").map(Number);
-    const [closingHours, closingMinutes] = closingHour.split(":").map(Number);
-    const openingInMinutes = openingHours * 60 + openingMinutes;
-    const closingInMinutes = closingHours * 60 + closingMinutes;
+      // Validar ordem dos horários
+      const [openingHours, openingMinutes] = openingHour.split(":").map(Number);
+      const [closingHours, closingMinutes] = closingHour.split(":").map(Number);
+      const openingInMinutes = openingHours * 60 + openingMinutes;
+      const closingInMinutes = closingHours * 60 + closingMinutes;
 
-    if (openingInMinutes >= closingInMinutes) {
-      return res.status(400).json({
-        error: "Horário de abertura deve ser anterior ao horário de fechamento",
-      });
-    }
-
-    // Validar intervalo entre horários
-    const totalMinutes = closingInMinutes - openingInMinutes;
-    if (totalMinutes < timeSlots) {
-      return res.status(400).json({
-        error:
-          "Intervalo entre abertura e fechamento deve ser maior que o intervalo de reservas",
-      });
+      if (openingInMinutes >= closingInMinutes) {
+        return res.status(400).json({
+          error:
+            "Horário de abertura deve ser anterior ao horário de fechamento",
+        });
+      }
     }
 
     // Criar nova configuração
     const config = await Config.create({
-      maxReservationsPerTime,
+      maxReservationsPerUser,
+      reservationLimitHours,
       minIntervalBetweenReservations,
       openingHour,
       closingHour,
-      timeSlots,
+      isReservationLimitEnabled,
+      isIntervalEnabled,
+      isOpeningHoursEnabled,
       updatedBy: req.user._id,
     });
 
     return res.json(config);
   } catch (error) {
-    console.error("Erro ao atualizar configurações:", error);
+    console.error("❌ Erro ao atualizar configurações:", error);
+
+    // Se for erro de validação do Mongoose/Joi, retornar 400
+    if (
+      error instanceof Error &&
+      (error.name === "ValidationError" || error.message.includes("validation"))
+    ) {
+      return res.status(400).json({
+        error: "Dados de configuração inválidos",
+        details: error.message,
+      });
+    }
+
     return res.status(500).json({
       error: "Erro ao atualizar configurações",
       details: error instanceof Error ? error.message : "Erro desconhecido",
@@ -117,7 +131,6 @@ export const getConfigHistory = async (_req: Request, res: Response) => {
       .populate("updatedBy", "nome email");
     return res.json(configs);
   } catch (error) {
-    console.error("Erro ao buscar histórico de configurações:", error);
     return res.status(500).json({
       error: "Erro ao buscar histórico de configurações",
       details: error instanceof Error ? error.message : "Erro desconhecido",

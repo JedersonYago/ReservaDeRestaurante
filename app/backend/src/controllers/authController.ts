@@ -1,97 +1,100 @@
 import { Request, Response } from "express";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import User from "../models/User";
-import { validateAdminCode } from "../config/admin";
+import { generateToken } from "../utils/jwt";
+import { config } from "../config";
 
-export const register = async (req: Request, res: Response) => {
-  try {
-    const { nome, email, username, senha, role, adminCode } = req.body;
+const authController = {
+  async login(req: Request, res: Response) {
+    try {
+      const { username, password } = req.body;
 
-    // Verificar se usuário já existe
-    const userExists = await User.findOne({ $or: [{ email }, { username }] });
-    if (userExists) {
-      return res
-        .status(400)
-        .json({ error: "Email ou nome de usuário já existe" });
+      const user = await User.findOne({ username });
+      if (!user) {
+        return res.status(401).json({ message: "Usuário ou senha inválidos" });
+      }
+
+      const isValidPassword = await user.comparePassword(password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Usuário ou senha inválidos" });
+      }
+
+      const token = generateToken(user);
+
+      res.json({
+        token,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao fazer login" });
     }
+  },
 
-    // Validar código de administrador se necessário
-    if (role === "admin" && !validateAdminCode(adminCode)) {
-      return res
-        .status(403)
-        .json({ error: "Código de administrador inválido" });
+  async register(req: Request, res: Response) {
+    try {
+      const { name, username, email, password, role, adminCode } = req.body;
+
+      if (role === "admin" && adminCode !== config.auth.adminCode) {
+        return res
+          .status(400)
+          .json({ message: "Código de administrador inválido" });
+      }
+
+      const existingUser = await User.findOne({
+        $or: [{ email }, { username }],
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Já existe um usuário com este email ou nome de usuário",
+        });
+      }
+
+      const user = await User.create({
+        name,
+        username,
+        email,
+        password,
+        role,
+      });
+
+      const token = generateToken(user);
+
+      res.status(201).json({
+        token,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao criar usuário" });
     }
+  },
 
-    // Hash da senha
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(senha, salt);
-
-    // Criar usuário
-    const user = await User.create({
-      nome,
-      email,
-      username,
-      senha: hashedPassword,
-      role: role || "cliente",
-    });
-
-    // Gerar token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "sua_chave_secreta_aqui",
-      { expiresIn: "1d" }
-    );
-
-    return res.status(201).json({
-      user: {
-        id: user._id,
-        nome: user.nome,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-      },
-      token,
-    });
-  } catch (error) {
-    return res.status(500).json({ error: "Erro ao registrar usuário" });
-  }
+  async getCurrentUser(req: Request, res: Response) {
+    try {
+      const user = await User.findById(req.user?._id).select("-password");
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar usuário" });
+    }
+  },
 };
 
-export const login = async (req: Request, res: Response) => {
-  try {
-    const { username, senha } = req.body;
-
-    // Verificar se usuário existe
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).json({ error: "Usuário não encontrado" });
-    }
-
-    // Verificar senha
-    const isMatch = await bcrypt.compare(senha, user.senha);
-    if (!isMatch) {
-      return res.status(400).json({ error: "Senha incorreta" });
-    }
-
-    // Gerar token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "sua_chave_secreta_aqui",
-      { expiresIn: "1d" }
-    );
-
-    return res.json({
-      user: {
-        id: user._id,
-        nome: user.nome,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-      },
-      token,
-    });
-  } catch (error) {
-    return res.status(500).json({ error: "Erro ao fazer login" });
-  }
-};
+export { authController };
