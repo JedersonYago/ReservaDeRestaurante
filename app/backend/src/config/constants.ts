@@ -1,0 +1,17 @@
+/**
+ * Re-exportar constantes da biblioteca compartilhada
+ * ✅ Migração completa - eliminação de duplicação
+ */
+
+export {
+  MAX_DAYS_AHEAD,
+  OPENING_TIME,
+  CLOSING_TIME,
+  LAST_RESERVATION_TIME,
+  MAX_RESERVATIONS_PER_USER,
+  AUTO_APPROVAL_MINUTES,
+  DEFAULT_CONFIG,
+  VALIDATION_LIMITS,
+  TABLE_NAME_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "../../../shared/constants";
