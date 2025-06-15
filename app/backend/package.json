@@ -4,15 +4,20 @@
   "description": "Backend do sistema de reservas de restaurante",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "dev": "nodemon src/index.ts",
+    "start": "ts-node -r tsconfig-paths/register src/index.ts",
+    "dev": "nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "remove-indexes": "ts-node -r tsconfig-paths/register src/scripts/removeOldIndexes.ts"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@types/joi": "^17.2.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.5.0",
@@ -36,6 +41,7 @@
     "nodemon": "^3.0.1",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.32.1"
   }
