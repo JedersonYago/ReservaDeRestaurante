@@ -1,27 +1,31 @@
 import { Router } from "express";
-import {
-  createTable,
-  getAllTables,
-  getTableById,
-  updateTable,
-  deleteTable,
-} from "../controllers/tableController";
-import { auth, isAdmin } from "../middlewares/auth";
-import { validate } from "../middlewares/validate";
+import { tableController } from "../controllers/tableController";
+import { validateSchema } from "../middlewares/validateSchema";
 import { tableSchema } from "../validations/schemas";
+import { auth, adminAuth } from "../middlewares/auth";
 
 const router = Router();
 
-// Todas as rotas de mesa requerem autenticação
+// Rotas protegidas
 router.use(auth);
 
-// Rotas que requerem autenticação de admin
-router.post("/", isAdmin, validate(tableSchema), createTable);
-router.put("/:id", isAdmin, validate(tableSchema), updateTable);
-router.delete("/:id", isAdmin, deleteTable);
-
-// Rotas que requerem apenas autenticação
-router.get("/", getAllTables);
-router.get("/:id", getTableById);
+router.get("/", tableController.list);
+router.get("/:id", tableController.getById);
+router.post(
+  "/",
+  adminAuth,
+  validateSchema(tableSchema),
+  tableController.create
+);
+router.put(
+  "/:id",
+  adminAuth,
+  validateSchema(tableSchema),
+  tableController.update
+);
+router.delete("/:id", adminAuth, tableController.delete);
+router.get("/:id/availability", tableController.getAvailability);
+router.get("/available", tableController.availableTables);
+router.get("/:id/status", tableController.getStatus);
 
 export default router;
