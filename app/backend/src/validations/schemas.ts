@@ -1,50 +1,54 @@
 import Joi from "joi";
+import { VALIDATION_LIMITS } from "../config/constants";
+import {
+  VALIDATION_PATTERNS,
+  VALIDATION_MESSAGES,
+} from "../config/validationPatterns";
+
+// Esquema de validação para login
+export const loginSchema = Joi.object({
+  username: Joi.string().required().messages({
+    "string.empty": "O nome de usuário é obrigatório",
+    "any.required": "O nome de usuário é obrigatório",
+  }),
+  password: Joi.string().required().messages({
+    "string.empty": "A senha é obrigatória",
+    "any.required": "A senha é obrigatória",
+  }),
+});
 
 // Esquema de validação para usuário
 export const userSchema = Joi.object({
-  nome: Joi.string()
-    .min(3)
-    .max(100)
-    .pattern(/^[a-zA-ZÀ-ÿ\s]+$/)
-    .required()
-    .messages({
-      "string.min": "O nome deve ter no mínimo 3 caracteres",
-      "string.max": "O nome deve ter no máximo 100 caracteres",
-      "string.pattern.base": "O nome deve conter apenas letras e espaços",
-      "any.required": "O nome é obrigatório",
-    }),
-  email: Joi.string().email().max(100).required().messages({
+  name: Joi.string().required().messages({
+    "string.empty": "O nome é obrigatório",
+    "any.required": "O nome é obrigatório",
+  }),
+  email: Joi.string().email().required().messages({
     "string.email": "Email inválido",
-    "string.max": "O email deve ter no máximo 100 caracteres",
+    "string.empty": "O email é obrigatório",
     "any.required": "O email é obrigatório",
   }),
   username: Joi.string()
     .min(3)
     .max(30)
-    .pattern(/^[a-zA-Z0-9_]+$/)
+    .pattern(VALIDATION_PATTERNS.USERNAME)
     .required()
     .messages({
       "string.min": "O nome de usuário deve ter no mínimo 3 caracteres",
       "string.max": "O nome de usuário deve ter no máximo 30 caracteres",
-      "string.pattern.base":
-        "O nome de usuário deve conter apenas letras, números e underscore",
+      "string.pattern.base": VALIDATION_MESSAGES.USERNAME,
       "any.required": "O nome de usuário é obrigatório",
     }),
-  senha: Joi.string()
-    .min(8)
-    .pattern(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-    )
-    .required()
-    .messages({
-      "string.min": "A senha deve ter no mínimo 8 caracteres",
-      "string.pattern.base":
-        "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial",
-      "any.required": "A senha é obrigatória",
-    }),
-  role: Joi.string().valid("cliente", "admin").default("cliente").messages({
-    "any.only": "O papel deve ser cliente ou admin",
+  password: Joi.string().min(8).required().messages({
+    "string.min": "A senha deve ter no mínimo 8 caracteres",
+    "string.empty": "A senha é obrigatória",
+    "any.required": "A senha é obrigatória",
   }),
+  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
+    "any.only": "As senhas não conferem",
+    "any.required": "Confirmação de senha é obrigatória",
+  }),
+  role: Joi.string().valid("client", "admin").default("client"),
   adminCode: Joi.string().when("role", {
     is: "admin",
     then: Joi.required().messages({
@@ -58,81 +62,258 @@ export const userSchema = Joi.object({
   }),
 });
 
+// Esquema de validação para mudança de senha
+export const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().required().messages({
+    "string.empty": "A senha atual é obrigatória",
+    "any.required": "A senha atual é obrigatória",
+  }),
+  newPassword: Joi.string()
+    .min(8)
+    .pattern(VALIDATION_PATTERNS.STRONG_PASSWORD)
+    .required()
+    .messages({
+      "string.min": "A nova senha deve ter no mínimo 8 caracteres",
+      "string.pattern.base": VALIDATION_MESSAGES.STRONG_PASSWORD,
+      "string.empty": "A nova senha é obrigatória",
+      "any.required": "A nova senha é obrigatória",
+    }),
+  confirmNewPassword: Joi.string()
+    .valid(Joi.ref("newPassword"))
+    .required()
+    .messages({
+      "any.only": "As senhas não conferem",
+      "any.required": "Confirmação da nova senha é obrigatória",
+    }),
+});
+
+// Esquema de validação para registro (reutiliza userSchema)
+export const registerSchema = userSchema;
+
+// Esquema de validação para atualização de perfil (campos opcionais)
+export const updateProfileSchema = Joi.object({
+  name: Joi.string().optional().messages({
+    "string.empty": "O nome não pode estar vazio",
+  }),
+  email: Joi.string().email().optional().messages({
+    "string.email": "Email inválido",
+    "string.empty": "O email não pode estar vazio",
+  }),
+  username: Joi.string()
+    .min(3)
+    .max(30)
+    .pattern(VALIDATION_PATTERNS.USERNAME)
+    .optional()
+    .messages({
+      "string.min": "O nome de usuário deve ter no mínimo 3 caracteres",
+      "string.max": "O nome de usuário deve ter no máximo 30 caracteres",
+      "string.pattern.base": VALIDATION_MESSAGES.USERNAME,
+      "string.empty": "O nome de usuário não pode estar vazio",
+    }),
+  // Senha obrigatória quando alterando email ou username
+  currentPassword: Joi.string()
+    .when("email", {
+      is: Joi.exist(),
+      then: Joi.required(),
+    })
+    .when("username", {
+      is: Joi.exist(),
+      then: Joi.required(),
+    })
+    .messages({
+      "any.required":
+        "Senha atual é obrigatória para alterar email ou nome de usuário",
+    }),
+})
+  .min(1)
+  .messages({
+    "object.min": "Pelo menos um campo deve ser fornecido para atualização",
+  });
+
+// Schema helper para intervalo de horário
+const timeIntervalSchema = Joi.object({
+  start: Joi.string().pattern(VALIDATION_PATTERNS.TIME).required(),
+  end: Joi.string().pattern(VALIDATION_PATTERNS.TIME).required(),
+});
+
+// Schema helper para array de horários por dia
+const dayHoursSchema = Joi.array().items(timeIntervalSchema).required();
+
+// Esquema Joi para horários flexíveis por dia da semana
+const availableHoursByDayJoi = Joi.object({
+  monday: dayHoursSchema,
+  tuesday: dayHoursSchema,
+  wednesday: dayHoursSchema,
+  thursday: dayHoursSchema,
+  friday: dayHoursSchema,
+  saturday: dayHoursSchema,
+  sunday: dayHoursSchema,
+});
+
+const availabilityBlockJoi = Joi.object({
+  daysOfWeek: Joi.array().items(
+    Joi.string().valid(
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday"
+    )
+  ),
+  specificDate: Joi.string().pattern(VALIDATION_PATTERNS.DATE),
+  times: Joi.array()
+    .items(Joi.string().pattern(VALIDATION_PATTERNS.TIME).required())
+    .min(1)
+    .required(),
+}).or("daysOfWeek", "specificDate");
+
 // Esquema de validação para mesa
 export const tableSchema = Joi.object({
-  numero: Joi.number().integer().positive().required().messages({
-    "number.base": "O número da mesa deve ser um número",
-    "number.integer": "O número da mesa deve ser um número inteiro",
-    "number.positive": "O número da mesa deve ser positivo",
-    "any.required": "O número da mesa é obrigatório",
+  name: Joi.string().required().messages({
+    "string.empty": "O nome da mesa é obrigatório",
+    "any.required": "O nome da mesa é obrigatório",
   }),
-  capacidade: Joi.number().integer().min(1).max(20).required().messages({
+  capacity: Joi.number().min(1).required().messages({
     "number.base": "A capacidade deve ser um número",
-    "number.integer": "A capacidade deve ser um número inteiro",
-    "number.min": "A capacidade mínima é 1 pessoa",
-    "number.max": "A capacidade máxima é 20 pessoas",
+    "number.min": "A capacidade deve ser maior que zero",
     "any.required": "A capacidade é obrigatória",
   }),
   status: Joi.string()
-    .valid("disponivel", "ocupada", "reservada", "manutencao")
-    .default("disponivel")
+    .valid("available", "reserved", "maintenance")
+    .default("available")
     .messages({
       "any.only": "Status inválido",
+    }),
+  availability: Joi.array()
+    .items(
+      Joi.object({
+        date: Joi.string()
+          .pattern(VALIDATION_PATTERNS.DATE)
+          .required()
+          .messages({
+            "string.pattern.base": VALIDATION_MESSAGES.DATE,
+            "any.required": "Data é obrigatória",
+          }),
+        times: Joi.array()
+          .items(
+            Joi.string()
+              .pattern(VALIDATION_PATTERNS.TIME_INTERVAL)
+              .required()
+              .messages({
+                "string.pattern.base": VALIDATION_MESSAGES.TIME_INTERVAL,
+                "any.required": "Horário é obrigatório",
+              })
+          )
+          .min(1)
+          .required()
+          .messages({
+            "array.min": "Pelo menos um horário deve ser informado",
+            "any.required": "Horários são obrigatórios",
+          }),
+      })
+    )
+    .min(1)
+    .required()
+    .messages({
+      "array.base": "Disponibilidade deve ser um array de blocos",
+      "array.min": "Pelo menos um bloco de disponibilidade deve ser informado",
+      "any.required": "Disponibilidade é obrigatória",
     }),
 });
 
 // Esquema de validação para reserva
 export const reservationSchema = Joi.object({
-  data: Joi.date().min("now").max(Joi.ref("dataMaxima")).required().messages({
-    "date.base": "Data inválida",
-    "date.min": "A data deve ser futura",
-    "date.max": "A data não pode ser mais que 30 dias no futuro",
-    "any.required": "A data é obrigatória",
+  tableId: Joi.string().required().messages({
+    "string.empty": "A mesa é obrigatória",
+    "any.required": "A mesa é obrigatória",
   }),
-  dataMaxima: Joi.date().default(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 30);
-    return date;
+  date: Joi.string().pattern(VALIDATION_PATTERNS.DATE).required().messages({
+    "string.pattern.base": VALIDATION_MESSAGES.DATE,
+    "any.required": "Data é obrigatória",
   }),
-  hora: Joi.string()
-    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .required()
-    .messages({
-      "string.pattern.base": "Formato de hora inválido (use HH:mm)",
-      "any.required": "A hora é obrigatória",
-    }),
-  numeroPessoas: Joi.number().integer().min(1).max(20).required().messages({
-    "number.base": "O número de pessoas deve ser um número",
-    "number.integer": "O número de pessoas deve ser um número inteiro",
-    "number.min": "O número mínimo de pessoas é 1",
-    "number.max": "O número máximo de pessoas é 20",
-    "any.required": "O número de pessoas é obrigatório",
+  time: Joi.string().pattern(VALIDATION_PATTERNS.TIME).required().messages({
+    "string.pattern.base": VALIDATION_MESSAGES.TIME,
+    "any.required": "Horário é obrigatório",
+  }),
+  customerName: Joi.string().required().messages({
+    "string.empty": "O nome do cliente é obrigatório",
+    "any.required": "O nome do cliente é obrigatório",
+  }),
+  customerEmail: Joi.string().email().required().messages({
+    "string.email": "Email inválido",
+    "string.empty": "O email do cliente é obrigatório",
+    "any.required": "O email do cliente é obrigatório",
+  }),
+  observations: Joi.string().allow("").optional(),
+  userId: Joi.string().required().messages({
+    "string.empty": "O ID do usuário é obrigatório",
+    "any.required": "O ID do usuário é obrigatório",
   }),
   status: Joi.string()
-    .valid("pendente", "confirmada", "cancelada", "concluida")
-    .default("pendente")
-    .messages({
-      "any.only": "Status inválido",
-    }),
-  observacoes: Joi.string().max(500).allow("").messages({
-    "string.max": "As observações devem ter no máximo 500 caracteres",
-  }),
-  telefone: Joi.string()
-    .pattern(/^\(\d{2}\) \d{5}-\d{4}$/)
-    .required()
-    .messages({
-      "string.pattern.base":
-        "Formato de telefone inválido (use (XX) XXXXX-XXXX)",
-      "any.required": "O telefone é obrigatório",
-    }),
+    .valid("pending", "confirmed", "cancelled")
+    .default("pending"),
 });
 
-// Esquema de validação para login
-export const loginSchema = Joi.object({
-  username: Joi.string().required().messages({
-    "any.required": "O nome de usuário é obrigatório",
-  }),
-  senha: Joi.string().required().messages({
-    "any.required": "A senha é obrigatória",
-  }),
+// Esquema de validação para configurações
+export const configSchema = Joi.object({
+  maxReservationsPerUser: Joi.number()
+    .min(VALIDATION_LIMITS.maxReservationsPerUser.min)
+    .max(VALIDATION_LIMITS.maxReservationsPerUser.max)
+    .required()
+    .messages({
+      "number.base": "O limite de reservas por usuário deve ser um número",
+      "number.min": `O limite mínimo de reservas por usuário é ${VALIDATION_LIMITS.maxReservationsPerUser.min}`,
+      "number.max": `O limite máximo de reservas por usuário é ${VALIDATION_LIMITS.maxReservationsPerUser.max}`,
+      "any.required": "O limite de reservas por usuário é obrigatório",
+    }),
+  reservationLimitHours: Joi.number()
+    .min(VALIDATION_LIMITS.reservationLimitHours.min)
+    .max(VALIDATION_LIMITS.reservationLimitHours.max)
+    .required()
+    .messages({
+      "number.base": "O período de limitação deve ser um número",
+      "number.min": `O período mínimo é ${VALIDATION_LIMITS.reservationLimitHours.min} hora`,
+      "number.max": `O período máximo é ${VALIDATION_LIMITS.reservationLimitHours.max} horas`,
+      "any.required": "O período de limitação é obrigatório",
+    }),
+  minIntervalBetweenReservations: Joi.number()
+    .min(VALIDATION_LIMITS.minIntervalBetweenReservations.min)
+    .max(VALIDATION_LIMITS.minIntervalBetweenReservations.max)
+    .required()
+    .messages({
+      "number.base": "O tempo de confirmação deve ser um número",
+      "number.min": `O tempo mínimo de confirmação é ${VALIDATION_LIMITS.minIntervalBetweenReservations.min} minutos`,
+      "number.max": `O tempo máximo de confirmação é ${VALIDATION_LIMITS.minIntervalBetweenReservations.max} minutos`,
+      "any.required": "O tempo de confirmação é obrigatório",
+    }),
+  openingHour: Joi.string()
+    .pattern(VALIDATION_PATTERNS.TIME)
+    .when("isOpeningHoursEnabled", {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    })
+    .messages({
+      "string.pattern.base": VALIDATION_MESSAGES.TIME,
+      "any.required":
+        "O horário de abertura é obrigatório quando horários estão ativados",
+    }),
+  closingHour: Joi.string()
+    .pattern(VALIDATION_PATTERNS.TIME)
+    .when("isOpeningHoursEnabled", {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    })
+    .messages({
+      "string.pattern.base": VALIDATION_MESSAGES.TIME,
+      "any.required":
+        "O horário de fechamento é obrigatório quando horários estão ativados",
+    }),
+
+  isReservationLimitEnabled: Joi.boolean().required(),
+  isIntervalEnabled: Joi.boolean().required(),
+  isOpeningHoursEnabled: Joi.boolean().required(),
 });
