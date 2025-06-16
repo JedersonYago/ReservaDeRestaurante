@@ -1,20 +1,27 @@
 import jwt from "jsonwebtoken";
+import { config } from "../config";
 import { IUser } from "../models/User";
 
-const JWT_SECRET = process.env.JWT_SECRET || "sua_chave_secreta_aqui";
+if (!config.auth.jwtSecret) {
+  throw new Error("JWT_SECRET não está configurado");
+}
 
-export const generateToken = (payload: IUser): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
+export const generateToken = (user: IUser): string => {
+  const payload = {
+    _id: user._id,
+    role: user.role,
+    username: user.username,
+  };
+
+  return jwt.sign(payload, config.auth.jwtSecret as jwt.Secret, {
+    expiresIn: config.auth.jwtExpiresIn as jwt.SignOptions["expiresIn"],
+  });
 };
 
-export const verifyToken = (token: string): Promise<IUser> => {
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(decoded as IUser);
-      }
-    });
-  });
+export const verifyToken = (token: string): any => {
+  try {
+    return jwt.verify(token, config.auth.jwtSecret as jwt.Secret);
+  } catch (error) {
+    throw new Error("Token inválido ou expirado");
+  }
 };
