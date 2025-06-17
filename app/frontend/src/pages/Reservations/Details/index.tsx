@@ -1,200 +1,215 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useReservations } from "../../../hooks/useReservations";
-import styled from "styled-components";
-import { Button } from "../../../components/Button";
+import { useAuth } from "../../../hooks/useAuth";
+import { Button } from "./styles";
+import { toast } from "react-toastify";
+import {
+  Container,
+  Title,
+  DetailsContainer,
+  DetailItem,
+  DetailLabel,
+  DetailValue,
+  ButtonGroup,
+  StatusBadge,
+  SectionTitle,
+  InfoSection,
+  ActionsSection,
+} from "./styles";
+import { formatDate, formatTime } from "../../../utils/dateUtils";
 
 export function ReservationDetails() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { reservations, isLoading, cancelReservation } = useReservations();
+  const {
+    getReservationById,
+    deleteReservation,
+    cancelReservation,
+    confirmReservation,
+  } = useReservations();
+  const { user } = useAuth();
+  const [reservation, setReservation] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const reservation = reservations?.find((r) => r.id === id);
+  useEffect(() => {
+    if (isDeleting) return;
+    const fetchReservation = async () => {
+      try {
+        const data = await getReservationById(id!);
+        setReservation(data);
+      } catch (error: any) {
+        console.error("Erro ao buscar reserva:", error);
+        const errorMessage =
+          error.response?.data?.error ||
+          "Erro ao buscar detalhes da reserva. Tente novamente.";
+        toast.error(errorMessage);
+        navigate("/reservations");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (isLoading) {
-    return <Loading>Carregando...</Loading>;
+    fetchReservation();
+  }, [id, getReservationById, navigate, isDeleting]);
+
+  const handleDelete = async () => {
+    if (window.confirm("Tem certeza que deseja excluir esta reserva?")) {
+      try {
+        setIsDeleting(true);
+        await deleteReservation.mutateAsync(reservation._id);
+        navigate("/reservations");
+        return;
+      } catch (error: any) {
+        setIsDeleting(false);
+        console.error("Erro ao excluir reserva:", error);
+        toast.error(error.response?.data?.error || "Erro ao excluir reserva");
+      }
+    }
+  };
+
+  const handleCancel = async () => {
+    if (window.confirm("Tem certeza que deseja cancelar esta reserva?")) {
+      try {
+        await cancelReservation.mutateAsync(reservation._id);
+        setReservation({ ...reservation, status: "cancelled" });
+      } catch (error: any) {
+        console.error("Erro ao cancelar reserva:", error);
+        toast.error(error.response?.data?.error || "Erro ao cancelar reserva");
+      }
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (window.confirm("Tem certeza que deseja confirmar esta reserva?")) {
+      try {
+        await confirmReservation.mutateAsync(reservation._id);
+        setReservation({ ...reservation, status: "confirmed" });
+      } catch (error: any) {
+        console.error("Erro ao confirmar reserva:", error);
+        toast.error(error.response?.data?.error || "Erro ao confirmar reserva");
+      }
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "Pendente";
+      case "confirmed":
+        return "Confirmada";
+      case "cancelled":
+        return "Cancelada";
+      default:
+        return status;
+    }
+  };
+
+  if (loading) {
+    return <div>Carregando...</div>;
   }
 
   if (!reservation) {
-    return <NotFound>Reserva não encontrada</NotFound>;
+    return <div>Reserva não encontrada</div>;
   }
 
   return (
     <Container>
-      <Header>
-        <h1>Detalhes da Reserva</h1>
-        <Button variant="secondary" onClick={() => navigate("/reservations")}>
-          Voltar
-        </Button>
-      </Header>
+      <Title>Detalhes da Reserva</Title>
 
-      <Content>
-        <InfoCard>
-          <h2>Informações</h2>
-          <InfoItem>
-            <Label>Nome:</Label>
-            <Value>{reservation.name}</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Email:</Label>
-            <Value>{reservation.email}</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Telefone:</Label>
-            <Value>{reservation.phone}</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Data:</Label>
-            <Value>{reservation.date}</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Horário:</Label>
-            <Value>{reservation.time}</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Número de Pessoas:</Label>
-            <Value>{reservation.numberOfPeople} pessoas</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Status:</Label>
-            <StatusBadge status={reservation.status}>
-              {getStatusText(reservation.status)}
-            </StatusBadge>
-          </InfoItem>
-        </InfoCard>
+      <DetailsContainer>
+        <InfoSection>
+          <SectionTitle>Informações da Mesa</SectionTitle>
+          <DetailItem>
+            <DetailLabel>Mesa:</DetailLabel>
+            <DetailValue>
+              {reservation.tableId ? reservation.tableId.name : "Mesa excluída"}
+            </DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailLabel>Capacidade:</DetailLabel>
+            <DetailValue>
+              {reservation.tableId
+                ? `${reservation.tableId.capacity} pessoas`
+                : "---"}
+            </DetailValue>
+          </DetailItem>
+        </InfoSection>
 
+        <InfoSection>
+          <SectionTitle>Informações da Reserva</SectionTitle>
+          <DetailItem>
+            <DetailLabel>Data:</DetailLabel>
+            <DetailValue>{formatDate(reservation.date)}</DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailLabel>Horário:</DetailLabel>
+            <DetailValue>{formatTime(reservation.time)}</DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailLabel>Status:</DetailLabel>
+            <DetailValue>
+              <StatusBadge status={reservation.status}>
+                {getStatusText(reservation.status)}
+              </StatusBadge>
+            </DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailLabel>Observações:</DetailLabel>
+            <DetailValue>{reservation.observations || "Nenhuma"}</DetailValue>
+          </DetailItem>
+        </InfoSection>
+
+        <InfoSection>
+          <SectionTitle>Informações do Cliente</SectionTitle>
+          <DetailItem>
+            <DetailLabel>Nome:</DetailLabel>
+            <DetailValue>{reservation.customerName}</DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailLabel>Email:</DetailLabel>
+            <DetailValue>{reservation.customerEmail}</DetailValue>
+          </DetailItem>
+        </InfoSection>
+
+        {reservation.observations && (
+          <InfoSection>
+            <SectionTitle>Observações</SectionTitle>
+            <DetailItem>
+              <DetailValue>{reservation.observations}</DetailValue>
+            </DetailItem>
+          </InfoSection>
+        )}
+      </DetailsContainer>
+      <ActionsSection>
         <ButtonGroup>
-          <Button
-            variant="danger"
-            onClick={() => {
-              if (
-                window.confirm("Tem certeza que deseja cancelar esta reserva?")
-              ) {
-                cancelReservation(reservation.id);
-                navigate("/reservations");
-              }
-            }}
-          >
-            Cancelar Reserva
+          <Button type="button" onClick={() => navigate("/reservations")}>
+            Voltar
           </Button>
+          {reservation.status === "pending" && (
+            <>
+              {user?.role === "admin" && (
+                <Button
+                  type="button"
+                  onClick={handleConfirm}
+                  $variant="success"
+                >
+                  Confirmar
+                </Button>
+              )}
+              <Button type="button" onClick={handleCancel} $variant="warning">
+                Cancelar
+              </Button>
+            </>
+          )}
+          {user?.role === "admin" && (
+            <Button type="button" onClick={handleDelete} $variant="danger">
+              Excluir
+            </Button>
+          )}
         </ButtonGroup>
-      </Content>
+      </ActionsSection>
     </Container>
   );
 }
-
-function getStatusText(status: string) {
-  const statusMap = {
-    pending: "Pendente",
-    confirmed: "Confirmada",
-    cancelled: "Cancelada",
-  };
-
-  return statusMap[status as keyof typeof statusMap] || status;
-}
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-
-  h1 {
-    color: #333;
-  }
-`;
-
-const Content = styled.div`
-  display: grid;
-  gap: 2rem;
-`;
-
-const InfoCard = styled.div`
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  h2 {
-    color: #333;
-    margin-bottom: 1.5rem;
-  }
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const Label = styled.span`
-  font-weight: 500;
-  color: #666;
-  width: 150px;
-`;
-
-const Value = styled.span`
-  color: #333;
-`;
-
-const StatusBadge = styled.span<{ status: string }>`
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-
-  ${({ status }) => {
-    switch (status) {
-      case "pending":
-        return `
-          background: #fff3cd;
-          color: #856404;
-        `;
-      case "confirmed":
-        return `
-          background: #d4edda;
-          color: #155724;
-        `;
-      case "cancelled":
-        return `
-          background: #f8d7da;
-          color: #721c24;
-        `;
-      default:
-        return "";
-    }
-  }}
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const Loading = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
-`;
-
-const NotFound = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
-`;

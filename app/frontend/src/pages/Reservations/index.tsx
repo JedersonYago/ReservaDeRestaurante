@@ -1,190 +1,241 @@
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useReservations } from "../../hooks/useReservations";
-import styled from "styled-components";
-import { formatInTimeZone } from "date-fns-tz";
-import { ptBR } from "date-fns/locale";
+import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/Button";
+import { Input } from "../../components/Input";
+import { toast } from "react-toastify";
+import {
+  Container,
+  Title,
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
+  ButtonGroup,
+  SearchContainer,
+  StatusBadge,
+  Select,
+} from "./styles";
+import { formatDate, formatTime } from "../../utils/dateUtils";
 
 export function Reservations() {
   const navigate = useNavigate();
-  const { reservations, isLoading, cancelReservation } = useReservations();
+  const {
+    reservations,
+    deleteReservation,
+    clearReservation,
+    cancelReservation,
+  } = useReservations();
+  const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  if (isLoading) {
-    return <Loading>Carregando...</Loading>;
-  }
+  const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
+
+  const filteredReservations = useMemo(() => {
+    if (!reservations) return [];
+
+    return reservations.filter((reservation) => {
+      const matchesSearch =
+        reservation.customerName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        reservation.customerEmail
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        (reservation.tableId &&
+          reservation.tableId.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()));
+
+      const matchesStatus =
+        statusFilter === "all" || reservation.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [reservations, searchTerm, statusFilter]);
+
+  const handleDelete = async (id: string) => {
+    if (
+      window.confirm(
+        "Tem certeza que deseja excluir esta reserva permanentemente?"
+      )
+    ) {
+      try {
+        await deleteReservation.mutateAsync(id);
+        // Toast de sucesso é exibido pelo hook useReservations
+      } catch (error: any) {
+        console.error("Erro ao excluir reserva:", error);
+        // Toast de erro já é exibido pelo hook, mas podemos manter este para casos específicos
+        const errorMessage =
+          error.response?.data?.error ||
+          "Erro ao excluir reserva. Tente novamente.";
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  const handleClear = async (id: string) => {
+    if (
+      window.confirm(
+        "Tem certeza que deseja remover esta reserva da sua lista?"
+      )
+    ) {
+      try {
+        await clearReservation.mutateAsync(id);
+        // Toast de sucesso é exibido pelo hook useReservations
+      } catch (error: any) {
+        console.error("Erro ao limpar reserva:", error);
+        const errorMessage =
+          error.response?.data?.error ||
+          "Erro ao limpar reserva. Tente novamente.";
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    if (window.confirm("Tem certeza que deseja cancelar esta reserva?")) {
+      try {
+        await cancelReservation.mutateAsync(id);
+        // Toast de sucesso é exibido pelo hook useReservations
+      } catch (error: any) {
+        console.error("Erro ao cancelar reserva:", error);
+        // Toast de erro já é exibido pelo hook, mas podemos manter este para casos específicos
+        const errorMessage =
+          error.response?.data?.error ||
+          "Erro ao cancelar reserva. Tente novamente.";
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "⏳ Pendente";
+      case "confirmed":
+        return "✅ Confirmada";
+      case "cancelled":
+        return "❌ Cancelada";
+      default:
+        return status;
+    }
+  };
 
   return (
     <Container>
-      <Header>
-        <h1>Minhas Reservas</h1>
-        <Button onClick={() => navigate("/reservations/new")}>
+      <Title>Reservas</Title>
+      <SearchContainer>
+        <Input
+          type="text"
+          placeholder="Buscar por nome, email ou mesa..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Select
+          value={statusFilter}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setStatusFilter(e.target.value)
+          }
+        >
+          <option value="all">Todos os status</option>
+          <option value="pending">Pendente</option>
+          <option value="confirmed">Confirmada</option>
+          <option value="cancelled">Cancelada</option>
+        </Select>
+      </SearchContainer>
+      <Table>
+        <thead>
+          <tr>
+            <TableHeader>Mesa</TableHeader>
+            <TableHeader>Cliente</TableHeader>
+            <TableHeader>Data</TableHeader>
+            <TableHeader>Horário</TableHeader>
+            <TableHeader>Status</TableHeader>
+            <TableHeader>Observações</TableHeader>
+            <TableHeader>Ações</TableHeader>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredReservations?.map((reservation) => (
+            <TableRow key={reservation._id}>
+              <TableCell>
+                {reservation.tableId
+                  ? reservation.tableId.name
+                  : "Mesa excluída"}
+              </TableCell>
+              <TableCell>
+                {reservation.customerName}
+                <br />
+                <small>{reservation.customerEmail}</small>
+              </TableCell>
+              <TableCell>{formatDate(reservation.date)}</TableCell>
+              <TableCell>{formatTime(reservation.time)}</TableCell>
+              <TableCell>
+                <StatusBadge status={reservation.status}>
+                  {getStatusText(reservation.status)}
+                </StatusBadge>
+              </TableCell>
+              <TableCell title={reservation.observations || ""}>
+                {truncateText(reservation.observations || "", 10)}
+              </TableCell>
+              <TableCell>
+                <ButtonGroup>
+                  <Button
+                    type="button"
+                    onClick={() => navigate(`/reservations/${reservation._id}`)}
+                    $variant="secondary"
+                  >
+                    Detalhes
+                  </Button>
+                  {user?.role === "admin" ? (
+                    // Admin: sempre pode excluir
+                    <Button
+                      type="button"
+                      onClick={() => handleDelete(reservation._id)}
+                      $variant="danger"
+                    >
+                      Excluir
+                    </Button>
+                  ) : (
+                    // Cliente: cancelar se não cancelada, limpar se cancelada
+                    <>
+                      {reservation.status !== "cancelled" && (
+                        <Button
+                          type="button"
+                          onClick={() => handleCancel(reservation._id)}
+                          $variant="secondary"
+                        >
+                          Cancelar
+                        </Button>
+                      )}
+                      {reservation.status === "cancelled" && (
+                        <Button
+                          type="button"
+                          onClick={() => handleClear(reservation._id)}
+                          $variant="secondary"
+                        >
+                          Limpar
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </ButtonGroup>
+              </TableCell>
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
+      <ButtonGroup>
+        <Button type="button" onClick={() => navigate("/reservations/new")}>
           Nova Reserva
         </Button>
-      </Header>
-
-      <ReservationList>
-        {reservations?.map((reservation) => (
-          <ReservationCard key={reservation.id}>
-            <ReservationInfo>
-              <h3>{reservation.name}</h3>
-              <p>
-                Data:{" "}
-                {formatInTimeZone(
-                  new Date(reservation.date),
-                  "America/Sao_Paulo",
-                  "dd 'de' MMMM 'de' yyyy",
-                  { locale: ptBR }
-                )}
-              </p>
-              <p>Horário: {reservation.time}</p>
-              <p>Pessoas: {reservation.numberOfPeople}</p>
-              <StatusBadge status={reservation.status}>
-                {getStatusText(reservation.status)}
-              </StatusBadge>
-            </ReservationInfo>
-
-            <ReservationActions>
-              <Button
-                variant="secondary"
-                onClick={() => navigate(`/reservations/${reservation.id}`)}
-              >
-                Detalhes
-              </Button>
-              {reservation.status === "pending" && (
-                <Button
-                  variant="danger"
-                  onClick={() => cancelReservation(reservation.id)}
-                >
-                  Cancelar
-                </Button>
-              )}
-            </ReservationActions>
-          </ReservationCard>
-        ))}
-
-        {reservations?.length === 0 && (
-          <EmptyState>
-            <p>Você ainda não tem reservas.</p>
-            <Button onClick={() => navigate("/reservations/new")}>
-              Fazer uma reserva
-            </Button>
-          </EmptyState>
-        )}
-      </ReservationList>
+      </ButtonGroup>
     </Container>
   );
 }
-
-function getStatusText(status: string) {
-  const statusMap = {
-    pending: "Pendente",
-    confirmed: "Confirmada",
-    cancelled: "Cancelada",
-  };
-
-  return statusMap[status as keyof typeof statusMap] || status;
-}
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-
-  h1 {
-    color: #333;
-  }
-`;
-
-const ReservationList = styled.div`
-  display: grid;
-  gap: 1rem;
-`;
-
-const ReservationCard = styled.div`
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    color: #333;
-    margin-bottom: 0.5rem;
-  }
-
-  p {
-    color: #666;
-    margin-bottom: 0.3rem;
-  }
-`;
-
-const ReservationInfo = styled.div`
-  flex: 1;
-`;
-
-const StatusBadge = styled.span<{ status: string }>`
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-top: 0.5rem;
-
-  ${({ status }) => {
-    switch (status) {
-      case "pending":
-        return `
-          background: #fff3cd;
-          color: #856404;
-        `;
-      case "confirmed":
-        return `
-          background: #d4edda;
-          color: #155724;
-        `;
-      case "cancelled":
-        return `
-          background: #f8d7da;
-          color: #721c24;
-        `;
-      default:
-        return "";
-    }
-  }}
-`;
-
-const ReservationActions = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 3rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  p {
-    color: #666;
-    margin-bottom: 1rem;
-  }
-`;
-
-const Loading = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
-`;
