@@ -1,38 +1,34 @@
 import styled from "styled-components";
 
 interface TableCardProps {
-  selected: boolean;
-  onClick: () => void;
   children: React.ReactNode;
+  onClick?: () => void;
 }
 
-export function TableCard({ selected, onClick, children }: TableCardProps) {
-  return (
-    <Container selected={selected} onClick={onClick}>
-      {children}
-    </Container>
-  );
+export function TableCard({ children, onClick }: TableCardProps) {
+  return <Container onClick={onClick}>{children}</Container>;
 }
 
-const Container = styled.div<{ selected: boolean }>`
-  background: ${({ selected }) => (selected ? "#e3f2fd" : "white")};
-  border: 2px solid ${({ selected }) => (selected ? "#2196f3" : "#e0e0e0")};
+const Container = styled.div`
+  background: white;
+  padding: 1.5rem;
   border-radius: 8px;
-  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 
   &:hover {
-    border-color: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 
   h3 {
+    margin: 0 0 0.5rem 0;
     color: #333;
-    margin-bottom: 0.5rem;
   }
 
   p {
+    margin: 0;
     color: #666;
-    font-size: 0.9rem;
   }
 `;
