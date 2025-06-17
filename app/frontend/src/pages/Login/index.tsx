@@ -1,75 +1,79 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import styled from "styled-components";
-
-const schema = yup.object().shape({
-  email: yup.string().email("Email inválido").required("Email é obrigatório"),
-  password: yup.string().required("Senha é obrigatória"),
-});
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { Button } from "../../components/Button";
+import { Input } from "../../components/Input";
+import { authService } from "../../services/authService";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../../hooks/useAuth";
+import { useEffect } from "react";
+import { loginSchema, type LoginFormData } from "../../schemas/auth";
 
 export function Login() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(loginSchema),
   });
 
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/reservations", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   async function handleLogin(data: LoginFormData) {
     try {
-      await signIn(data.email, data.password);
+      const response = await authService.login(data);
+      await queryClient.setQueryData(["user"], response.user);
       toast.success("Login realizado com sucesso!");
-      navigate("/reservations");
-    } catch (error) {
-      toast.error("Erro ao fazer login. Verifique suas credenciais.");
+      navigate("/reservations", { replace: true });
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Erro ao fazer login. Verifique suas credenciais.";
+      toast.error(errorMessage);
     }
   }
 
   return (
     <Container>
       <FormContainer>
-        <h1>Login</h1>
+        <h1>Bem-vindo de volta!</h1>
+        <p className="subtitle">Faça login para acessar sua conta</p>
+
         <form onSubmit={handleSubmit(handleLogin)}>
-          <InputGroup>
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              {...register("email")}
-              placeholder="Seu email"
-            />
-            {errors.email && <span>{errors.email.message}</span>}
-          </InputGroup>
+          <Input
+            label="Nome de Usuário"
+            type="text"
+            error={errors.username?.message}
+            {...register("username")}
+            placeholder="Seu nome de usuário"
+          />
 
-          <InputGroup>
-            <label htmlFor="password">Senha</label>
-            <input
-              type="password"
-              id="password"
-              {...register("password")}
-              placeholder="Sua senha"
-            />
-            {errors.password && <span>{errors.password.message}</span>}
-          </InputGroup>
+          <Input
+            label="Senha"
+            type="password"
+            error={errors.password?.message}
+            {...register("password")}
+            placeholder="Sua senha"
+          />
 
-          <button type="submit">Entrar</button>
+          <Button type="submit" $fullWidth disabled={isSubmitting}>
+            {isSubmitting ? "Entrando..." : "Entrar"}
+          </Button>
         </form>
 
-        <p>
-          Não tem uma conta? <a href="/register">Registre-se</a>
+        <p className="register-text">
+          Não tem uma conta? <Link to="/register">Registre-se</Link>
         </p>
       </FormContainer>
     </Container>
@@ -82,77 +86,49 @@ const Container = styled.div`
   justify-content: center;
   min-height: 100vh;
   padding: 20px;
+  background: #f5f5f5;
 `;
 
 const FormContainer = styled.div`
   background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
 
   h1 {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
     color: #333;
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2rem;
   }
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
-  button {
-    background: #007bff;
-    color: white;
-    padding: 0.8rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    margin-top: 1rem;
-
-    &:hover {
-      background: #0056b3;
-    }
-  }
-
-  p {
+  .register-text {
     text-align: center;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
+    color: #666;
 
     a {
       color: #007bff;
-      text-decoration: underline;
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
-  }
-`;
-
-const InputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  label {
-    font-size: 0.9rem;
-    color: #666;
-  }
-
-  input {
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-
-    &:focus {
-      outline: none;
-      border-color: #007bff;
-    }
-  }
-
-  span {
-    color: #dc3545;
-    font-size: 0.8rem;
   }
 `;
