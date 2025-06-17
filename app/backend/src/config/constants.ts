@@ -1,8 +1,3 @@
-/**
- * Re-exportar constantes da biblioteca compartilhada
- * ✅ Migração completa - eliminação de duplicação
- */
-
 export {
   MAX_DAYS_AHEAD,
   OPENING_TIME,
