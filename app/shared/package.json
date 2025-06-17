@@ -1,0 +1,22 @@
+{
+  "name": "@restaurant-reservation/shared",
+  "version": "1.0.0",
+  "description": "Biblioteca compartilhada entre frontend e backend",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "restaurant",
+    "reservation",
+    "shared",
+    "typescript"
+  ],
+  "author": "Restaurant Reservation Team",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
