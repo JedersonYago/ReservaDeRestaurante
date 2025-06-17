@@ -2,42 +2,34 @@ import type { ButtonHTMLAttributes } from "react";
 import styled from "styled-components";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "danger";
-  fullWidth?: boolean;
+  $variant?: "primary" | "secondary" | "danger";
+  $fullWidth?: boolean;
 }
 
 export function Button({
   children,
-  variant = "primary",
-  fullWidth = false,
+  $variant = "primary",
+  $fullWidth = false,
   ...props
 }: ButtonProps) {
   return (
-    <StyledButton variant={variant} fullWidth={fullWidth} {...props}>
+    <StyledButton $variant={$variant} $fullWidth={$fullWidth} {...props}>
       {children}
     </StyledButton>
   );
 }
 
-const StyledButton = styled.button<{ variant: string; fullWidth: boolean }>`
-  padding: 0.8rem 1.5rem;
+const StyledButton = styled.button<{ $variant: string; $fullWidth: boolean }>`
+  padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
-  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
 
-  ${({ variant }) => {
-    switch (variant) {
-      case "primary":
-        return `
-          background: #007bff;
-          color: white;
-          &:hover {
-            background: #0056b3;
-          }
-        `;
+  ${({ $variant = "primary" }) => {
+    switch ($variant) {
       case "secondary":
         return `
           background: #6c757d;
@@ -55,7 +47,13 @@ const StyledButton = styled.button<{ variant: string; fullWidth: boolean }>`
           }
         `;
       default:
-        return "";
+        return `
+          background: #007bff;
+          color: white;
+          &:hover {
+            background: #0056b3;
+          }
+        `;
     }
   }}
 
