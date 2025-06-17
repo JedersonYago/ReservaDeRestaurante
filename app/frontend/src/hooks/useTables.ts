@@ -1,15 +1,37 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { tableService } from "../services/tableService";
-import type { CreateTableData } from "../services/tableService";
+import type { CreateTableData, UpdateTableData, Table } from "../types";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+
+const TOKEN_KEY = "token";
 
 export function useTables() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const { data: tables, isLoading } = useQuery({
+  const { data: tables, isLoading } = useQuery<Table[], Error>({
     queryKey: ["tables"],
-    queryFn: tableService.getAll,
+    queryFn: () => tableService.list(),
+    retry: false,
   });
+
+  useEffect(() => {
+    const handleError = (error: any) => {
+      if (error?.response?.status === 401) {
+        localStorage.removeItem(TOKEN_KEY);
+        navigate("/login");
+        toast.error("Sua sessão expirou. Por favor, faça login novamente.");
+      } else {
+        toast.error("Erro ao carregar mesas. Tente novamente.");
+      }
+    };
+
+    if (tables === undefined && !isLoading) {
+      handleError(new Error("Falha ao carregar mesas"));
+    }
+  }, [tables, isLoading, navigate]);
 
   const createTable = useMutation({
     mutationFn: tableService.create,
@@ -17,36 +39,44 @@ export function useTables() {
       queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast.success("Mesa criada com sucesso!");
     },
-    onError: () => {
-      toast.error("Erro ao criar mesa. Tente novamente.");
+    onError: (error: any) => {
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Erro ao criar mesa. Tente novamente.");
+      }
     },
   });
 
   const updateTable = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: Partial<CreateTableData>;
-    }) => tableService.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateTableData }) =>
+      tableService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast.success("Mesa atualizada com sucesso!");
     },
-    onError: () => {
-      toast.error("Erro ao atualizar mesa. Tente novamente.");
+    onError: (error: any) => {
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Erro ao atualizar mesa. Tente novamente.");
+      }
     },
   });
 
-  const deleteTable = useMutation({
+  const { mutateAsync: deleteTable } = useMutation({
     mutationFn: tableService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
       toast.success("Mesa excluída com sucesso!");
     },
-    onError: () => {
-      toast.error("Erro ao excluir mesa. Tente novamente.");
+    onError: (error: any) => {
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Erro ao excluir mesa. Tente novamente.");
+      }
     },
   });
 
@@ -54,8 +84,16 @@ export function useTables() {
     tables,
     isLoading,
     createTable: (data: CreateTableData) => createTable.mutate(data),
-    updateTable: (id: string, data: Partial<CreateTableData>) =>
+    updateTable: (id: string, data: UpdateTableData) =>
       updateTable.mutate({ id, data }),
-    deleteTable: (id: string) => deleteTable.mutate(id),
+    deleteTable,
   };
+}
+
+export function useTableById(id: string | undefined) {
+  return useQuery({
+    queryKey: ["table", id],
+    queryFn: () => tableService.getById(id!),
+    enabled: !!id,
+  });
 }
