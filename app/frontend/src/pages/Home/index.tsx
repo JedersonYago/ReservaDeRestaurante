@@ -8,12 +8,8 @@ export function Home() {
     <Container>
       <h1>Bem-vindo ao Sistema de Reservas</h1>
       <ButtonGroup>
-        <button onClick={() => navigate("/reservations")}>
-          Ver Minhas Reservas
-        </button>
-        <button onClick={() => navigate("/reservations/new")}>
-          Fazer Nova Reserva
-        </button>
+        <button onClick={() => navigate("/register")}>Registrar</button>
+        <button onClick={() => navigate("/login")}>Login</button>
       </ButtonGroup>
     </Container>
   );
