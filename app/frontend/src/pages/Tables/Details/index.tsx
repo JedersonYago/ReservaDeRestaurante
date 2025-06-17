@@ -1,14 +1,82 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useTables } from "../../../hooks/useTables";
+import { useTableById } from "../../../hooks/useTables";
+import { useReservationsByTable } from "../../../hooks/useReservations";
 import styled from "styled-components";
 import { Button } from "../../../components/Button";
+import { useState, useEffect } from "react";
+import { tableService } from "../../../services/tableService";
+import { toYMD } from "../../../utils/dateUtils";
+import { formatDate, formatTime } from "../../../utils/dateUtils";
+import { StatusBadge } from "../../../components/StatusBadge";
+import { useAuth } from "../../../hooks/useAuth";
+import { useReservations } from "../../../hooks/useReservations";
 
 export function TableDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tables, isLoading, updateTable, deleteTable } = useTables();
+  const { user } = useAuth();
+  const { deleteReservation, confirmReservation, cancelReservation } =
+    useReservations();
+  const { data: table, isLoading } = useTableById(id);
+  const {
+    reservations,
+    loading: loadingReservations,
+    refetch: refetchReservations,
+  } = useReservationsByTable(id || "");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [dynamicStatus, setDynamicStatus] = useState<string | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState(false);
 
-  const table = tables?.find((t) => t.id === id);
+  useEffect(() => {
+    if (table && !selectedDate) {
+      setSelectedDate(toYMD(new Date()));
+    }
+  }, [table]);
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (id && selectedDate) {
+        setLoadingStatus(true);
+        try {
+          const res = await tableService.getStatus(id, selectedDate);
+          setDynamicStatus(res.status);
+        } catch {
+          setDynamicStatus(null);
+        }
+        setLoadingStatus(false);
+      }
+    };
+    fetchStatus();
+  }, [id, selectedDate]);
+
+  const handleConfirm = async (reservationId: string) => {
+    try {
+      await confirmReservation.mutateAsync(reservationId);
+      refetchReservations();
+    } catch (error) {
+      // Toast de erro já é exibido pelo hook
+    }
+  };
+
+  const handleCancel = async (reservationId: string) => {
+    try {
+      await cancelReservation.mutateAsync(reservationId);
+      refetchReservations();
+    } catch (error) {
+      // Toast de erro já é exibido pelo hook
+    }
+  };
+
+  const handleDelete = async (reservationId: string) => {
+    if (window.confirm("Tem certeza que deseja excluir esta reserva?")) {
+      try {
+        await deleteReservation.mutateAsync(reservationId);
+        refetchReservations();
+      } catch (error) {
+        // Toast de erro já é exibido pelo hook
+      }
+    }
+  };
 
   if (isLoading) {
     return <Loading>Carregando...</Loading>;
@@ -21,8 +89,8 @@ export function TableDetails() {
   return (
     <Container>
       <Header>
-        <h1>Detalhes da Mesa {table.number}</h1>
-        <Button variant="secondary" onClick={() => navigate("/tables")}>
+        <h1>Detalhes da Mesa {table.name}</h1>
+        <Button $variant="secondary" onClick={() => navigate("/tables")}>
           Voltar
         </Button>
       </Header>
@@ -31,38 +99,149 @@ export function TableDetails() {
         <InfoCard>
           <h2>Informações</h2>
           <InfoItem>
-            <Label>Número:</Label>
-            <Value>{table.number}</Value>
+            <Label>Nome:</Label>
+            <Value>{table.name}</Value>
           </InfoItem>
           <InfoItem>
             <Label>Capacidade:</Label>
             <Value>{table.capacity} pessoas</Value>
           </InfoItem>
           <InfoItem>
-            <Label>Status:</Label>
+            <Label>Status global:</Label>
             <StatusBadge status={table.status}>
               {getStatusText(table.status)}
             </StatusBadge>
           </InfoItem>
+          <InfoItem>
+            <Label>Status para data:</Label>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                style={{
+                  padding: "0.5rem",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              />
+              {loadingStatus ? (
+                <span>Carregando...</span>
+              ) : (
+                dynamicStatus && (
+                  <StatusBadge status={dynamicStatus}>
+                    {getStatusText(dynamicStatus)}
+                  </StatusBadge>
+                )
+              )}
+            </div>
+          </InfoItem>
+          <InfoItem>
+            <Label>Disponibilidade:</Label>
+            <Value>
+              <ul>
+                {table.availability && table.availability.length > 0 ? (
+                  table.availability.map((block, idx) => (
+                    <li key={idx} style={{ marginBottom: 8 }}>
+                      <b>{block.date}:</b> {block.times.join(", ")}
+                    </li>
+                  ))
+                ) : (
+                  <li>Nenhuma disponibilidade cadastrada</li>
+                )}
+              </ul>
+            </Value>
+          </InfoItem>
         </InfoCard>
+
+        <ReservationsCard>
+          <h2>Reservas</h2>
+          {loadingReservations ? (
+            <Loading>Carregando reservas...</Loading>
+          ) : reservations.length > 0 ? (
+            <ReservationsTable>
+              <thead>
+                <tr>
+                  <TableHeader>Cliente</TableHeader>
+                  <TableHeader>Data</TableHeader>
+                  <TableHeader>Horário</TableHeader>
+                  <TableHeader>Status</TableHeader>
+                  <TableHeader>Ações</TableHeader>
+                </tr>
+              </thead>
+              <tbody>
+                {reservations.map((reservation) => (
+                  <TableRow key={reservation._id}>
+                    <TableCell>
+                      {reservation.customerName}
+                      <br />
+                      <small>{reservation.customerEmail}</small>
+                    </TableCell>
+                    <TableCell>{formatDate(reservation.date)}</TableCell>
+                    <TableCell>{formatTime(reservation.time)}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={reservation.status}>
+                        {getStatusText(reservation.status)}
+                      </StatusBadge>
+                    </TableCell>
+                    <TableCell>
+                      <ButtonGroup>
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            navigate(`/reservations/${reservation._id}`)
+                          }
+                          $variant="secondary"
+                        >
+                          Detalhes
+                        </Button>
+                        {reservation.status === "pending" &&
+                          user?.role === "admin" && (
+                            <Button
+                              type="button"
+                              onClick={() => handleConfirm(reservation._id)}
+                              $variant="secondary"
+                            >
+                              Confirmar
+                            </Button>
+                          )}
+                        {reservation.status !== "cancelled" && (
+                          <Button
+                            type="button"
+                            onClick={() => handleCancel(reservation._id)}
+                            $variant="secondary"
+                          >
+                            Cancelar
+                          </Button>
+                        )}
+                        {user?.role === "admin" && (
+                          <Button
+                            type="button"
+                            onClick={() => handleDelete(reservation._id)}
+                            $variant="danger"
+                          >
+                            Excluir
+                          </Button>
+                        )}
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </tbody>
+            </ReservationsTable>
+          ) : (
+            <EmptyMessage>
+              Nenhuma reserva encontrada para esta mesa
+            </EmptyMessage>
+          )}
+        </ReservationsCard>
 
         <ButtonGroup>
           <Button
-            variant="secondary"
-            onClick={() => navigate(`/tables/${table.id}/edit`)}
+            $variant="secondary"
+            onClick={() => navigate(`/tables/${table._id}/edit`)}
           >
             Editar
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              if (window.confirm("Tem certeza que deseja excluir esta mesa?")) {
-                deleteTable(table.id);
-                navigate("/tables");
-              }
-            }}
-          >
-            Excluir
           </Button>
         </ButtonGroup>
       </Content>
@@ -73,8 +252,12 @@ export function TableDetails() {
 function getStatusText(status: string) {
   const statusMap = {
     available: "Disponível",
-    reserved: "Reservada",
     occupied: "Ocupada",
+    reserved: "Reservada",
+    maintenance: "Manutenção",
+    pending: "Pendente",
+    confirmed: "Confirmada",
+    cancelled: "Cancelada",
   };
 
   return statusMap[status as keyof typeof statusMap] || status;
@@ -127,41 +310,11 @@ const InfoItem = styled.div`
 const Label = styled.span`
   font-weight: 500;
   color: #666;
-  width: 100px;
+  width: 150px;
 `;
 
 const Value = styled.span`
   color: #333;
-`;
-
-const StatusBadge = styled.span<{ status: string }>`
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-
-  ${({ status }) => {
-    switch (status) {
-      case "available":
-        return `
-          background: #d4edda;
-          color: #155724;
-        `;
-      case "reserved":
-        return `
-          background: #fff3cd;
-          color: #856404;
-        `;
-      case "occupied":
-        return `
-          background: #f8d7da;
-          color: #721c24;
-        `;
-      default:
-        return "";
-    }
-  }}
 `;
 
 const ButtonGroup = styled.div`
@@ -185,4 +338,45 @@ const NotFound = styled.div`
   min-height: 100vh;
   font-size: 1.2rem;
   color: #666;
+`;
+
+const ReservationsCard = styled(InfoCard)`
+  margin-top: 2rem;
+`;
+
+const ReservationsTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+`;
+
+const TableHeader = styled.th`
+  padding: 12px;
+  text-align: left;
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #495057;
+`;
+
+const TableRow = styled.tr`
+  &:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+
+  &:hover {
+    background-color: #f1f3f5;
+  }
+`;
+
+const TableCell = styled.td`
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  color: #212529;
+`;
+
+const EmptyMessage = styled.p`
+  text-align: center;
+  color: #666;
+  margin: 2rem 0;
 `;
