@@ -1,29 +1,17 @@
 import api from "./api";
-
-export interface Reservation {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  date: string;
-  time: string;
-  numberOfPeople: number;
-  status: "pending" | "confirmed" | "cancelled";
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateReservationData {
-  name: string;
-  email: string;
-  phone: string;
-  date: string;
-  time: string;
-  numberOfPeople: number;
-}
+import type {
+  Reservation,
+  CreateReservationData,
+  UpdateReservationData,
+} from "../types/reservation";
 
 export const reservationService = {
-  async getAll(): Promise<Reservation[]> {
+  async create(data: CreateReservationData): Promise<Reservation> {
+    const response = await api.post<Reservation>("/reservations", data);
+    return response.data;
+  },
+
+  async list(): Promise<Reservation[]> {
     const response = await api.get<Reservation[]>("/reservations");
     return response.data;
   },
@@ -33,27 +21,24 @@ export const reservationService = {
     return response.data;
   },
 
-  async create(data: CreateReservationData): Promise<Reservation> {
-    const response = await api.post<Reservation>("/reservations", data);
+  async cancel(id: string): Promise<Reservation> {
+    const response = await api.put<Reservation>(`/reservations/${id}/cancel`);
     return response.data;
   },
 
-  async cancel(id: string): Promise<void> {
-    await api.patch(`/reservations/${id}/cancel`);
-  },
-
-  async update(
-    id: string,
-    data: Partial<CreateReservationData>
-  ): Promise<Reservation> {
+  async update(id: string, data: UpdateReservationData): Promise<Reservation> {
     const response = await api.put<Reservation>(`/reservations/${id}`, data);
     return response.data;
   },
 
-  async getAvailableTimes(date: string): Promise<string[]> {
-    const response = await api.get<string[]>("/reservations/available-times", {
-      params: { date },
-    });
-    return response.data;
+  async delete(id: string): Promise<void> {
+    await api.delete(`/reservations/${id}`);
   },
+
+  async clear(id: string): Promise<void> {
+    await api.patch(`/reservations/${id}/clear`);
+  },
+
+  confirm: (id: string) =>
+    api.put<Reservation>(`/reservations/${id}/confirm`).then((res) => res.data),
 };

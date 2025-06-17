@@ -1,17 +1,41 @@
 import axios from "axios";
+import { authService } from "./authService";
+
+const TOKEN_KEY = "token";
 
 const api = axios.create({
   baseURL: "http://localhost:3000/api",
 });
 
+// Interceptor para adicionar o token em todas as requisições
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("@ReservaRestaurante:token");
-
+  const token = authService.getToken();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
+// Interceptor para tratar erros de autenticação
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      authService.logout();
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
+
+export const configApi = {
+  async getConfig() {
+    const response = await api.get("/config");
+    return response.data;
+  },
+  async updateConfig(data: any) {
+    const response = await api.put("/config", data);
+    return response.data;
+  },
+};

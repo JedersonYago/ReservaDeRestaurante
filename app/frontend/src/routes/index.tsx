@@ -1,5 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
-import { Home } from "../pages/Home";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
 import { Reservations } from "../pages/Reservations";
@@ -8,47 +7,108 @@ import { ReservationDetails } from "../pages/Reservations/Details";
 import { Tables } from "../pages/Tables";
 import { NewTable } from "../pages/Tables/New";
 import { TableDetails } from "../pages/Tables/Details";
-//import { Profile } from '../pages/Profile';
+import { EditTable } from "../pages/Tables/Edit";
+import { Profile } from "../pages/Profile";
+import { useAuth } from "../hooks/useAuth";
+import { ProtectedLayout } from "../components/ProtectedLayout";
+import { Settings } from "../pages/Settings";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
-  },
-  {
-    path: "/reservations",
-    element: <Reservations />,
-  },
-  {
-    path: "/reservations/new",
-    element: <NewReservation />,
-  },
-  {
-    path: "/reservations/:id",
-    element: <ReservationDetails />,
-  },
-  {
-    path: "/tables",
-    element: <Tables />,
-  },
-  {
-    path: "/tables/new",
-    element: <NewTable />,
-  },
-  {
-    path: "/tables/:id",
-    element: <TableDetails />,
-  },
-  // {
-  //   path: "/profile",
-  //   element: <Profile />,
-  // },
-]);
+export function AppRoutes() {
+  const { isAuthenticated, user } = useAuth();
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/reservations" />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      {/* Rotas protegidas */}
+      <Route element={<ProtectedLayout />}>
+        <Route
+          path="/reservations"
+          element={
+            isAuthenticated ? <Reservations /> : <Navigate to="/login" />
+          }
+        />
+        <Route
+          path="/reservations/new"
+          element={
+            isAuthenticated ? <NewReservation /> : <Navigate to="/login" />
+          }
+        />
+        <Route
+          path="/reservations/:id"
+          element={
+            isAuthenticated ? <ReservationDetails /> : <Navigate to="/login" />
+          }
+        />
+
+        <Route
+          path="/tables"
+          element={
+            isAuthenticated && user?.role === "admin" ? (
+              <Tables />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/tables/new"
+          element={
+            isAuthenticated && user?.role === "admin" ? (
+              <NewTable />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/tables/:id"
+          element={
+            isAuthenticated && user?.role === "admin" ? (
+              <TableDetails />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/tables/:id/edit"
+          element={
+            isAuthenticated && user?.role === "admin" ? (
+              <EditTable />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={isAuthenticated ? <Profile /> : <Navigate to="/login" />}
+        />
+      </Route>
+
+      {/* Outras rotas */}
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute adminOnly>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
