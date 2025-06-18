@@ -18,7 +18,7 @@ export function useAuth() {
 
   const signOut = () => {
     authService.logout();
-    queryClient.setQueryData(["user"], null);
+    queryClient.clear(); // Limpa todo o cache do React Query
     navigate("/login", { replace: true });
   };
 

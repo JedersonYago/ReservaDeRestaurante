@@ -52,6 +52,8 @@ export function Register() {
 
       // Atualizar o estado de autenticação
       await queryClient.setQueryData(["user"], response.user);
+      // Invalida todas as queries para garantir dados atualizados para o novo usuário
+      queryClient.invalidateQueries();
 
       toast.success("Conta criada com sucesso!");
 

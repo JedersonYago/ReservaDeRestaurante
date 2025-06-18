@@ -34,6 +34,8 @@ export function Login() {
     try {
       const response = await authService.login(data);
       await queryClient.setQueryData(["user"], response.user);
+      // Invalida todas as queries para garantir dados atualizados para o novo usuário
+      queryClient.invalidateQueries();
       toast.success("Login realizado com sucesso!");
       navigate("/reservations", { replace: true });
     } catch (error: any) {

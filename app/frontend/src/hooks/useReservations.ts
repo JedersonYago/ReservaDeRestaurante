@@ -2,9 +2,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { reservationService } from "../services/reservationService";
 import type { UpdateReservationData, Reservation } from "../types";
 import { toast } from "react-toastify";
+import { useAuth } from "./useAuth";
+
+// Interface local para reserva com tableId populado
+interface PopulatedReservation extends Omit<Reservation, "tableId"> {
+  tableId: string | { _id: string; name: string; capacity: number };
+}
 
 export const useReservations = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const {
     data: reservations = [],
@@ -12,12 +19,13 @@ export const useReservations = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["reservations"],
+    queryKey: ["reservations", user?._id], // Adiciona o ID do usuário como dependência
     queryFn: reservationService.list,
     staleTime: 10000, // 10 segundos para capturar mudanças de status mais rapidamente
     refetchInterval: 15000, // Atualiza a cada 15 segundos automaticamente
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    enabled: !!user, // Só executa se houver um usuário logado
   });
 
   const createReservation = useMutation({
@@ -134,9 +142,12 @@ export function useReservationsByTable(tableId: string) {
     staleTime: 30000,
   });
 
-  const reservations = allReservations.filter(
-    (res: Reservation) => res.tableId && res.tableId._id === tableId
-  );
+  const reservations = allReservations.filter((res: PopulatedReservation) => {
+    if (!res.tableId) return false;
+    return typeof res.tableId === "string"
+      ? res.tableId === tableId
+      : res.tableId._id === tableId;
+  });
 
   return { reservations, loading, error, refetch };
 }
