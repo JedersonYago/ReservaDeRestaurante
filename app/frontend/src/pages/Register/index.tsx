@@ -58,7 +58,7 @@ export function Register() {
       toast.success("Conta criada com sucesso!");
 
       // Redirecionar após atualizar o estado
-      navigate("/reservations", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       console.error("Erro completo:", error.response?.data);
       if (error.response?.data?.message) {

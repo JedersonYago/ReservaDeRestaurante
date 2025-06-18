@@ -26,7 +26,7 @@ export function Login() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/reservations", { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -37,7 +37,7 @@ export function Login() {
       // Invalida todas as queries para garantir dados atualizados para o novo usuário
       queryClient.invalidateQueries();
       toast.success("Login realizado com sucesso!");
-      navigate("/reservations", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message ||
