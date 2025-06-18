@@ -10,13 +10,17 @@ import { auth, roleAuth } from "../middlewares/auth";
 
 const router = Router();
 
-// Todas as rotas de configuração requerem autenticação e role admin
-router.use(auth);
-router.use(roleAuth(["admin"]));
+// Rota de leitura de configuração - acessível a todos os usuários autenticados
+router.get("/", auth, getConfig);
 
-// Rotas de configuração
-router.get("/", getConfig);
-router.get("/history", getConfigHistory);
-router.put("/", validateSchema(configSchema), updateConfig);
+// Rotas administrativas - restritas aos admins
+router.get("/history", auth, roleAuth(["admin"]), getConfigHistory);
+router.put(
+  "/",
+  auth,
+  roleAuth(["admin"]),
+  validateSchema(configSchema),
+  updateConfig
+);
 
 export default router;

@@ -3,13 +3,14 @@ import { useTableById } from "../../../hooks/useTables";
 import { useReservationsByTable } from "../../../hooks/useReservations";
 import styled from "styled-components";
 import { Button } from "../../../components/Button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { tableService } from "../../../services/tableService";
 import { toYMD } from "../../../utils/dateUtils";
 import { formatDate, formatTime } from "../../../utils/dateUtils";
 import { StatusBadge } from "../../../components/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
 import { useReservations } from "../../../hooks/useReservations";
+import { getStatusText } from "../../../utils/textUtils";
 
 export function TableDetails() {
   const { id } = useParams();
@@ -27,12 +28,24 @@ export function TableDetails() {
   const [dynamicStatus, setDynamicStatus] = useState<string | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
 
-  useEffect(() => {
-    if (table && !selectedDate) {
-      setSelectedDate(toYMD(new Date()));
-    }
+  // Datas disponíveis (que têm horários cadastrados)
+  const availableDates = useMemo(() => {
+    if (!table?.availability) return [];
+    return table.availability.map((block) => block.date).sort();
   }, [table]);
 
+  useEffect(() => {
+    if (table && !selectedDate && availableDates.length > 0) {
+      // Define a primeira data disponível como padrão
+      const today = toYMD(new Date());
+      const defaultDate = availableDates.includes(today)
+        ? today
+        : availableDates[0];
+      setSelectedDate(defaultDate);
+    }
+  }, [table, availableDates]);
+
+  // Fetch status geral da data
   useEffect(() => {
     const fetchStatus = async () => {
       if (id && selectedDate) {
@@ -48,6 +61,35 @@ export function TableDetails() {
     };
     fetchStatus();
   }, [id, selectedDate]);
+
+  // Calcula status dos horários de forma otimizada
+  const timeSlotStatuses = useMemo(() => {
+    if (!table?.availability || !reservations) return {};
+
+    const statuses: Record<string, Record<string, string>> = {};
+
+    for (const block of table.availability) {
+      const dateStatuses: Record<string, string> = {};
+
+      for (const timeRange of block.times) {
+        const [startTime] = timeRange.split("-");
+
+        // Verifica se há reserva para este horário específico
+        const hasReservation = reservations.some(
+          (reservation) =>
+            reservation.date === block.date &&
+            reservation.time === startTime &&
+            reservation.status !== "cancelled"
+        );
+
+        dateStatuses[timeRange] = hasReservation ? "reserved" : "available";
+      }
+
+      statuses[block.date] = dateStatuses;
+    }
+
+    return statuses;
+  }, [table?.availability, reservations]);
 
   const handleConfirm = async (reservationId: string) => {
     try {
@@ -115,16 +157,19 @@ export function TableDetails() {
           <InfoItem>
             <Label>Status para data:</Label>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <input
-                type="date"
+              <DateSelector
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                }}
-              />
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setSelectedDate(e.target.value)
+                }
+              >
+                <option value="">Selecione uma data</option>
+                {availableDates.map((date) => (
+                  <option key={date} value={date}>
+                    {formatDate(date)}
+                  </option>
+                ))}
+              </DateSelector>
               {loadingStatus ? (
                 <span>Carregando...</span>
               ) : (
@@ -138,19 +183,49 @@ export function TableDetails() {
           </InfoItem>
           <InfoItem>
             <Label>Disponibilidade:</Label>
-            <Value>
-              <ul>
-                {table.availability && table.availability.length > 0 ? (
-                  table.availability.map((block, idx) => (
-                    <li key={idx} style={{ marginBottom: 8 }}>
-                      <b>{block.date}:</b> {block.times.join(", ")}
-                    </li>
-                  ))
-                ) : (
-                  <li>Nenhuma disponibilidade cadastrada</li>
-                )}
-              </ul>
-            </Value>
+            <AvailabilityContainer>
+              <Legend>
+                <LegendItem>
+                  <StatusBadge status="available">Disponível</StatusBadge>
+                  <span>Horário livre para reserva</span>
+                </LegendItem>
+                <LegendItem>
+                  <StatusBadge status="reserved">Reservado</StatusBadge>
+                  <span>Horário já reservado</span>
+                </LegendItem>
+              </Legend>
+
+              {table.availability && table.availability.length > 0 ? (
+                table.availability.map((block, idx) => (
+                  <AvailabilityBlock key={idx}>
+                    <AvailabilityDate>
+                      📅 <strong>{formatDate(block.date)}</strong>
+                    </AvailabilityDate>
+                    <AvailabilityTimes>
+                      {block.times.map((timeRange, timeIdx) => {
+                        const status =
+                          timeSlotStatuses[block.date]?.[timeRange] ||
+                          "available";
+                        return (
+                          <AvailabilityTime key={timeIdx}>
+                            <span>{timeRange}</span>
+                            <StatusBadge status={status}>
+                              {status === "available"
+                                ? "Disponível"
+                                : "Reservado"}
+                            </StatusBadge>
+                          </AvailabilityTime>
+                        );
+                      })}
+                    </AvailabilityTimes>
+                  </AvailabilityBlock>
+                ))
+              ) : (
+                <EmptyAvailability>
+                  📋 Nenhuma disponibilidade cadastrada
+                </EmptyAvailability>
+              )}
+            </AvailabilityContainer>
           </InfoItem>
         </InfoCard>
 
@@ -247,20 +322,6 @@ export function TableDetails() {
       </Content>
     </Container>
   );
-}
-
-function getStatusText(status: string) {
-  const statusMap = {
-    available: "Disponível",
-    occupied: "Ocupada",
-    reserved: "Reservada",
-    maintenance: "Manutenção",
-    pending: "Pendente",
-    confirmed: "Confirmada",
-    cancelled: "Cancelada",
-  };
-
-  return statusMap[status as keyof typeof statusMap] || status;
 }
 
 const Container = styled.div`
@@ -379,4 +440,101 @@ const EmptyMessage = styled.p`
   text-align: center;
   color: #666;
   margin: 2rem 0;
+`;
+
+const DateSelector = styled.select`
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #333;
+  font-size: 0.9rem;
+  min-width: 200px;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+`;
+
+const AvailabilityContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+`;
+
+const AvailabilityBlock = styled.div`
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fafafa;
+`;
+
+const AvailabilityDate = styled.div`
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: #333;
+
+  strong {
+    color: #007bff;
+  }
+`;
+
+const AvailabilityTimes = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+`;
+
+const AvailabilityTime = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+
+  span {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9rem;
+  }
+`;
+
+const EmptyAvailability = styled.div`
+  text-align: center;
+  color: #666;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-style: italic;
+`;
+
+const Legend = styled.div`
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  span {
+    font-size: 0.875rem;
+    color: #666;
+  }
 `;
