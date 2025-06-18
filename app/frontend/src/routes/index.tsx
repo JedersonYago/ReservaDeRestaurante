@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
+import { Dashboard } from "../pages/Dashboard";
 import { Reservations } from "../pages/Reservations";
 import { NewReservation } from "../pages/Reservations/New";
 import { ReservationDetails } from "../pages/Reservations/Details";
@@ -23,7 +24,7 @@ export function AppRoutes() {
         path="/"
         element={
           isAuthenticated ? (
-            <Navigate to="/reservations" />
+            <Navigate to="/dashboard" />
           ) : (
             <Navigate to="/login" />
           )
@@ -34,6 +35,10 @@ export function AppRoutes() {
 
       {/* Rotas protegidas */}
       <Route element={<ProtectedLayout />}>
+        <Route
+          path="/dashboard"
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+        />
         <Route
           path="/reservations"
           element={

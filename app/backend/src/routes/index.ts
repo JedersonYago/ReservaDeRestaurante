@@ -4,6 +4,7 @@ import tableRoutes from "./tableRoutes";
 import reservationRoutes from "./reservationRoutes";
 import configRoutes from "./configRoutes";
 import profileRoutes from "./profileRoutes";
+import dashboardRoutes from "./dashboardRoutes";
 
 const router = Router();
 
@@ -21,5 +22,8 @@ router.use("/config", configRoutes);
 
 // Rotas de perfil
 router.use("/profile", profileRoutes);
+
+// Rotas de dashboard
+router.use("/dashboard", dashboardRoutes);
 
 export default router;

@@ -16,7 +16,7 @@ export function Header() {
       <Nav>
         <Logo to="/">ReservaFácil</Logo>
         <Menu>
-          <MenuItem to="/">Home</MenuItem>
+          <MenuItem to="/dashboard">Dashboard</MenuItem>
           <MenuItem to="/reservations">Reservas</MenuItem>
           {user?.role === "admin" && <MenuItem to="/tables">Mesas</MenuItem>}
           {user?.role === "admin" && (
