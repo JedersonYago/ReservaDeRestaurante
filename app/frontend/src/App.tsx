@@ -1,16 +1,21 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ToastContainer } from "react-toastify";
 import { AppRoutes } from "./routes";
-import "react-toastify/dist/ReactToastify.css";
+import { ThemeProvider } from "./components/ThemeProvider";
+import { ToastProvider } from "./components/Toast";
+import { GlobalStyle } from "./styles/global";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppRoutes />
-      <ToastContainer />
-    </QueryClientProvider>
+    <ThemeProvider>
+      <GlobalStyle />
+      <QueryClientProvider client={queryClient}>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
