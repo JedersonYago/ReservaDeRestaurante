@@ -30,12 +30,6 @@ export const getConfig = async (req: Request, res: Response) => {
 // Atualizar configurações
 export const updateConfig = async (req: Request, res: Response) => {
   try {
-    // Log para debug
-    console.log(
-      "📝 Recebendo dados de configuração:",
-      JSON.stringify(req.body, null, 2)
-    );
-
     const {
       maxReservationsPerUser,
       reservationLimitHours,

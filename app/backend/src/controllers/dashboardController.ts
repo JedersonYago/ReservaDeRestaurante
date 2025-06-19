@@ -60,22 +60,6 @@ export const getClientStats = async (req: Request, res: Response) => {
       (r) => r.status === "cancelled"
     ).length;
 
-    // Mesa favorita (mais reservada)
-    const tableCount = userReservations.reduce((acc, r) => {
-      if (r.tableId && typeof r.tableId === "object" && "name" in r.tableId) {
-        const tableName = (r.tableId as any).name;
-        acc[tableName] = (acc[tableName] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
-
-    const favoriteTable =
-      Object.keys(tableCount).length > 0
-        ? Object.keys(tableCount).reduce((a, b) =>
-            tableCount[a] > tableCount[b] ? a : b
-          )
-        : null;
-
     // Informações do restaurante
     const totalTables = await Table.countDocuments();
     const availableTablesToday = await Table.countDocuments({
@@ -89,7 +73,6 @@ export const getClientStats = async (req: Request, res: Response) => {
         thisMonthReservations,
         confirmedReservations,
         cancelledReservations,
-        favoriteTable,
       },
       restaurant: {
         totalTables,
@@ -109,7 +92,10 @@ export const getClientStats = async (req: Request, res: Response) => {
 // Estatísticas para o admin
 export const getAdminStats = async (req: Request, res: Response) => {
   try {
-    const today = format(new Date(), "yyyy-MM-dd");
+    const today = new Date();
+    const todayStart = startOfDay(today);
+    const todayEnd = endOfDay(today);
+    const todayFormatted = format(today, "yyyy-MM-dd");
     const thisWeek = Array.from({ length: 7 }, (_, i) =>
       format(subDays(new Date(), i), "yyyy-MM-dd")
     ).reverse();
@@ -119,10 +105,21 @@ export const getAdminStats = async (req: Request, res: Response) => {
     const totalReservations = await Reservation.countDocuments({
       hiddenFromUser: false,
     });
+
+    // Reservas de hoje - usando query mais robusta
     const todayReservations = await Reservation.countDocuments({
-      date: today,
+      $or: [
+        { date: todayFormatted }, // formato yyyy-MM-dd
+        {
+          date: {
+            $gte: format(todayStart, "yyyy-MM-dd"),
+            $lte: format(todayEnd, "yyyy-MM-dd"),
+          },
+        },
+      ],
       hiddenFromUser: false,
     });
+
     const thisMonthReservations = await Reservation.countDocuments({
       date: { $regex: `^${thisMonth}` },
       hiddenFromUser: false,
@@ -145,7 +142,6 @@ export const getAdminStats = async (req: Request, res: Response) => {
     // Estatísticas de mesas
     const totalTables = await Table.countDocuments();
     const availableTables = await Table.countDocuments({ status: "available" });
-    const occupiedTables = await Table.countDocuments({ status: "occupied" });
     const reservedTables = await Table.countDocuments({ status: "reserved" });
     const maintenanceTables = await Table.countDocuments({
       status: "maintenance",
@@ -177,7 +173,7 @@ export const getAdminStats = async (req: Request, res: Response) => {
     const reservationsNeedingAttention = await Reservation.find({
       status: "pending",
       hiddenFromUser: false,
-      date: { $gte: today },
+      date: { $gte: todayFormatted },
     })
       .populate("tableId", "name")
       .populate("userId", "name email")
@@ -199,7 +195,6 @@ export const getAdminStats = async (req: Request, res: Response) => {
       tables: {
         total: totalTables,
         available: availableTables,
-        occupied: occupiedTables,
         reserved: reservedTables,
         maintenance: maintenanceTables,
       },

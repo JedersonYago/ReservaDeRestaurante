@@ -255,6 +255,85 @@ const profileController = {
       res.status(500).json({ message: "Erro ao alterar senha" });
     }
   },
+
+  async deleteAccount(req: Request, res: Response) {
+    try {
+      const { username } = req.params;
+      const { currentPassword } = req.body;
+
+      // Verifica se o usuário está tentando deletar sua própria conta
+      if (req.user?.username !== username) {
+        return res
+          .status(403)
+          .json({ message: "Não autorizado a deletar esta conta" });
+      }
+
+      const user = await User.findOne({ username });
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      // Verifica se a senha atual está correta
+      if (!currentPassword) {
+        return res.status(400).json({
+          message: "Senha atual é obrigatória para deletar a conta",
+        });
+      }
+
+      const isCurrentPasswordValid = await user.comparePassword(
+        currentPassword
+      );
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Senha atual incorreta" });
+      }
+
+      // Cancelar todas as reservas ativas do usuário
+      const Reservation = (await import("../models/Reservation")).default;
+      await Reservation.updateMany(
+        {
+          userId: user._id,
+          status: { $in: ["pending", "confirmed"] },
+        },
+        {
+          status: "cancelled",
+          hiddenFromUser: true,
+        }
+      );
+
+      // Se for admin, lidar com as mesas e todas as reservas
+      if (user.role === "admin") {
+        const Table = (await import("../models/Table")).default;
+
+        // Verificar se há outros admins no sistema
+        const otherAdmins = await User.countDocuments({
+          role: "admin",
+          _id: { $ne: user._id },
+        });
+
+        if (otherAdmins === 0) {
+          // Se este é o último admin, cancelar TODAS as reservas e deletar todas as mesas
+          await Reservation.updateMany(
+            { status: { $in: ["pending", "confirmed"] } },
+            {
+              status: "cancelled",
+              hiddenFromUser: true,
+            }
+          );
+
+          // Deletar todas as mesas
+          await Table.deleteMany({});
+        }
+      }
+
+      // Deletar o usuário
+      await User.findByIdAndDelete(user._id);
+
+      res.json({ message: "Conta deletada com sucesso" });
+    } catch (error) {
+      console.error("Erro ao deletar conta:", error);
+      res.status(500).json({ message: "Erro ao deletar conta" });
+    }
+  },
 };
 
 export { profileController };

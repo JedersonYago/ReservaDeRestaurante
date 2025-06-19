@@ -145,45 +145,64 @@ async function validateUserReservationLimit(
   }
 }
 
-async function updateTableStatus(tableId: string | null) {
+export async function updateTableStatus(tableId: string | null) {
   if (!tableId) return;
 
   const table = await Table.findById(tableId);
   if (!table) return;
 
-  // Buscar todas as reservas ativas para esta mesa
+  // Não alterar status se a mesa estiver em manutenção (controlado pelo admin)
+  if (table.status === "maintenance") {
+    return;
+  }
+
+  // Calcular total de slots disponíveis
+  const totalSlots = table.availability.reduce((total, block) => {
+    return total + block.times.length;
+  }, 0);
+
+  if (totalSlots === 0) {
+    // Se não há horários configurados, manter como available
+    if (table.status !== "available") {
+      await Table.findByIdAndUpdate(tableId, { status: "available" });
+    }
+    return;
+  }
+
+  // Buscar todas as reservas ativas da mesa
   const activeReservations = await Reservation.find({
-    tableId: tableId,
+    tableId,
     status: { $in: ["pending", "confirmed"] },
   });
 
-  // Criar um mapa de horários reservados por data
-  const reservedTimeSlots = new Map();
-  activeReservations.forEach((reservation: IReservation) => {
-    const key = `${reservation.date}T${reservation.time}`;
-    reservedTimeSlots.set(key, true);
-  });
-
-  // Verificar se todos os horários de todos os blocos de disponibilidade estão reservados
-  let allBlocksFullyReserved = true;
-  for (const block of table.availability) {
-    let blockFullyReserved = true;
-    for (const timeRange of block.times) {
-      const [startTime] = timeRange.split("-");
-      const key = `${block.date}T${startTime}`;
-      if (!reservedTimeSlots.has(key)) {
-        blockFullyReserved = false;
-        break;
+  // Contar slots reservados verificando se cada reserva corresponde a um slot válido
+  let reservedSlots = 0;
+  for (const reservation of activeReservations) {
+    // Verificar se a reserva corresponde a um slot válido na disponibilidade
+    const block = table.availability.find((b) => b.date === reservation.date);
+    if (block) {
+      const timeSlot = block.times.find((timeRange) => {
+        const [startTime] = timeRange.split("-");
+        return startTime === reservation.time;
+      });
+      if (timeSlot) {
+        reservedSlots++;
       }
-    }
-    if (!blockFullyReserved) {
-      allBlocksFullyReserved = false;
-      break;
     }
   }
 
-  const newStatus = allBlocksFullyReserved ? "reserved" : "available";
-  await Table.findByIdAndUpdate(tableId, { status: newStatus });
+  // Determinar novo status baseado na ocupação
+  let newStatus: "available" | "reserved";
+  if (reservedSlots === totalSlots && totalSlots > 0) {
+    newStatus = "reserved"; // Todos os horários estão ocupados
+  } else {
+    newStatus = "available"; // Há pelo menos um horário livre
+  }
+
+  // Atualizar status apenas se mudou
+  if (table.status !== newStatus) {
+    await Table.findByIdAndUpdate(tableId, { status: newStatus });
+  }
 }
 
 // Criar nova reserva
@@ -565,7 +584,7 @@ export const reservationController = {
   async list(req: Request, res: Response) {
     try {
       const reservations = await Reservation.find()
-        .populate("table", "name capacity")
+        .populate("tableId", "name capacity")
         .sort({ date: 1, time: 1 });
       res.json(reservations);
     } catch (error) {
@@ -577,7 +596,7 @@ export const reservationController = {
   async getById(req: Request, res: Response) {
     try {
       const reservation = await Reservation.findById(req.params.id).populate(
-        "table",
+        "tableId",
         "name capacity"
       );
       if (!reservation) {
@@ -747,7 +766,7 @@ export const reservationController = {
         // Verificar se o novo horário está disponível
         const isSlotAvailable = !(await Reservation.findOne({
           _id: { $ne: id },
-          table,
+          tableId: table,
           date: date.slice(0, 10),
           time,
           status: { $in: ["pending", "confirmed"] },

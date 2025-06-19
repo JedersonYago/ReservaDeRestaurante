@@ -9,7 +9,6 @@ import mongoose from "mongoose";
 import { formatToYMD } from "../../../shared/utils/dateFormat";
 
 function getDayOfWeek(dateStr: string) {
-  // 0 = domingo, 1 = segunda, ...
   const dayIdx = getDay(parseISO(dateStr));
   return [
     "sunday",
@@ -196,16 +195,17 @@ export const tableController = {
           .json({ message: "Parâmetros obrigatórios ausentes" });
       }
 
-      // Buscar todas as mesas disponíveis para o período
+      // Buscar todas as mesas que não estão em manutenção
+      // (uma mesa pode ter reservas em outros horários e ainda estar disponível para este horário específico)
       const tables = await Table.find({
-        status: "available",
+        status: { $ne: "maintenance" }, // Apenas exclui mesas em manutenção
         capacity: { $gte: Number(numberOfPeople) },
       });
 
-      // Filtrar mesas que já têm reserva para o horário e estão disponíveis no availability
+      // Filtrar mesas que estão disponíveis para o horário específico solicitado
       const available = [];
       for (const table of tables) {
-        // Verifica se o horário está dentro dos blocos de availability
+        // Verifica se o horário está dentro dos blocos de availability da mesa
         const availabilityBlock = table.availability.find(
           (block: AvailabilityBlock) => block.date === date
         );
@@ -221,13 +221,15 @@ export const tableController = {
 
         if (!isTimeAvailable) continue;
 
+        // Verificar se já existe uma reserva para ESTE horário específico
         const existingReservation = await Reservation.findOne({
-          table: table._id,
+          tableId: table._id,
           date,
           time,
           status: { $ne: "cancelled" },
         });
 
+        // Se não há reserva para este horário específico, a mesa está disponível
         if (!existingReservation) {
           available.push(table);
         }
@@ -251,9 +253,9 @@ export const tableController = {
         return res.status(404).json({ message: "Mesa não encontrada" });
       }
 
-      // Buscar reservas ativas para a data
+      // Buscar reservas ativas para a data específica
       const reservations = await Reservation.find({
-        table: tableId,
+        tableId: tableId, // Corrigido: usar tableId ao invés de table
         date,
         status: { $in: ["pending", "confirmed"] },
       });
@@ -268,7 +270,7 @@ export const tableController = {
         (block: AvailabilityBlock) => block.date === date
       );
 
-      if (!availabilityBlock) {
+      if (!availabilityBlock || availabilityBlock.times.length === 0) {
         return res.json({ status: "unavailable" });
       }
 
@@ -279,10 +281,21 @@ export const tableController = {
       }).length;
 
       let status = "available";
-      if (reserved === total && total > 0) status = "reserved";
-      else if (reserved > 0) status = "partial";
+      if (reserved === total && total > 0) {
+        status = "reserved"; // Todos os horários estão reservados
+      } else if (reserved > 0) {
+        status = "partial"; // Alguns horários estão reservados
+      }
+      // Se reserved === 0, status permanece "available"
 
-      return res.json({ status });
+      return res.json({
+        status,
+        details: {
+          totalSlots: total,
+          reservedSlots: reserved,
+          availableSlots: total - reserved,
+        },
+      });
     } catch (error) {
       console.error("Erro ao obter status dinâmico da mesa:", error);
       res.status(500).json({ message: "Erro ao obter status da mesa" });
