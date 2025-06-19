@@ -1,19 +1,61 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Users,
+  User,
+  MessageSquare,
+  CheckCircle,
+  AlertCircle,
+  Info,
+} from "lucide-react";
 import { useTables } from "../../../hooks/useTables";
 import { useReservations } from "../../../hooks/useReservations";
 import { useAuth } from "../../../hooks/useAuth";
 import { useConfig } from "../../../hooks/useConfig";
-import { Button } from "../../../components/Button";
+import { Button, CancelButton } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Select } from "../../../components/Select";
-import { toast } from "react-toastify";
-import { Container, Title, Form, FormGroup, ButtonGroup } from "./styles";
+import { Container as LayoutContainer } from "../../../components/Layout/Container";
+import { useToast } from "../../../components/Toast";
 import { isPastDate, isPastTime } from "../../../utils/dateValidation";
+import {
+  PageWrapper,
+  Header,
+  HeaderContent,
+  TitleSection,
+  Title,
+  Subtitle,
+  HeaderActions,
+  Content,
+  InfoCard,
+  InfoIcon,
+  InfoContent,
+  InfoTitle,
+  InfoDescription,
+  FormSection,
+  SectionTitle,
+  SectionDescription,
+  FormGrid,
+  FormGroup,
+  ErrorMessage,
+  TextAreaGroup,
+  TextAreaContainer,
+  CharCounter,
+  TimeSlotSelector,
+  TimeSlotGrid,
+  TimeSlotItem,
+  LoadingContainer,
+  EmptyState,
+  ActionButtons,
+} from "./styles";
 
 export function NewReservation() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const { tables } = useTables();
   const { createReservation } = useReservations();
   const { config } = useConfig();
@@ -30,6 +72,7 @@ export function NewReservation() {
   });
   const [dateLimits, setDateLimits] = useState({ min: "", max: "" });
   const [loadingHours, setLoadingHours] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [dateError, setDateError] = useState("");
@@ -162,10 +205,9 @@ export function NewReservation() {
     }
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setFormData((prev) => ({ ...prev, time: value }));
-    if (isPastTime(formData.date, value)) {
+  const handleTimeChange = (timeValue: string) => {
+    setFormData((prev) => ({ ...prev, time: timeValue }));
+    if (isPastTime(formData.date, timeValue)) {
       setTimeError("Não é permitido selecionar horários anteriores ao atual.");
     } else {
       setTimeError("");
@@ -190,16 +232,15 @@ export function NewReservation() {
     };
 
     try {
+      setIsSubmitting(true);
       await createReservation.mutateAsync(reservationData);
-      const confirmationMessage =
-        config && config.isIntervalEnabled
-          ? `Reserva criada com sucesso! Ela ficará pendente por ${config.minIntervalBetweenReservations} minutos.`
-          : "Reserva criada com sucesso!";
-      toast.success(confirmationMessage);
+      // Toast já é exibido pelo hook useReservations
       navigate("/reservations");
     } catch (error: any) {
       console.error("[NewReservation] Erro ao criar reserva:", error);
-      toast.error(error.response?.data?.error || "Erro ao criar reserva");
+      // Toast de erro já é exibido pelo hook useReservations
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -207,174 +248,322 @@ export function NewReservation() {
     navigate("/reservations");
   };
 
+  const selectedTableData = tables?.find((t) => t._id === selectedTable);
+
+  const hasErrors = nameError || emailError || dateError || timeError;
+  const isFormValid =
+    selectedTable &&
+    formData.date &&
+    formData.time &&
+    formData.customerName &&
+    formData.customerEmail &&
+    !hasErrors;
+
   return (
-    <Container>
-      <Title>Nova Reserva</Title>
+    <PageWrapper>
+      <LayoutContainer>
+        <Header>
+          <HeaderContent>
+            <TitleSection>
+              <Title>
+                <Calendar size={32} />
+                Nova Reserva
+              </Title>
+              <Subtitle>
+                Faça sua reserva e garante seu lugar no restaurante
+              </Subtitle>
+            </TitleSection>
+            <HeaderActions>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/reservations")}
+                leftIcon={<ArrowLeft size={18} />}
+              >
+                Voltar
+              </Button>
+            </HeaderActions>
+          </HeaderContent>
+        </Header>
 
-      {/* Seção informativa sobre o processo de confirmação */}
-      {config && config.isIntervalEnabled && (
-        <div
-          style={{
-            backgroundColor: "#e3f2fd",
-            border: "1px solid #2196f3",
-            borderRadius: "8px",
-            padding: "16px",
-            marginBottom: "24px",
-          }}
-        >
-          <h4 style={{ margin: "0 0 8px 0", color: "#1976d2" }}>
-            📅 Como funciona sua reserva
-          </h4>
-          <p style={{ margin: "0", fontSize: "14px", lineHeight: "1.5" }}>
-            Sua reserva ficará{" "}
-            <strong>
-              pendente por {config.minIntervalBetweenReservations} minutos
-            </strong>{" "}
-            após a criação. Durante este período, você pode cancelá-la se
-            necessário. Após {config.minIntervalBetweenReservations} minutos,
-            ela será <strong>confirmada automaticamente</strong>.
-          </p>
-        </div>
-      )}
-
-      <Form onSubmit={handleSubmit}>
-        <FormGroup>
-          <Select
-            label="Mesa"
-            value={selectedTable}
-            onChange={(e) => setSelectedTable(e.target.value)}
-            required
-          >
-            <option value="">Selecione uma mesa</option>
-            {availableTables?.map((table) => (
-              <option key={table._id} value={table._id}>
-                Mesa {table.name} - Capacidade: {table.capacity} pessoas
-              </option>
-            ))}
-          </Select>
-        </FormGroup>
-
-        <FormGroup>
-          <Input
-            label="Data"
-            type="date"
-            value={formData.date}
-            onChange={handleDateChange}
-            min={dateLimits.min}
-            max={dateLimits.max}
-            required
-            list="available-dates"
-          />
-          <datalist id="available-dates">
-            {selectedTable &&
-              tables &&
-              getAvailableDates(
-                tables.find((t) => t._id === selectedTable)
-              )?.map((date: string) => <option key={date} value={date} />)}
-          </datalist>
-          {dateError && (
-            <div style={{ color: "red", marginTop: 4 }}>{dateError}</div>
+        <Content>
+          {/* Card informativo sobre o processo */}
+          {config && config.isIntervalEnabled && (
+            <InfoCard>
+              <InfoIcon>
+                <Info size={24} />
+              </InfoIcon>
+              <InfoContent>
+                <InfoTitle>Como funciona sua reserva</InfoTitle>
+                <InfoDescription>
+                  Sua reserva ficará{" "}
+                  <strong>
+                    pendente por {config.minIntervalBetweenReservations} minutos
+                  </strong>{" "}
+                  após a criação. Durante este período, você pode cancelá-la se
+                  necessário. Após {config.minIntervalBetweenReservations}{" "}
+                  minutos, ela será <strong>confirmada automaticamente</strong>.
+                </InfoDescription>
+              </InfoContent>
+            </InfoCard>
           )}
-        </FormGroup>
 
-        <FormGroup>
-          {loadingHours ? (
-            <div style={{ color: "#888" }}>Carregando horários...</div>
-          ) : availableHours.length === 0 ? (
-            <div style={{ color: "#888" }}>
-              Nenhum horário disponível para esta data.
-            </div>
-          ) : (
-            <Select
-              label="Horário"
-              value={formData.time}
-              onChange={handleTimeChange}
-              required
-              disabled={loadingHours || !formData.date}
-            >
-              <option value="">Selecione um horário</option>
-              {availableHours.map((hour, index) => (
-                <option
-                  key={index}
-                  value={hour.start}
-                  disabled={isPastTime(formData.date, hour.start)}
+          <form onSubmit={handleSubmit} style={{ display: "contents" }}>
+            {/* Seleção de Mesa */}
+            <FormSection>
+              <SectionTitle>
+                <Users size={20} />
+                Escolha da Mesa
+              </SectionTitle>
+              <SectionDescription>
+                Selecione a mesa desejada para sua reserva
+              </SectionDescription>
+
+              <FormGroup>
+                <Select
+                  label="Mesa"
+                  value={selectedTable}
+                  onChange={(e) => setSelectedTable(e.target.value)}
+                  required
                 >
-                  {hour.start} - {hour.end}
-                </option>
-              ))}
-            </Select>
-          )}
-          {timeError && (
-            <div style={{ color: "red", marginTop: 4 }}>{timeError}</div>
-          )}
-        </FormGroup>
+                  <option value="">Selecione uma mesa</option>
+                  {availableTables?.map((table) => (
+                    <option key={table._id} value={table._id}>
+                      Mesa {table.name} - Capacidade: {table.capacity} pessoas
+                    </option>
+                  ))}
+                </Select>
+              </FormGroup>
+            </FormSection>
 
-        <FormGroup>
-          <Input
-            label="Nome"
-            value={formData.customerName}
-            onChange={handleNameChange}
-            required
-            maxLength={40}
-          />
-          {nameError && (
-            <div style={{ color: "red", marginTop: 4 }}>{nameError}</div>
-          )}
-        </FormGroup>
+            {/* Data e Horário */}
+            <FormSection>
+              <SectionTitle>
+                <Clock size={20} />
+                Data e Horário
+              </SectionTitle>
+              <SectionDescription>
+                Escolha quando você gostaria de fazer sua reserva
+              </SectionDescription>
 
-        <FormGroup>
-          <Input
-            label="Email"
-            type="email"
-            value={formData.customerEmail}
-            onChange={handleEmailChange}
-            required
-          />
-          {emailError && (
-            <div style={{ color: "red", marginTop: 4 }}>{emailError}</div>
-          )}
-        </FormGroup>
+              <FormGrid>
+                <FormGroup>
+                  <Input
+                    label="Data"
+                    type="date"
+                    value={formData.date}
+                    onChange={handleDateChange}
+                    min={dateLimits.min}
+                    max={dateLimits.max}
+                    required
+                    disabled={!selectedTable}
+                    list="available-dates"
+                  />
+                  <datalist id="available-dates">
+                    {selectedTable &&
+                      tables &&
+                      getAvailableDates(
+                        tables.find((t) => t._id === selectedTable)
+                      )?.map((date: string) => (
+                        <option key={date} value={date} />
+                      ))}
+                  </datalist>
+                  {dateError && <ErrorMessage>{dateError}</ErrorMessage>}
+                </FormGroup>
 
-        <FormGroup>
-          <label style={{ display: "block", marginBottom: 4 }}>
-            Observações
-          </label>
-          <textarea
-            value={formData.observations}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                observations: e.target.value.slice(0, 50),
-              })
-            }
-            style={{ width: "100%", minHeight: 60, resize: "vertical" }}
-            placeholder="Observações (opcional)"
-            maxLength={50}
-          />
-          <div
-            style={{
-              textAlign: "right",
-              fontSize: "0.8rem",
-              color: "#666",
-              marginTop: 4,
-            }}
-          >
-            {formData.observations.length}/50 caracteres
-          </div>
-        </FormGroup>
+                <FormGroup>
+                  {!formData.date ? (
+                    <EmptyState>
+                      <Clock size={24} />
+                      <span>Selecione uma data primeiro</span>
+                    </EmptyState>
+                  ) : loadingHours ? (
+                    <LoadingContainer>
+                      <div className="spinner" />
+                      <span>Carregando horários...</span>
+                    </LoadingContainer>
+                  ) : availableHours.length === 0 ? (
+                    <EmptyState>
+                      <AlertCircle size={24} />
+                      <span>Nenhum horário disponível para esta data</span>
+                    </EmptyState>
+                  ) : (
+                    <TimeSlotSelector>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginBottom: "16px",
+                          paddingBottom: "8px",
+                          borderBottom: "1px solid #e5e7eb",
+                        }}
+                      >
+                        <Clock size={16} />
+                        <span
+                          style={{
+                            fontWeight: "500",
+                            color: "#374151",
+                            fontSize: "0.875rem",
+                          }}
+                        >
+                          Horários Disponíveis
+                        </span>
+                        <span
+                          style={{
+                            backgroundColor: "#f3f4f6",
+                            color: "#6b7280",
+                            fontSize: "0.75rem",
+                            padding: "2px 8px",
+                            borderRadius: "12px",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {availableHours.length} disponível
+                          {availableHours.length !== 1 ? "is" : ""}
+                        </span>
+                      </div>
+                      <TimeSlotGrid>
+                        {availableHours.map((hour, index) => (
+                          <TimeSlotItem
+                            key={index}
+                            type="button"
+                            $selected={formData.time === hour.start}
+                            $disabled={isPastTime(formData.date, hour.start)}
+                            onClick={() => {
+                              if (!isPastTime(formData.date, hour.start)) {
+                                handleTimeChange(hour.start);
+                              }
+                            }}
+                          >
+                            <Clock size={14} />
+                            <span>
+                              {hour.start} - {hour.end}
+                            </span>
+                          </TimeSlotItem>
+                        ))}
+                      </TimeSlotGrid>
+                    </TimeSlotSelector>
+                  )}
+                  {timeError && <ErrorMessage>{timeError}</ErrorMessage>}
+                </FormGroup>
+              </FormGrid>
+            </FormSection>
 
-        <ButtonGroup>
-          <Button
-            type="submit"
-            disabled={!!nameError || !!emailError || !!dateError || !!timeError}
-          >
-            Fazer Reserva
-          </Button>
-          <Button type="button" $variant="secondary" onClick={handleCancel}>
-            Cancelar
-          </Button>
-        </ButtonGroup>
-      </Form>
-    </Container>
+            {/* Informações do Cliente */}
+            <FormSection>
+              <SectionTitle>
+                <User size={20} />
+                Suas Informações
+              </SectionTitle>
+              <SectionDescription>
+                Confirme ou atualize suas informações de contato
+              </SectionDescription>
+
+              <FormGrid>
+                <FormGroup>
+                  <Input
+                    label="Nome"
+                    value={formData.customerName}
+                    onChange={handleNameChange}
+                    required
+                    maxLength={40}
+                    placeholder="Seu nome completo"
+                  />
+                  {nameError && <ErrorMessage>{nameError}</ErrorMessage>}
+                </FormGroup>
+
+                <FormGroup>
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={formData.customerEmail}
+                    onChange={handleEmailChange}
+                    required
+                    placeholder="seu@email.com"
+                  />
+                  {emailError && <ErrorMessage>{emailError}</ErrorMessage>}
+                </FormGroup>
+              </FormGrid>
+
+              <TextAreaGroup>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "8px",
+                    fontWeight: "500",
+                    color: "#374151",
+                  }}
+                >
+                  <MessageSquare size={16} />
+                  Observações (opcional)
+                </label>
+                <TextAreaContainer>
+                  <textarea
+                    value={formData.observations}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        observations: e.target.value.slice(0, 50),
+                      })
+                    }
+                    placeholder="Alguma observação especial? (alergia, comemoração, etc.)"
+                    maxLength={50}
+                  />
+                  <CharCounter>
+                    {formData.observations.length}/50 caracteres
+                  </CharCounter>
+                </TextAreaContainer>
+              </TextAreaGroup>
+            </FormSection>
+
+            {/* Resumo da Reserva */}
+            {selectedTableData && formData.date && formData.time && (
+              <InfoCard>
+                <InfoIcon>
+                  <CheckCircle size={24} />
+                </InfoIcon>
+                <InfoContent>
+                  <InfoTitle>Resumo da Reserva</InfoTitle>
+                  <InfoDescription>
+                    <strong>Mesa:</strong> {selectedTableData.name} (até{" "}
+                    {selectedTableData.capacity} pessoas)
+                    <br />
+                    <strong>Data:</strong>{" "}
+                    {new Date(formData.date + "T00:00:00").toLocaleDateString(
+                      "pt-BR"
+                    )}
+                    <br />
+                    <strong>Horário:</strong> {formData.time}
+                    <br />
+                    <strong>Cliente:</strong> {formData.customerName}
+                  </InfoDescription>
+                </InfoContent>
+              </InfoCard>
+            )}
+
+            {/* Ações */}
+            <ActionButtons>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!isFormValid || isSubmitting}
+                leftIcon={isSubmitting ? undefined : <CheckCircle size={18} />}
+              >
+                {isSubmitting ? "Criando Reserva..." : "Fazer Reserva"}
+              </Button>
+              <CancelButton
+                type="button"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </CancelButton>
+            </ActionButtons>
+          </form>
+        </Content>
+      </LayoutContainer>
+    </PageWrapper>
   );
 }

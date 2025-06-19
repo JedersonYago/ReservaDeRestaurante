@@ -1,15 +1,513 @@
-import styled from "styled-components";
-import { StatusBadge } from "../../components/StatusBadge";
+import styled, { keyframes } from "styled-components";
 
-export { StatusBadge };
+// Animações
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
 
-export const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+// Page Layout - Exatamente igual às reservas
+export const PageWrapper = styled.div`
+  width: 100%;
+  min-height: calc(100vh - ${({ theme }) => theme.spacing[16]});
+  background: ${({ theme }) => theme.colors.background.secondary};
+  padding-bottom: ${({ theme }) => theme.spacing[8]};
+`;
+
+export const Header = styled.header`
+  margin-bottom: ${({ theme }) => theme.spacing[8]};
+`;
+
+export const HeaderContent = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing[6]};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: ${({ theme }) => theme.spacing[4]};
+  }
+`;
+
+export const TitleSection = styled.div`
+  flex: 1;
 `;
 
 export const Title = styled.h1`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[3]};
+  font-size: ${({ theme }) => theme.typography.fontSize["2xl"]};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0 0 ${({ theme }) => theme.spacing[2]} 0;
+
+  svg {
+    color: ${({ theme }) => theme.colors.primary.main};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    font-size: ${({ theme }) => theme.typography.fontSize["xl"]};
+  }
+`;
+
+export const Subtitle = styled.p`
+  font-size: ${({ theme }) => theme.typography.fontSize.md};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  margin: 0;
+  line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
+`;
+
+export const HeaderActions = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing[3]};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: column;
+  }
+`;
+
+// Filters Section - Exatamente igual às reservas
+export const FiltersSection = styled.div`
+  background: ${({ theme }) => theme.colors.background.primary};
+  border-radius: ${({ theme }) => theme.borderRadius.xl};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  padding: ${({ theme }) => theme.spacing[6]};
+  margin-bottom: ${({ theme }) => theme.spacing[8]};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+`;
+
+export const FiltersHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  margin-bottom: ${({ theme }) => theme.spacing[4]};
+
+  svg {
+    color: ${({ theme }) => theme.colors.primary.main};
+  }
+`;
+
+export const FiltersTitle = styled.h3`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0;
+`;
+
+export const FiltersGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: ${({ theme }) => theme.spacing[4]};
+  align-items: end;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing[4]};
+  }
+`;
+
+export const SearchContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+
+  label {
+    font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+    color: ${({ theme }) => theme.colors.text.secondary};
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing[2]};
+
+    svg {
+      color: ${({ theme }) => theme.colors.primary.main};
+    }
+  }
+
+  .input-wrapper {
+    position: relative;
+
+    svg {
+      position: absolute;
+      left: ${({ theme }) => theme.spacing[3]};
+      top: 50%;
+      transform: translateY(-50%);
+      color: ${({ theme }) => theme.colors.text.secondary};
+      z-index: 1;
+    }
+
+    input {
+      padding-left: ${({ theme }) => theme.spacing[10]};
+      width: 100%;
+    }
+  }
+`;
+
+export const FilterContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+  min-width: 200px;
+
+  label {
+    font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+    color: ${({ theme }) => theme.colors.text.secondary};
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing[2]};
+
+    svg {
+      color: ${({ theme }) => theme.colors.primary.main};
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    min-width: auto;
+  }
+`;
+
+export const Select = styled.select`
+  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[300]};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  background: ${({ theme }) => theme.colors.background.primary};
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-family: ${({ theme }) => theme.typography.fontFamily};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.duration[200]}
+    ${({ theme }) => theme.transitions.timing.out};
+  width: 100%;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    background: ${({ theme }) => theme.colors.neutral[50]};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+    background: ${({ theme }) => theme.colors.background.primary};
+  }
+
+  option {
+    padding: ${({ theme }) => theme.spacing[2]};
+    background: ${({ theme }) => theme.colors.background.primary};
+    color: ${({ theme }) => theme.colors.text.primary};
+  }
+`;
+
+export const ClearFiltersButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  background: ${({ theme }) => theme.colors.background.primary};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[300]};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  font-family: ${({ theme }) => theme.typography.fontFamily};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.duration[200]}
+    ${({ theme }) => theme.transitions.timing.out};
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.semantic.error}15;
+    border-color: ${({ theme }) => theme.colors.semantic.error};
+    color: ${({ theme }) => theme.colors.semantic.error};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
+// Content Section
+export const ContentSection = styled.div`
+  /* Content styles */
+`;
+
+export const ResultsCounter = styled.div`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  margin-bottom: ${({ theme }) => theme.spacing[4]};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+
+  strong {
+    color: ${({ theme }) => theme.colors.text.primary};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  }
+`;
+
+// Grid de mesas - 3 colunas
+export const TablesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacing[6]};
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: ${({ theme }) => theme.spacing[4]};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing[4]};
+  }
+`;
+
+export const TableCard = styled.div`
+  background: ${({ theme }) => theme.colors.background.primary};
+  border-radius: ${({ theme }) => theme.borderRadius.xl};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  padding: ${({ theme }) => theme.spacing[6]};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  transition: all ${({ theme }) => theme.transitions.duration[200]}
+    ${({ theme }) => theme.transitions.timing.out};
+  animation: ${fadeIn} 0.3s ease-out;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  word-wrap: break-word;
+
+  &:hover {
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    border-color: ${({ theme }) => theme.colors.primary.light};
+    transform: translateY(-2px);
+  }
+`;
+
+// Card Header - Exatamente igual às reservas
+export const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing[4]};
+  padding-bottom: ${({ theme }) => theme.spacing[4]};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.neutral[100]};
+  gap: ${({ theme }) => theme.spacing[3]};
+  min-width: 0;
+`;
+
+export const TableInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-size: ${({ theme }) => theme.typography.fontSize.md};
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+
+  svg {
+    color: ${({ theme }) => theme.colors.primary.main};
+    flex-shrink: 0;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+`;
+
+export const StatusBadgeContainer = styled.div`
+  display: flex;
+  flex-shrink: 0;
+  min-width: 0;
+`;
+
+// Card Content - Exatamente igual às reservas
+export const CardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[4]};
+  margin-bottom: ${({ theme }) => theme.spacing[6]};
+`;
+
+export const CapacityInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing[2]};
+    font-size: ${({ theme }) => theme.typography.fontSize.xs};
+    color: ${({ theme }) => theme.colors.text.secondary};
+
+    svg {
+      color: ${({ theme }) => theme.colors.primary.main};
+      flex-shrink: 0;
+    }
+
+    &:first-child {
+      font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+      color: ${({ theme }) => theme.colors.text.primary};
+      font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    }
+  }
+`;
+
+export const WarningInfo = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => theme.spacing[3]};
+  background: ${({ theme }) => theme.colors.neutral[50]};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  border-left: 3px solid ${({ theme }) => theme.colors.primary.main};
+
+  svg {
+    color: ${({ theme }) => theme.colors.primary.main};
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  span {
+    font-size: ${({ theme }) => theme.typography.fontSize.xs};
+    color: ${({ theme }) => theme.colors.text.secondary};
+    line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
+  }
+`;
+
+// Card Actions - Melhorado para 2 botões (sem excluir)
+export const CardActions = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing[3]};
+  padding-top: ${({ theme }) => theme.spacing[4]};
+  border-top: 1px solid ${({ theme }) => theme.colors.neutral[100]};
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing[2]};
+  }
+`;
+
+// Container para o botão de excluir separado
+export const DeleteButtonContainer = styled.div`
+  margin-top: ${({ theme }) => theme.spacing[2]};
+`;
+
+// Botão de excluir que ocupa toda a largura
+export const DeleteButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
+  background: ${({ theme }) => theme.colors.semantic.error};
+  color: ${({ theme }) => theme.colors.background.primary};
+  border: 1px solid ${({ theme }) => theme.colors.semantic.error};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  font-family: ${({ theme }) => theme.typography.fontFamily};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.semantic.error}dd;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+`;
+
+// Empty State - Exatamente igual às reservas
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing[16]}
+    ${({ theme }) => theme.spacing[6]};
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.background.primary},
+    ${({ theme }) => theme.colors.neutral[50]}
+  );
+  border-radius: ${({ theme }) => theme.borderRadius.xl};
+  border: 2px dashed ${({ theme }) => theme.colors.neutral[200]};
+`;
+
+export const EmptyStateIcon = styled.div`
+  color: ${({ theme }) => theme.colors.neutral[400]};
+  margin-bottom: ${({ theme }) => theme.spacing[6]};
+`;
+
+export const EmptyStateContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[4]};
+  max-width: 500px;
+`;
+
+export const EmptyTitle = styled.h3`
+  font-size: ${({ theme }) => theme.typography.fontSize.xl};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin: 0;
+`;
+
+export const EmptyDescription = styled.p`
+  font-size: ${({ theme }) => theme.typography.fontSize.md};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  margin: 0 0 ${({ theme }) => theme.spacing[6]} 0;
+  line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
+`;
+
+// Estilos legados para outras páginas (manter compatibilidade)
+export const Container = styled.div`
+  width: 100%;
+  padding: 2rem;
+`;
+
+export const LegacyTitle = styled.h1`
   color: #333;
   margin-bottom: 2rem;
 `;
@@ -66,13 +564,8 @@ export const TableItem = styled.div`
   }
 `;
 
-export const TableInfo = styled.div`
+export const LegacyTableInfo = styled.div`
   flex: 1;
-`;
-
-export const TableActions = styled.div`
-  display: flex;
-  gap: 1rem;
 `;
 
 export const EmptyMessage = styled.p`
@@ -88,4 +581,58 @@ export const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+`;
+
+export const ActionButton = styled.button<{
+  $variant: "primary" | "secondary" | "danger" | "warning";
+}>`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  font-family: ${({ theme }) => theme.typography.fontFamily};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  justify-content: center;
+  min-width: fit-content;
+
+  ${({ $variant, theme }) => {
+    switch ($variant) {
+      case "primary":
+        return `
+          background: ${theme.colors.primary.main};
+          color: ${theme.colors.primary.contrast};
+          border: 1px solid ${theme.colors.primary.main};
+
+          &:hover {
+            background: ${theme.colors.primary.dark};
+            border-color: ${theme.colors.primary.dark};
+          }
+        `;
+      default:
+        return `
+          background: ${theme.colors.background.primary};
+          color: ${theme.colors.text.primary};
+          border: 1px solid ${theme.colors.neutral[300]};
+
+          &:hover {
+            background: ${theme.colors.neutral[50]};
+            border-color: ${theme.colors.primary.main};
+          }
+        `;
+    }
+  }}
+
+  &:focus {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
 `;

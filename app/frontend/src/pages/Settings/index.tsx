@@ -1,8 +1,56 @@
 import React, { useEffect, useState } from "react";
+import {
+  Settings as SettingsIcon,
+  Clock,
+  Users,
+  Timer,
+  Save,
+  AlertCircle,
+  Loader2,
+  Info,
+  Shield,
+  RefreshCcw,
+} from "lucide-react";
 import { configApi } from "../../services/api";
 import type { Config } from "../../types/config";
-import styled from "styled-components";
-import { Header } from "../../components/Header";
+import { Button } from "../../components/Button";
+import { Input } from "../../components/Input";
+
+import { Container as LayoutContainer } from "../../components/Layout/Container";
+import { useToast } from "../../components/Toast";
+import {
+  PageWrapper,
+  HeaderSection,
+  HeaderContent,
+  TitleSection,
+  Title,
+  Subtitle,
+  Content,
+  ConfigCard,
+  ConfigSection,
+  SectionHeader,
+  SectionTitle,
+  SectionDescription,
+  ToggleContainer,
+  ToggleSwitch,
+  ToggleLabel,
+  ToggleSlider,
+  FieldsContainer,
+  FieldGroup,
+  HelpText,
+  ActionButtons,
+  LoadingContainer,
+  LoadingSpinner,
+  LoadingText,
+  ErrorContainer,
+  ErrorIcon,
+  ErrorContent,
+  ErrorTitle,
+  ErrorDescription,
+  MessageContainer,
+  MessageIcon,
+  MessageText,
+} from "./styles";
 
 const defaultConfig: Config = {
   maxReservationsPerUser: 5,
@@ -16,17 +64,20 @@ const defaultConfig: Config = {
 };
 
 export function Settings() {
+  const toast = useToast();
   const [config, setConfig] = useState<Config>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalConfig, setOriginalConfig] = useState<Config>(defaultConfig);
 
   useEffect(() => {
     configApi
       .getConfig()
       .then((data) => {
         setConfig(data as Config);
+        setOriginalConfig(data as Config);
         setLoading(false);
       })
       .catch(() => {
@@ -37,17 +88,34 @@ export function Settings() {
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value, type, checked } = e.target;
-    setConfig((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const newValue = type === "checkbox" ? checked : value;
+
+    setConfig((prev) => {
+      const newConfig = {
+        ...prev,
+        [name]: newValue,
+      };
+
+      // Verificar se há mudanças comparando com a configuração original
+      setHasChanges(
+        JSON.stringify(newConfig) !== JSON.stringify(originalConfig)
+      );
+
+      return newConfig;
+    });
+  }
+
+  function handleReset() {
+    setConfig(originalConfig);
+    setHasChanges(false);
+    toast.info("Configurações restauradas");
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
-    setSuccess(null);
+
     try {
       const payload = {
         maxReservationsPerUser: Number(config.maxReservationsPerUser),
@@ -62,240 +130,347 @@ export function Settings() {
         isOpeningHoursEnabled: config.isOpeningHoursEnabled,
       };
 
-      console.log("🚀 Enviando payload:", payload);
       await configApi.updateConfig(payload);
-      setSuccess("Configurações salvas com sucesso!");
+      setOriginalConfig(config);
+      setHasChanges(false);
+      toast.success("Configurações salvas com sucesso!");
     } catch (err: any) {
-      setError(err?.response?.data?.error || "Erro ao salvar configurações");
+      const errorMessage =
+        err?.response?.data?.error || "Erro ao salvar configurações";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <div>Carregando...</div>;
+  if (loading) {
+    return (
+      <PageWrapper>
+        <LayoutContainer>
+          <LoadingContainer>
+            <LoadingSpinner>
+              <Loader2 size={40} />
+            </LoadingSpinner>
+            <LoadingText>Carregando configurações...</LoadingText>
+          </LoadingContainer>
+        </LayoutContainer>
+      </PageWrapper>
+    );
+  }
+
+  if (error && !config) {
+    return (
+      <PageWrapper>
+        <LayoutContainer>
+          <ErrorContainer>
+            <ErrorIcon>
+              <AlertCircle size={64} />
+            </ErrorIcon>
+            <ErrorContent>
+              <ErrorTitle>Erro ao carregar configurações</ErrorTitle>
+              <ErrorDescription>
+                Não foi possível carregar as configurações do sistema. Verifique
+                sua conexão e tente novamente.
+              </ErrorDescription>
+              <Button
+                variant="primary"
+                onClick={() => window.location.reload()}
+                leftIcon={<RefreshCcw size={18} />}
+              >
+                Tentar Novamente
+              </Button>
+            </ErrorContent>
+          </ErrorContainer>
+        </LayoutContainer>
+      </PageWrapper>
+    );
+  }
 
   return (
-    <>
-      <Header />
-      <Container>
-        <h2>Configurações do Sistema</h2>
-        <form onSubmit={handleSubmit}>
-          <ConfigSection>
-            <h3>Horários de Funcionamento</h3>
-            <SwitchContainer>
-              <label>
-                <input
-                  type="checkbox"
-                  name="isOpeningHoursEnabled"
-                  checked={config.isOpeningHoursEnabled}
-                  onChange={handleChange}
-                />
-                Ativar restrição de horários
-              </label>
-            </SwitchContainer>
-            {config.isOpeningHoursEnabled && (
-              <>
-                <div>
-                  <label>Horário de abertura:</label>
-                  <input
-                    type="time"
-                    name="openingHour"
-                    value={config.openingHour}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label>Horário de fechamento:</label>
-                  <input
-                    type="time"
-                    name="closingHour"
-                    value={config.closingHour}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </>
-            )}
-          </ConfigSection>
+    <PageWrapper>
+      <LayoutContainer>
+        <HeaderSection>
+          <HeaderContent>
+            <TitleSection>
+              <Title>
+                <SettingsIcon size={32} />
+                Configurações do Sistema
+              </Title>
+              <Subtitle>
+                Configure os parâmetros operacionais do sistema de reservas
+              </Subtitle>
+            </TitleSection>
+          </HeaderContent>
+        </HeaderSection>
 
-          <ConfigSection>
-            <h3>Tempo de Confirmação</h3>
-            <SwitchContainer>
-              <label>
-                <input
-                  type="checkbox"
-                  name="isIntervalEnabled"
-                  checked={config.isIntervalEnabled}
-                  onChange={handleChange}
-                />
-                Ativar tempo de confirmação automática
-              </label>
-            </SwitchContainer>
-            {config.isIntervalEnabled && (
-              <div>
-                <label>Tempo até confirmação automática (minutos):</label>
-                <input
-                  type="number"
-                  name="minIntervalBetweenReservations"
-                  min={1}
-                  max={120}
-                  value={config.minIntervalBetweenReservations}
-                  onChange={handleChange}
-                  required
-                />
-                <small
-                  style={{ display: "block", color: "#666", marginTop: "4px" }}
+        <Content>
+          <form onSubmit={handleSubmit}>
+            {/* Horários de Funcionamento */}
+            <ConfigCard>
+              <ConfigSection>
+                <SectionHeader>
+                  <SectionTitle>
+                    <Clock size={20} />
+                    Horários de Funcionamento
+                  </SectionTitle>
+                  <SectionDescription>
+                    Configure os horários de abertura e fechamento do
+                    restaurante
+                  </SectionDescription>
+                </SectionHeader>
+
+                <ToggleContainer
+                  onClick={() => {
+                    const event = {
+                      target: {
+                        name: "isOpeningHoursEnabled",
+                        type: "checkbox",
+                        checked: !config.isOpeningHoursEnabled,
+                        value: !config.isOpeningHoursEnabled,
+                      },
+                    } as any;
+                    handleChange(event);
+                  }}
                 >
-                  Reservas ficam pendentes por este tempo, permitindo
-                  cancelamento pelo cliente. Após o tempo definido, são
-                  confirmadas automaticamente.
-                </small>
-              </div>
-            )}
-          </ConfigSection>
+                  <ToggleSwitch>
+                    <input
+                      type="checkbox"
+                      id="isOpeningHoursEnabled"
+                      name="isOpeningHoursEnabled"
+                      checked={config.isOpeningHoursEnabled}
+                      onChange={handleChange}
+                      style={{
+                        position: "absolute",
+                        opacity: 0,
+                        pointerEvents: "none",
+                      }}
+                    />
+                    <ToggleSlider checked={config.isOpeningHoursEnabled} />
+                  </ToggleSwitch>
+                  <ToggleLabel>
+                    <Shield size={16} />
+                    Ativar restrição de horários
+                  </ToggleLabel>
+                </ToggleContainer>
 
-          <ConfigSection>
-            <h3>Limite de Reservas por Usuário</h3>
-            <SwitchContainer>
-              <label>
-                <input
-                  type="checkbox"
-                  name="isReservationLimitEnabled"
-                  checked={config.isReservationLimitEnabled}
-                  onChange={handleChange}
-                />
-                Ativar limite de reservas por usuário
-              </label>
-            </SwitchContainer>
-            {config.isReservationLimitEnabled && (
-              <>
-                <div>
-                  <label>Máximo de reservas por usuário:</label>
-                  <input
-                    type="number"
-                    name="maxReservationsPerUser"
-                    min={1}
-                    max={20}
-                    value={config.maxReservationsPerUser}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label>Período de limitação (horas):</label>
-                  <input
-                    type="number"
-                    name="reservationLimitHours"
-                    min={1}
-                    max={168}
-                    value={config.reservationLimitHours}
-                    onChange={handleChange}
-                    required
-                  />
-                  <small
-                    style={{
-                      display: "block",
-                      color: "#666",
-                      marginTop: "4px",
-                    }}
-                  >
-                    Por exemplo: 5 reservas a cada 24 horas. O usuário só poderá
-                    fazer mais reservas após o período definido.
-                  </small>
-                </div>
-              </>
-            )}
-          </ConfigSection>
+                {config.isOpeningHoursEnabled && (
+                  <FieldsContainer>
+                    <FieldGroup>
+                      <Input
+                        label="Horário de abertura"
+                        type="time"
+                        name="openingHour"
+                        value={config.openingHour}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FieldGroup>
+                    <FieldGroup>
+                      <Input
+                        label="Horário de fechamento"
+                        type="time"
+                        name="closingHour"
+                        value={config.closingHour}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FieldGroup>
+                  </FieldsContainer>
+                )}
+              </ConfigSection>
+            </ConfigCard>
 
-          <button type="submit" disabled={saving}>
-            {saving ? "Salvando..." : "Salvar"}
-          </button>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-          {success && <SuccessMessage>{success}</SuccessMessage>}
-        </form>
-      </Container>
-    </>
+            {/* Tempo de Confirmação */}
+            <ConfigCard>
+              <ConfigSection>
+                <SectionHeader>
+                  <SectionTitle>
+                    <Timer size={20} />
+                    Tempo de Confirmação
+                  </SectionTitle>
+                  <SectionDescription>
+                    Defina o tempo para confirmação automática das reservas
+                  </SectionDescription>
+                </SectionHeader>
+
+                <ToggleContainer
+                  onClick={() => {
+                    const event = {
+                      target: {
+                        name: "isIntervalEnabled",
+                        type: "checkbox",
+                        checked: !config.isIntervalEnabled,
+                        value: !config.isIntervalEnabled,
+                      },
+                    } as any;
+                    handleChange(event);
+                  }}
+                >
+                  <ToggleSwitch>
+                    <input
+                      type="checkbox"
+                      id="isIntervalEnabled"
+                      name="isIntervalEnabled"
+                      checked={config.isIntervalEnabled}
+                      onChange={handleChange}
+                      style={{
+                        position: "absolute",
+                        opacity: 0,
+                        pointerEvents: "none",
+                      }}
+                    />
+                    <ToggleSlider checked={config.isIntervalEnabled} />
+                  </ToggleSwitch>
+                  <ToggleLabel>
+                    <Timer size={16} />
+                    Ativar confirmação automática
+                  </ToggleLabel>
+                </ToggleContainer>
+
+                {config.isIntervalEnabled && (
+                  <FieldsContainer>
+                    <FieldGroup style={{ gridColumn: "1 / -1" }}>
+                      <Input
+                        label="Tempo até confirmação automática (minutos)"
+                        type="number"
+                        name="minIntervalBetweenReservations"
+                        min={1}
+                        max={120}
+                        value={config.minIntervalBetweenReservations}
+                        onChange={handleChange}
+                        required
+                      />
+                      <HelpText>
+                        <Info size={14} />
+                        Reservas ficam pendentes por este tempo, permitindo
+                        cancelamento pelo cliente. Após o tempo definido, são
+                        confirmadas automaticamente.
+                      </HelpText>
+                    </FieldGroup>
+                  </FieldsContainer>
+                )}
+              </ConfigSection>
+            </ConfigCard>
+
+            {/* Limite de Reservas */}
+            <ConfigCard>
+              <ConfigSection>
+                <SectionHeader>
+                  <SectionTitle>
+                    <Users size={20} />
+                    Limite de Reservas por Usuário
+                  </SectionTitle>
+                  <SectionDescription>
+                    Configure quantas reservas cada usuário pode fazer por
+                    período
+                  </SectionDescription>
+                </SectionHeader>
+
+                <ToggleContainer
+                  onClick={() => {
+                    const event = {
+                      target: {
+                        name: "isReservationLimitEnabled",
+                        type: "checkbox",
+                        checked: !config.isReservationLimitEnabled,
+                        value: !config.isReservationLimitEnabled,
+                      },
+                    } as any;
+                    handleChange(event);
+                  }}
+                >
+                  <ToggleSwitch>
+                    <input
+                      type="checkbox"
+                      id="isReservationLimitEnabled"
+                      name="isReservationLimitEnabled"
+                      checked={config.isReservationLimitEnabled}
+                      onChange={handleChange}
+                      style={{
+                        position: "absolute",
+                        opacity: 0,
+                        pointerEvents: "none",
+                      }}
+                    />
+                    <ToggleSlider checked={config.isReservationLimitEnabled} />
+                  </ToggleSwitch>
+                  <ToggleLabel>
+                    <Users size={16} />
+                    Ativar limite de reservas
+                  </ToggleLabel>
+                </ToggleContainer>
+
+                {config.isReservationLimitEnabled && (
+                  <FieldsContainer>
+                    <FieldGroup>
+                      <Input
+                        label="Máximo de reservas por usuário"
+                        type="number"
+                        name="maxReservationsPerUser"
+                        min={1}
+                        max={20}
+                        value={config.maxReservationsPerUser}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FieldGroup>
+                    <FieldGroup>
+                      <Input
+                        label="Período de limitação (horas)"
+                        type="number"
+                        name="reservationLimitHours"
+                        min={1}
+                        max={168}
+                        value={config.reservationLimitHours}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FieldGroup>
+                    <FieldGroup style={{ gridColumn: "1 / -1" }}>
+                      <HelpText>
+                        <Info size={14} />
+                        Por exemplo: {config.maxReservationsPerUser} reservas a
+                        cada {config.reservationLimitHours} horas. O usuário só
+                        poderá fazer mais reservas após o período definido.
+                      </HelpText>
+                    </FieldGroup>
+                  </FieldsContainer>
+                )}
+              </ConfigSection>
+            </ConfigCard>
+
+            {error && (
+              <MessageContainer $variant="error">
+                <MessageIcon $variant="error">
+                  <AlertCircle size={20} />
+                </MessageIcon>
+                <MessageText>{error}</MessageText>
+              </MessageContainer>
+            )}
+
+            <ActionButtons>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={saving || !hasChanges}
+                leftIcon={saving ? <Loader2 size={18} /> : <Save size={18} />}
+              >
+                {saving ? "Salvando..." : "Salvar Configurações"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleReset}
+                disabled={saving || !hasChanges}
+                leftIcon={<RefreshCcw size={18} />}
+              >
+                Restaurar
+              </Button>
+            </ActionButtons>
+          </form>
+        </Content>
+      </LayoutContainer>
+    </PageWrapper>
   );
 }
-
-const Container = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
-
-  h2 {
-    margin-bottom: 2rem;
-    color: #333;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-`;
-
-const ConfigSection = styled.section`
-  background: #f5f5f5;
-  padding: 1.5rem;
-  border-radius: 8px;
-
-  h3 {
-    margin-bottom: 1rem;
-    color: #333;
-  }
-
-  > div {
-    margin-bottom: 1rem;
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #666;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-
-      &[type="number"] {
-        width: 150px;
-      }
-    }
-  }
-`;
-
-const SwitchContainer = styled.div`
-  margin-bottom: 1rem;
-
-  label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-  }
-
-  input[type="checkbox"] {
-    width: auto;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: #d32f2f;
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: #ffebee;
-  border-radius: 4px;
-`;
-
-const SuccessMessage = styled.div`
-  color: #2e7d32;
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: #e8f5e9;
-  border-radius: 4px;
-`;

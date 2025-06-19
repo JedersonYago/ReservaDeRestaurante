@@ -1,20 +1,119 @@
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useTableById } from "../../../hooks/useTables";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../../components/Toast";
+import { useTableById, useTables } from "../../../hooks/useTables";
 import { useReservationsByTable } from "../../../hooks/useReservations";
-import styled from "styled-components";
 import { Button } from "../../../components/Button";
-import { useState, useEffect, useMemo } from "react";
 import { tableService } from "../../../services/tableService";
 import { toYMD } from "../../../utils/dateUtils";
 import { formatDate, formatTime } from "../../../utils/dateUtils";
-import { StatusBadge } from "../../../components/StatusBadge";
+import { StatusBadge, type BadgeStatus } from "../../../components/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
 import { useReservations } from "../../../hooks/useReservations";
 import { getStatusText } from "../../../utils/textUtils";
+import { Container as LayoutContainer } from "../../../components/Layout/Container";
+import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
+import {
+  ArrowLeft,
+  Utensils,
+  Users,
+  Calendar,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Settings,
+  Eye,
+  Edit,
+  Trash2,
+  User,
+  Mail,
+  Hash,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import {
+  PageWrapper,
+  Header,
+  HeaderContent,
+  TitleSection,
+  Title,
+  Subtitle,
+  HeaderActions,
+  Content,
+  MainGrid,
+  InfoCard,
+  SectionTitle,
+  InfoGrid,
+  InfoItem,
+  InfoLabel,
+  InfoValue,
+  StatusSection,
+  DateSelector,
+  AvailabilitySection,
+  Legend,
+  LegendItem,
+  AvailabilityGrid,
+  AvailabilityBlock,
+  AvailabilityDate,
+  AvailabilityTimes,
+  AvailabilityTime,
+  EmptyAvailability,
+  ReservationsSection,
+  ReservationsGrid,
+  ReservationCard,
+  ReservationHeader,
+  ReservationNumber,
+  ReservationStatus,
+  ReservationInfo,
+  CustomerInfo,
+  DateTimeInfo,
+  ReservationActions,
+  ActionButton,
+  EmptyReservations,
+  LoadingContainer,
+  LoadingSpinner,
+  LoadingText,
+  NotFoundContainer,
+  NotFoundIcon,
+  NotFoundContent,
+  NotFoundTitle,
+  NotFoundDescription,
+  AvailabilityHeader,
+  CollapseButton,
+  AvailabilityPreview,
+} from "./styles";
+
+const statusConfig: Record<
+  string,
+  {
+    label: string;
+    icon: React.ComponentType<{ size?: number }>;
+    status: string;
+  }
+> = {
+  available: {
+    label: "Disponível",
+    icon: CheckCircle,
+    status: "available",
+  },
+  reserved: {
+    label: "Reservada",
+    icon: Clock,
+    status: "reserved",
+  },
+  maintenance: {
+    label: "Em Manutenção",
+    icon: Settings,
+    status: "maintenance",
+  },
+};
 
 export function TableDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const toast = useToast();
   const { user } = useAuth();
   const { deleteReservation, confirmReservation, cancelReservation } =
     useReservations();
@@ -27,6 +126,31 @@ export function TableDetails() {
   const [selectedDate, setSelectedDate] = useState("");
   const [dynamicStatus, setDynamicStatus] = useState<string | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
+  const [collapsedBlocks, setCollapsedBlocks] = useState<
+    Record<number, boolean>
+  >({});
+  const [showDeleteReservationModal, setShowDeleteReservationModal] =
+    useState(false);
+  const [showDeleteTableModal, setShowDeleteTableModal] = useState(false);
+  const [showReservationActionModal, setShowReservationActionModal] =
+    useState(false);
+  const [reservationToDelete, setReservationToDelete] = useState<string | null>(
+    null
+  );
+  const [reservationActionConfig, setReservationActionConfig] = useState<{
+    type: "confirm" | "cancel";
+    reservationId: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isProcessingReservation, setIsProcessingReservation] = useState(false);
+  const { deleteTable } = useTables();
+
+  // Função para gerar número da reserva amigável
+  const getReservationNumber = (id: string) => {
+    const lastChars = id.slice(-6);
+    const num = parseInt(lastChars, 16) % 999999;
+    return num.toString().padStart(6, "0");
+  };
 
   // Datas disponíveis (que têm horários cadastrados)
   const availableDates = useMemo(() => {
@@ -34,9 +158,19 @@ export function TableDetails() {
     return table.availability.map((block) => block.date).sort();
   }, [table]);
 
+  // Inicializar blocos como recolhidos
+  useEffect(() => {
+    if (table?.availability) {
+      const initialCollapsed: Record<number, boolean> = {};
+      table.availability.forEach((_, idx) => {
+        initialCollapsed[idx] = true; // Começar todos recolhidos
+      });
+      setCollapsedBlocks(initialCollapsed);
+    }
+  }, [table?.availability]);
+
   useEffect(() => {
     if (table && !selectedDate && availableDates.length > 0) {
-      // Define a primeira data disponível como padrão
       const today = toYMD(new Date());
       const defaultDate = availableDates.includes(today)
         ? today
@@ -62,6 +196,135 @@ export function TableDetails() {
     fetchStatus();
   }, [id, selectedDate]);
 
+  // Calcula status global e estatísticas em tempo real baseado nas reservas
+  const globalTableStats = useMemo(() => {
+    if (!table || table.status === "maintenance") {
+      return {
+        status: table?.status || "available",
+        availableSlots: 0,
+        reservedSlots: 0,
+        totalSlots: 0,
+      };
+    }
+
+    // Se não há horários cadastrados, usa status da mesa
+    if (!table.availability || table.availability.length === 0) {
+      return {
+        status: table.status,
+        availableSlots: 0,
+        reservedSlots: 0,
+        totalSlots: 0,
+      };
+    }
+
+    // Se não há reservas, mesa está disponível
+    if (!reservations || reservations.length === 0) {
+      const totalSlots = table.availability.reduce((acc, block) => {
+        const today = toYMD(new Date());
+        return block.date >= today ? acc + block.times.length : acc;
+      }, 0);
+
+      return {
+        status: "available",
+        availableSlots: totalSlots,
+        reservedSlots: 0,
+        totalSlots,
+      };
+    }
+
+    const today = toYMD(new Date());
+
+    // Conta total de horários disponíveis para hoje ou datas futuras
+    let totalSlotsAvailable = 0;
+    let totalSlotsReserved = 0;
+
+    table.availability.forEach((block) => {
+      // Considera apenas blocos de hoje ou futuros
+      if (block.date >= today) {
+        block.times.forEach((timeRange) => {
+          const [startTime] = timeRange.split("-");
+
+          // Verifica se este horário específico tem reserva ativa
+          const hasActiveReservation = reservations.some((reservation) => {
+            // Normaliza as datas para comparação (remove possíveis diferenças de formato)
+            const reservationDate = reservation.date;
+            const blockDate = block.date;
+            const reservationTime = reservation.time;
+
+            return (
+              reservationDate === blockDate &&
+              reservationTime === startTime &&
+              reservation.status !== "cancelled"
+            );
+          });
+
+          if (hasActiveReservation) {
+            totalSlotsReserved++;
+          } else {
+            totalSlotsAvailable++;
+          }
+        });
+      }
+    });
+
+    const totalSlots = totalSlotsAvailable + totalSlotsReserved;
+
+    // Se não há horários para hoje ou futuro, considera disponível
+    if (totalSlots === 0) {
+      return {
+        status: "available",
+        availableSlots: 0,
+        reservedSlots: 0,
+        totalSlots: 0,
+      };
+    }
+
+    // Se todos os horários estão reservados, mesa está reservada
+    const status = totalSlotsAvailable === 0 ? "reserved" : "available";
+
+    return {
+      status,
+      availableSlots: totalSlotsAvailable,
+      reservedSlots: totalSlotsReserved,
+      totalSlots,
+    };
+  }, [table, reservations]);
+
+  const globalTableStatus = globalTableStats.status;
+
+  // Debug temporário - remover depois
+  useEffect(() => {
+    if (table && reservations) {
+      console.log("DEBUG - Status Global:", {
+        tableId: table._id,
+        tableName: table.name,
+        configuredStatus: table.status,
+        calculatedStatus: globalTableStatus,
+        stats: globalTableStats,
+        totalReservations: reservations.length,
+        activeReservations: reservations.filter(
+          (r) => r.status !== "cancelled"
+        ),
+        today: toYMD(new Date()),
+        availability: table.availability,
+        reservationsDetail: reservations.map((r) => ({
+          date: r.date,
+          time: r.time,
+          status: r.status,
+          customer: r.customerName,
+        })),
+      });
+    }
+  }, [table, reservations, globalTableStatus, globalTableStats]);
+
+  // Invalida queries da mesa quando o status global muda para atualizar em tempo real
+  useEffect(() => {
+    if (table && globalTableStatus !== table.status) {
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["table", id] });
+    }
+  }, [globalTableStatus, table?.status, id, queryClient]);
+
   // Calcula status dos horários de forma otimizada
   const timeSlotStatuses = useMemo(() => {
     if (!table?.availability || !reservations) return {};
@@ -74,7 +337,6 @@ export function TableDetails() {
       for (const timeRange of block.times) {
         const [startTime] = timeRange.split("-");
 
-        // Verifica se há reserva para este horário específico
         const hasReservation = reservations.some(
           (reservation) =>
             reservation.date === block.date &&
@@ -91,450 +353,587 @@ export function TableDetails() {
     return statuses;
   }, [table?.availability, reservations]);
 
-  const handleConfirm = async (reservationId: string) => {
-    try {
-      await confirmReservation.mutateAsync(reservationId);
-      refetchReservations();
-    } catch (error) {
-      // Toast de erro já é exibido pelo hook
-    }
+  const handleConfirmClick = (reservationId: string) => {
+    setReservationActionConfig({
+      type: "confirm",
+      reservationId,
+    });
+    setShowReservationActionModal(true);
   };
 
-  const handleCancel = async (reservationId: string) => {
-    try {
-      await cancelReservation.mutateAsync(reservationId);
-      refetchReservations();
-    } catch (error) {
-      // Toast de erro já é exibido pelo hook
-    }
+  const handleCancelClick = (reservationId: string) => {
+    setReservationActionConfig({
+      type: "cancel",
+      reservationId,
+    });
+    setShowReservationActionModal(true);
   };
 
-  const handleDelete = async (reservationId: string) => {
-    if (window.confirm("Tem certeza que deseja excluir esta reserva?")) {
-      try {
-        await deleteReservation.mutateAsync(reservationId);
-        refetchReservations();
-      } catch (error) {
-        // Toast de erro já é exibido pelo hook
+  const handleConfirmReservationAction = async () => {
+    if (!reservationActionConfig) return;
+
+    setIsProcessingReservation(true);
+    try {
+      if (reservationActionConfig.type === "confirm") {
+        await confirmReservation.mutateAsync(
+          reservationActionConfig.reservationId
+        );
+      } else {
+        await cancelReservation.mutateAsync(
+          reservationActionConfig.reservationId
+        );
       }
+      refetchReservations();
+      setShowReservationActionModal(false);
+      setReservationActionConfig(null);
+    } catch (error) {
+      // Toast de erro já é exibido pelo hook
+    } finally {
+      setIsProcessingReservation(false);
     }
+  };
+
+  const handleCancelReservationAction = () => {
+    setShowReservationActionModal(false);
+    setReservationActionConfig(null);
+    setIsProcessingReservation(false);
+  };
+
+  const handleDeleteClick = (reservationId: string) => {
+    setReservationToDelete(reservationId);
+    setShowDeleteReservationModal(true);
+  };
+
+  const handleConfirmDeleteReservation = async () => {
+    if (!reservationToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteReservation.mutateAsync(reservationToDelete);
+      refetchReservations();
+      setShowDeleteReservationModal(false);
+      setReservationToDelete(null);
+    } catch (error) {
+      // Toast de erro já é exibido pelo hook
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancelDeleteReservation = () => {
+    setShowDeleteReservationModal(false);
+    setReservationToDelete(null);
+    setIsDeleting(false);
+  };
+
+  const handleDeleteTableClick = () => {
+    if (!table) return;
+    setShowDeleteTableModal(true);
+  };
+
+  const handleConfirmDeleteTable = async () => {
+    if (!table) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteTable(table._id);
+      navigate("/tables");
+    } catch (error) {
+      // Toast de erro já é exibido pelo hook
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancelDeleteTable = () => {
+    setShowDeleteTableModal(false);
+    setIsDeleting(false);
+  };
+
+  // Função para alternar colapso de um bloco
+  const toggleBlockCollapse = (blockIdx: number) => {
+    setCollapsedBlocks((prev) => ({
+      ...prev,
+      [blockIdx]: !prev[blockIdx],
+    }));
   };
 
   if (isLoading) {
-    return <Loading>Carregando...</Loading>;
+    return (
+      <PageWrapper>
+        <LayoutContainer>
+          <LoadingContainer>
+            <LoadingSpinner />
+            <LoadingText>Carregando detalhes da mesa...</LoadingText>
+          </LoadingContainer>
+        </LayoutContainer>
+      </PageWrapper>
+    );
   }
 
   if (!table) {
-    return <NotFound>Mesa não encontrada</NotFound>;
+    return (
+      <PageWrapper>
+        <LayoutContainer>
+          <NotFoundContainer>
+            <NotFoundIcon>
+              <Utensils size={64} />
+            </NotFoundIcon>
+            <NotFoundContent>
+              <NotFoundTitle>Mesa não encontrada</NotFoundTitle>
+              <NotFoundDescription>
+                A mesa solicitada não existe ou foi removida.
+              </NotFoundDescription>
+              <Button
+                variant="primary"
+                onClick={() => navigate("/tables")}
+                leftIcon={<ArrowLeft size={18} />}
+              >
+                Voltar para Mesas
+              </Button>
+            </NotFoundContent>
+          </NotFoundContainer>
+        </LayoutContainer>
+      </PageWrapper>
+    );
   }
 
-  return (
-    <Container>
-      <Header>
-        <h1>Detalhes da Mesa {table.name}</h1>
-        <Button $variant="secondary" onClick={() => navigate("/tables")}>
-          Voltar
-        </Button>
-      </Header>
+  const tableStatus = statusConfig[globalTableStatus] || statusConfig.available;
+  const TableStatusIcon = tableStatus.icon;
 
-      <Content>
-        <InfoCard>
-          <h2>Informações</h2>
-          <InfoItem>
-            <Label>Nome:</Label>
-            <Value>{table.name}</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Capacidade:</Label>
-            <Value>{table.capacity} pessoas</Value>
-          </InfoItem>
-          <InfoItem>
-            <Label>Status global:</Label>
-            <StatusBadge status={table.status}>
-              {getStatusText(table.status)}
-            </StatusBadge>
-          </InfoItem>
-          <InfoItem>
-            <Label>Status para data:</Label>
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <DateSelector
-                value={selectedDate}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setSelectedDate(e.target.value)
-                }
+  return (
+    <PageWrapper>
+      <LayoutContainer>
+        <Header>
+          <HeaderContent>
+            <TitleSection>
+              <Title>
+                <Utensils size={32} />
+                {table.name}
+              </Title>
+              <Subtitle>Detalhes e reservas da mesa</Subtitle>
+            </TitleSection>
+            <HeaderActions>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/tables")}
+                leftIcon={<ArrowLeft size={16} />}
               >
-                <option value="">Selecione uma data</option>
-                {availableDates.map((date) => (
-                  <option key={date} value={date}>
-                    {formatDate(date)}
-                  </option>
-                ))}
-              </DateSelector>
-              {loadingStatus ? (
-                <span>Carregando...</span>
-              ) : (
-                dynamicStatus && (
-                  <StatusBadge status={dynamicStatus}>
-                    {getStatusText(dynamicStatus)}
-                  </StatusBadge>
-                )
+                Voltar
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate(`/tables/${table._id}/edit`)}
+                leftIcon={<Edit size={16} />}
+              >
+                Editar Mesa
+              </Button>
+              {user?.role === "admin" && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={handleDeleteTableClick}
+                  leftIcon={<Trash2 size={16} />}
+                >
+                  Excluir Mesa
+                </Button>
               )}
-            </div>
-          </InfoItem>
-          <InfoItem>
-            <Label>Disponibilidade:</Label>
-            <AvailabilityContainer>
+            </HeaderActions>
+          </HeaderContent>
+        </Header>
+
+        <Content>
+          <MainGrid>
+            <InfoCard>
+              <SectionTitle>
+                <Utensils size={20} />
+                Informações da Mesa
+              </SectionTitle>
+
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>Nome da Mesa</InfoLabel>
+                  <InfoValue>{table.name}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>Capacidade</InfoLabel>
+                  <InfoValue>
+                    <Users size={16} />
+                    {table.capacity} pessoas
+                  </InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>Status Global</InfoLabel>
+                  <InfoValue>
+                    <StatusBadge
+                      status={tableStatus.status as BadgeStatus}
+                      size="sm"
+                    >
+                      <TableStatusIcon size={12} />
+                      {tableStatus.label}
+                    </StatusBadge>
+                    {globalTableStats.totalSlots > 0 && (
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "#6b7280",
+                          marginTop: "4px",
+                          display: "flex",
+                          gap: "8px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>{globalTableStats.availableSlots} livres</span>
+                        <span>•</span>
+                        <span>{globalTableStats.reservedSlots} ocupados</span>
+                        <span>•</span>
+                        <span>{globalTableStats.totalSlots} total</span>
+                      </div>
+                    )}
+                  </InfoValue>
+                </InfoItem>
+              </InfoGrid>
+
+              <StatusSection>
+                <InfoLabel>Status para Data Específica</InfoLabel>
+                <div>
+                  <DateSelector
+                    value={selectedDate}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      setSelectedDate(e.target.value)
+                    }
+                  >
+                    <option value="">Selecione uma data</option>
+                    {availableDates.map((date) => (
+                      <option key={date} value={date}>
+                        {formatDate(date)}
+                      </option>
+                    ))}
+                  </DateSelector>
+                  {loadingStatus ? (
+                    <span>Carregando...</span>
+                  ) : (
+                    dynamicStatus && (
+                      <StatusBadge
+                        status={dynamicStatus as BadgeStatus}
+                        size="sm"
+                      >
+                        {React.createElement(
+                          statusConfig[dynamicStatus]?.icon || Settings,
+                          { size: 12 }
+                        )}
+                        {getStatusText(dynamicStatus)}
+                      </StatusBadge>
+                    )
+                  )}
+                </div>
+              </StatusSection>
+            </InfoCard>
+
+            <AvailabilitySection>
+              <SectionTitle>
+                <Calendar size={20} />
+                Horários de Disponibilidade
+              </SectionTitle>
+
               <Legend>
                 <LegendItem>
-                  <StatusBadge status="available">Disponível</StatusBadge>
+                  <StatusBadge status="available" size="sm">
+                    <CheckCircle size={12} />
+                    Livre
+                  </StatusBadge>
                   <span>Horário livre para reserva</span>
                 </LegendItem>
                 <LegendItem>
-                  <StatusBadge status="reserved">Reservado</StatusBadge>
-                  <span>Horário já reservado</span>
+                  <StatusBadge status="reserved" size="sm">
+                    <Clock size={12} />
+                    Reservado
+                  </StatusBadge>
+                  <span>Horário já ocupado</span>
                 </LegendItem>
               </Legend>
 
               {table.availability && table.availability.length > 0 ? (
-                table.availability.map((block, idx) => (
-                  <AvailabilityBlock key={idx}>
-                    <AvailabilityDate>
-                      📅 <strong>{formatDate(block.date)}</strong>
-                    </AvailabilityDate>
-                    <AvailabilityTimes>
-                      {block.times.map((timeRange, timeIdx) => {
-                        const status =
-                          timeSlotStatuses[block.date]?.[timeRange] ||
-                          "available";
-                        return (
-                          <AvailabilityTime key={timeIdx}>
-                            <span>{timeRange}</span>
-                            <StatusBadge status={status}>
-                              {status === "available"
-                                ? "Disponível"
-                                : "Reservado"}
-                            </StatusBadge>
-                          </AvailabilityTime>
-                        );
-                      })}
-                    </AvailabilityTimes>
-                  </AvailabilityBlock>
-                ))
+                <AvailabilityGrid>
+                  {table.availability.map((block, idx) => {
+                    const isCollapsed = collapsedBlocks[idx];
+                    const timesCount = block.times.length;
+
+                    return (
+                      <AvailabilityBlock key={idx}>
+                        <AvailabilityHeader>
+                          <AvailabilityDate>
+                            <Calendar size={16} />
+                            <strong>{formatDate(block.date)}</strong>
+                          </AvailabilityDate>
+                          <CollapseButton
+                            onClick={() => toggleBlockCollapse(idx)}
+                            type="button"
+                          >
+                            {isCollapsed ? (
+                              <>
+                                <span>Expandir</span>
+                                <ChevronDown size={16} />
+                              </>
+                            ) : (
+                              <>
+                                <span>Recolher</span>
+                                <ChevronUp size={16} />
+                              </>
+                            )}
+                          </CollapseButton>
+                        </AvailabilityHeader>
+
+                        {isCollapsed ? (
+                          <AvailabilityPreview>
+                            <span>
+                              {timesCount} horário{timesCount !== 1 ? "s" : ""}
+                            </span>
+                            {block.times
+                              .slice(0, 2)
+                              .map((timeRange, timeIdx) => {
+                                const status =
+                                  timeSlotStatuses[block.date]?.[timeRange] ||
+                                  "available";
+                                const isAvailable = status === "available";
+                                return (
+                                  <StatusBadge
+                                    key={timeIdx}
+                                    status={
+                                      isAvailable ? "available" : "reserved"
+                                    }
+                                    size="sm"
+                                  >
+                                    {timeRange}
+                                  </StatusBadge>
+                                );
+                              })}
+                            {timesCount > 2 && (
+                              <span>... e mais {timesCount - 2}</span>
+                            )}
+                          </AvailabilityPreview>
+                        ) : (
+                          <AvailabilityTimes>
+                            {block.times.map((timeRange, timeIdx) => {
+                              const status =
+                                timeSlotStatuses[block.date]?.[timeRange] ||
+                                "available";
+                              const isAvailable = status === "available";
+                              return (
+                                <AvailabilityTime
+                                  key={timeIdx}
+                                  $available={isAvailable}
+                                >
+                                  <Clock size={14} />
+                                  <span>{timeRange}</span>
+                                  <StatusBadge
+                                    status={
+                                      isAvailable ? "available" : "reserved"
+                                    }
+                                    size="sm"
+                                  >
+                                    {isAvailable ? "Livre" : "Reservado"}
+                                  </StatusBadge>
+                                </AvailabilityTime>
+                              );
+                            })}
+                          </AvailabilityTimes>
+                        )}
+                      </AvailabilityBlock>
+                    );
+                  })}
+                </AvailabilityGrid>
               ) : (
                 <EmptyAvailability>
-                  📋 Nenhuma disponibilidade cadastrada
+                  <Calendar size={48} />
+                  <div>
+                    <h4>Nenhuma disponibilidade cadastrada</h4>
+                    <p>Configure os horários disponíveis para esta mesa</p>
+                  </div>
                 </EmptyAvailability>
               )}
-            </AvailabilityContainer>
-          </InfoItem>
-        </InfoCard>
+            </AvailabilitySection>
+          </MainGrid>
 
-        <ReservationsCard>
-          <h2>Reservas</h2>
-          {loadingReservations ? (
-            <Loading>Carregando reservas...</Loading>
-          ) : reservations.length > 0 ? (
-            <ReservationsTable>
-              <thead>
-                <tr>
-                  <TableHeader>Cliente</TableHeader>
-                  <TableHeader>Data</TableHeader>
-                  <TableHeader>Horário</TableHeader>
-                  <TableHeader>Status</TableHeader>
-                  <TableHeader>Ações</TableHeader>
-                </tr>
-              </thead>
-              <tbody>
+          <ReservationsSection>
+            <SectionTitle>
+              <Calendar size={20} />
+              Reservas da Mesa
+              {reservations.length > 0 && <span>({reservations.length})</span>}
+            </SectionTitle>
+
+            {loadingReservations ? (
+              <LoadingContainer>
+                <LoadingSpinner />
+                <LoadingText>Carregando reservas...</LoadingText>
+              </LoadingContainer>
+            ) : reservations.length > 0 ? (
+              <ReservationsGrid>
                 {reservations.map((reservation) => (
-                  <TableRow key={reservation._id}>
-                    <TableCell>
-                      {reservation.customerName}
-                      <br />
-                      <small>{reservation.customerEmail}</small>
-                    </TableCell>
-                    <TableCell>{formatDate(reservation.date)}</TableCell>
-                    <TableCell>{formatTime(reservation.time)}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={reservation.status}>
-                        {getStatusText(reservation.status)}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell>
-                      <ButtonGroup>
-                        <Button
-                          type="button"
-                          onClick={() =>
-                            navigate(`/reservations/${reservation._id}`)
-                          }
-                          $variant="secondary"
+                  <ReservationCard key={reservation._id}>
+                    <ReservationHeader>
+                      <ReservationNumber>
+                        <Hash size={16} />#
+                        {getReservationNumber(reservation._id)}
+                      </ReservationNumber>
+                      <ReservationStatus>
+                        <StatusBadge
+                          status={reservation.status as BadgeStatus}
+                          size="sm"
                         >
-                          Detalhes
-                        </Button>
-                        {reservation.status === "pending" &&
-                          user?.role === "admin" && (
-                            <Button
-                              type="button"
-                              onClick={() => handleConfirm(reservation._id)}
-                              $variant="secondary"
-                            >
-                              Confirmar
-                            </Button>
+                          {reservation.status === "confirmed" && (
+                            <CheckCircle size={12} />
                           )}
-                        {reservation.status !== "cancelled" && (
-                          <Button
-                            type="button"
-                            onClick={() => handleCancel(reservation._id)}
-                            $variant="secondary"
-                          >
-                            Cancelar
-                          </Button>
-                        )}
-                        {user?.role === "admin" && (
-                          <Button
-                            type="button"
-                            onClick={() => handleDelete(reservation._id)}
-                            $variant="danger"
-                          >
-                            Excluir
-                          </Button>
-                        )}
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </tbody>
-            </ReservationsTable>
-          ) : (
-            <EmptyMessage>
-              Nenhuma reserva encontrada para esta mesa
-            </EmptyMessage>
-          )}
-        </ReservationsCard>
+                          {reservation.status === "pending" && (
+                            <Clock size={12} />
+                          )}
+                          {reservation.status === "cancelled" && (
+                            <XCircle size={12} />
+                          )}
+                          {getStatusText(reservation.status)}
+                        </StatusBadge>
+                      </ReservationStatus>
+                    </ReservationHeader>
 
-        <ButtonGroup>
-          <Button
-            $variant="secondary"
-            onClick={() => navigate(`/tables/${table._id}/edit`)}
-          >
-            Editar
-          </Button>
-        </ButtonGroup>
-      </Content>
-    </Container>
+                    <ReservationInfo>
+                      <CustomerInfo>
+                        <div>
+                          <User size={16} />
+                          <span>{reservation.customerName}</span>
+                        </div>
+                        <div>
+                          <Mail size={16} />
+                          <span>{reservation.customerEmail}</span>
+                        </div>
+                      </CustomerInfo>
+
+                      <DateTimeInfo>
+                        <div>
+                          <Calendar size={16} />
+                          <span>{formatDate(reservation.date)}</span>
+                        </div>
+                        <div>
+                          <Clock size={16} />
+                          <span>{formatTime(reservation.time)}</span>
+                        </div>
+                      </DateTimeInfo>
+                    </ReservationInfo>
+
+                    <ReservationActions>
+                      <ActionButton
+                        onClick={() =>
+                          navigate(`/reservations/${reservation._id}`)
+                        }
+                        $variant="secondary"
+                      >
+                        <Eye size={16} />
+                        Detalhes
+                      </ActionButton>
+
+                      {reservation.status === "pending" &&
+                        user?.role === "admin" && (
+                          <ActionButton
+                            onClick={() => handleConfirmClick(reservation._id)}
+                            $variant="success"
+                          >
+                            <CheckCircle size={16} />
+                            Confirmar
+                          </ActionButton>
+                        )}
+
+                      {reservation.status !== "cancelled" && (
+                        <ActionButton
+                          onClick={() => handleCancelClick(reservation._id)}
+                          $variant="cancel"
+                        >
+                          <XCircle size={16} />
+                          Cancelar
+                        </ActionButton>
+                      )}
+
+                      {user?.role === "admin" && (
+                        <ActionButton
+                          onClick={() => handleDeleteClick(reservation._id)}
+                          $variant="danger"
+                        >
+                          <Trash2 size={16} />
+                          Excluir
+                        </ActionButton>
+                      )}
+                    </ReservationActions>
+                  </ReservationCard>
+                ))}
+              </ReservationsGrid>
+            ) : (
+              <EmptyReservations>
+                <Calendar size={64} />
+                <div>
+                  <h4>Nenhuma reserva encontrada</h4>
+                  <p>Esta mesa ainda não possui reservas</p>
+                </div>
+              </EmptyReservations>
+            )}
+          </ReservationsSection>
+        </Content>
+
+        <ConfirmationModal
+          isOpen={showDeleteReservationModal}
+          onClose={handleCancelDeleteReservation}
+          onConfirm={handleConfirmDeleteReservation}
+          type="danger"
+          title="Excluir Reserva"
+          message="Tem certeza que deseja excluir esta reserva? Esta ação não pode ser desfeita."
+          confirmText="Sim, Excluir"
+          cancelText="Cancelar"
+          isLoading={isDeleting}
+        />
+
+        <ConfirmationModal
+          isOpen={showDeleteTableModal}
+          onClose={handleCancelDeleteTable}
+          onConfirm={handleConfirmDeleteTable}
+          type="danger"
+          title="Excluir Mesa"
+          message={
+            reservations.length > 0
+              ? `Esta mesa possui ${reservations.length} reserva(s). Ao excluí-la, todas as reservas serão canceladas. Deseja continuar?`
+              : "Tem certeza que deseja excluir esta mesa? Esta ação não pode ser desfeita."
+          }
+          confirmText="Sim, Excluir"
+          cancelText="Cancelar"
+          isLoading={isDeleting}
+        />
+
+        <ConfirmationModal
+          isOpen={showReservationActionModal}
+          onClose={handleCancelReservationAction}
+          onConfirm={handleConfirmReservationAction}
+          type={
+            reservationActionConfig?.type === "confirm" ? "success" : "warning"
+          }
+          title={
+            reservationActionConfig?.type === "confirm"
+              ? "Confirmar Reserva"
+              : "Cancelar Reserva"
+          }
+          message={
+            reservationActionConfig?.type === "confirm"
+              ? "Tem certeza que deseja confirmar esta reserva?"
+              : "Tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita."
+          }
+          confirmText={
+            reservationActionConfig?.type === "confirm"
+              ? "Sim, Confirmar"
+              : "Sim, Cancelar"
+          }
+          cancelText="Não"
+          isLoading={isProcessingReservation}
+        />
+      </LayoutContainer>
+    </PageWrapper>
   );
 }
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-
-  h1 {
-    color: #333;
-  }
-`;
-
-const Content = styled.div`
-  display: grid;
-  gap: 2rem;
-`;
-
-const InfoCard = styled.div`
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  h2 {
-    color: #333;
-    margin-bottom: 1.5rem;
-  }
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const Label = styled.span`
-  font-weight: 500;
-  color: #666;
-  width: 150px;
-`;
-
-const Value = styled.span`
-  color: #333;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const Loading = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
-`;
-
-const NotFound = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
-`;
-
-const ReservationsCard = styled(InfoCard)`
-  margin-top: 2rem;
-`;
-
-const ReservationsTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-`;
-
-const TableHeader = styled.th`
-  padding: 12px;
-  text-align: left;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-  font-weight: 600;
-  color: #495057;
-`;
-
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f8f9fa;
-  }
-
-  &:hover {
-    background-color: #f1f3f5;
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 12px;
-  border-bottom: 1px solid #dee2e6;
-  color: #212529;
-`;
-
-const EmptyMessage = styled.p`
-  text-align: center;
-  color: #666;
-  margin: 2rem 0;
-`;
-
-const DateSelector = styled.select`
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background: white;
-  color: #333;
-  font-size: 0.9rem;
-  min-width: 200px;
-
-  &:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-  }
-`;
-
-const AvailabilityContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 600px;
-`;
-
-const AvailabilityBlock = styled.div`
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1rem;
-  background: #fafafa;
-`;
-
-const AvailabilityDate = styled.div`
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
-  color: #333;
-
-  strong {
-    color: #007bff;
-  }
-`;
-
-const AvailabilityTimes = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-`;
-
-const AvailabilityTime = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-
-  span {
-    font-weight: 500;
-    color: #333;
-    font-size: 0.9rem;
-  }
-`;
-
-const EmptyAvailability = styled.div`
-  text-align: center;
-  color: #666;
-  padding: 2rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  font-style: italic;
-`;
-
-const Legend = styled.div`
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-`;
-
-const LegendItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  span {
-    font-size: 0.875rem;
-    color: #666;
-  }
-`;

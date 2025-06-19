@@ -1,22 +1,78 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import {
+  User,
+  Edit,
+  Key,
+  Save,
+  X,
+  Check,
+  Shield,
+  ShieldAlert,
+  ShieldX,
+  AlertTriangle,
+  Mail,
+  Calendar,
+  Crown,
+  UserCircle,
+  Trash2,
+} from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import {
   profileService,
   type UpdateProfileData,
+  type DeleteAccountData,
 } from "../../services/profileService";
 import { changePasswordSchema } from "../../schemas/auth";
-import { toast } from "react-toastify";
-import styled from "styled-components";
-import { Button } from "../../components/Button";
+import { useToast } from "../../components/Toast";
+import { Button, CancelButton } from "../../components/Button";
 import { Input } from "../../components/Input";
-import { Header } from "../../components/Header";
+import { Container as LayoutContainer } from "../../components/Layout/Container";
+import { ConfirmationModal } from "../../components/Modal/ConfirmationModal";
+import {
+  PageWrapper,
+  Header,
+  HeaderContent,
+  TitleSection,
+  Title,
+  Subtitle,
+  HeaderActions,
+  Content,
+  ProfileCard,
+  ProfileSection,
+  SectionTitle,
+  SectionDescription,
+  FormGrid,
+  FormGroup,
+  InfoGrid,
+  InfoItem,
+  InfoLabel,
+  InfoValue,
+  RoleBadge,
+  FieldNote,
+  PasswordStrength,
+  StrengthBar,
+  StrengthFill,
+  StrengthText,
+  CheckList,
+  CheckItem,
+  ActionButtons,
+  NotFoundContainer,
+  NotFoundIcon,
+  NotFoundContent,
+  NotFoundTitle,
+  NotFoundDescription,
+} from "./styles";
 
 export function Profile() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, signOut } = useAuth();
+  const toast = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -105,18 +161,21 @@ export function Profile() {
         updateData
       );
 
-      // Atualizar dados do usuário no contexto
-      const updatedUser = {
-        ...user,
-        name: updateData.name || user.name,
-        email: updateData.email || user.email,
-        username: updateData.username || user.username,
-      };
-
-      updateUser(updatedUser);
-
-      // Mostrar informações sobre limites se disponível
+      // Atualizar dados do usuário no contexto com os dados retornados pelo servidor
       if (response.user) {
+        const updatedUser = {
+          ...user,
+          ...response.user,
+          // Garantir que os campos básicos estão atualizados
+          name: response.user.name || updateData.name || user.name,
+          email: response.user.email || updateData.email || user.email,
+          username:
+            response.user.username || updateData.username || user.username,
+        };
+
+        updateUser(updatedUser);
+
+        // Mostrar informações sobre limites se disponível
         const { emailChanges, usernameChanges } = response.user;
         if (emailChanges && emailChanges.remaining < 2) {
           toast.info(
@@ -128,6 +187,15 @@ export function Profile() {
             `Você ainda pode alterar o nome de usuário ${usernameChanges.remaining} vez(es)`
           );
         }
+      } else {
+        // Fallback se response.user não existir
+        const updatedUser = {
+          ...user,
+          name: updateData.name || user.name,
+          email: updateData.email || user.email,
+          username: updateData.username || user.username,
+        };
+        updateUser(updatedUser);
       }
 
       toast.success("Perfil atualizado com sucesso!");
@@ -208,407 +276,494 @@ export function Profile() {
     setIsChangingPassword(false);
   };
 
+  const handleDeleteAccount = async () => {
+    if (!user?.username || !deletePassword) return;
+
+    setDeleteLoading(true);
+    try {
+      const data: DeleteAccountData = {
+        currentPassword: deletePassword,
+      };
+
+      await profileService.deleteAccount(user.username, data);
+
+      toast.success("Conta deletada com sucesso!");
+      signOut(); // Fazer logout após deletar
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Erro ao deletar conta");
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setDeletePassword("");
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeletePassword("");
+    setShowDeleteModal(false);
+  };
+
   if (!user) {
     return (
-      <>
-        <Header />
-        <Container>
-          <ErrorMessage>Usuário não encontrado</ErrorMessage>
-        </Container>
-      </>
+      <PageWrapper>
+        <LayoutContainer>
+          <NotFoundContainer>
+            <NotFoundIcon>
+              <UserCircle size={64} />
+            </NotFoundIcon>
+            <NotFoundContent>
+              <NotFoundTitle>Usuário não encontrado</NotFoundTitle>
+              <NotFoundDescription>
+                Não foi possível carregar as informações do seu perfil.
+              </NotFoundDescription>
+            </NotFoundContent>
+          </NotFoundContainer>
+        </LayoutContainer>
+      </PageWrapper>
     );
   }
 
   return (
-    <>
-      <Header />
-      <Container>
-        <ProfileCard>
-          <ProfileHeader>
-            <h1>Meu Perfil</h1>
+    <PageWrapper>
+      <LayoutContainer>
+        <Header>
+          <HeaderContent>
+            <TitleSection>
+              <Title>
+                <User size={32} />
+                Meu Perfil
+              </Title>
+              <Subtitle>
+                Gerencie suas informações pessoais e configurações de conta
+              </Subtitle>
+            </TitleSection>
             {!isEditing && !isChangingPassword && (
-              <HeaderButtonGroup>
-                <Button onClick={() => setIsEditing(true)}>
+              <HeaderActions>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  leftIcon={<Edit size={18} />}
+                >
                   Editar Perfil
                 </Button>
                 <Button
-                  $variant="secondary"
+                  variant="outline"
                   onClick={() => setIsChangingPassword(true)}
+                  leftIcon={<Key size={18} />}
                 >
                   Alterar Senha
                 </Button>
-              </HeaderButtonGroup>
+              </HeaderActions>
             )}
-          </ProfileHeader>
+          </HeaderContent>
+        </Header>
 
+        <Content>
           {isChangingPassword ? (
-            <form onSubmit={handlePasswordSubmit}>
-              <FormGroup>
-                <Input
-                  label="Senha Atual"
-                  name="currentPassword"
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={handlePasswordInputChange}
-                  required
-                />
-              </FormGroup>
+            <ProfileCard>
+              <ProfileSection>
+                <SectionTitle>
+                  <Key size={20} />
+                  Alterar Senha
+                </SectionTitle>
+                <SectionDescription>
+                  Crie uma nova senha segura para sua conta
+                </SectionDescription>
 
-              <FormGroup>
-                <Input
-                  label="Nova Senha"
-                  name="newPassword"
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={handlePasswordInputChange}
-                  required
-                />
-                {passwordData.newPassword && (
-                  <PasswordStrength>
-                    {(() => {
-                      const { checks, score } = checkPasswordStrength(
-                        passwordData.newPassword
-                      );
-                      const strengthLevel =
-                        score === 5 ? "strong" : score >= 3 ? "medium" : "weak";
+                <form onSubmit={handlePasswordSubmit}>
+                  <FormGrid>
+                    <FormGroup>
+                      <Input
+                        label="Senha Atual"
+                        name="currentPassword"
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={handlePasswordInputChange}
+                        required
+                        placeholder="Digite sua senha atual"
+                      />
+                    </FormGroup>
 
-                      return (
-                        <>
-                          <StrengthBar level={strengthLevel}>
-                            <StrengthFill level={strengthLevel} score={score} />
-                          </StrengthBar>
-                          <StrengthText level={strengthLevel}>
-                            {score === 5
-                              ? "🟢 Senha forte"
-                              : score >= 3
-                              ? "🟡 Senha média"
-                              : "🔴 Senha fraca"}
-                          </StrengthText>
-                          <CheckList>
-                            <CheckItem valid={checks.length}>
-                              {checks.length ? "✅" : "❌"} Mínimo 8 caracteres
-                            </CheckItem>
-                            <CheckItem valid={checks.uppercase}>
-                              {checks.uppercase ? "✅" : "❌"} Letra maiúscula
-                            </CheckItem>
-                            <CheckItem valid={checks.lowercase}>
-                              {checks.lowercase ? "✅" : "❌"} Letra minúscula
-                            </CheckItem>
-                            <CheckItem valid={checks.number}>
-                              {checks.number ? "✅" : "❌"} Número
-                            </CheckItem>
-                            <CheckItem valid={checks.special}>
-                              {checks.special ? "✅" : "❌"} Caractere especial
-                            </CheckItem>
-                          </CheckList>
-                        </>
-                      );
-                    })()}
-                  </PasswordStrength>
-                )}
-              </FormGroup>
+                    <FormGroup>
+                      <Input
+                        label="Nova Senha"
+                        name="newPassword"
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={handlePasswordInputChange}
+                        required
+                        placeholder="Digite sua nova senha"
+                      />
+                      {passwordData.newPassword && (
+                        <PasswordStrength>
+                          {(() => {
+                            const { checks, score } = checkPasswordStrength(
+                              passwordData.newPassword
+                            );
+                            const strengthLevel =
+                              score === 5
+                                ? "strong"
+                                : score >= 3
+                                ? "medium"
+                                : "weak";
 
-              <FormGroup>
-                <Input
-                  label="Confirmar Nova Senha"
-                  name="confirmNewPassword"
-                  type="password"
-                  value={passwordData.confirmNewPassword}
-                  onChange={handlePasswordInputChange}
-                  required
-                />
-              </FormGroup>
+                            return (
+                              <>
+                                <StrengthBar level={strengthLevel}>
+                                  <StrengthFill
+                                    level={strengthLevel}
+                                    score={score}
+                                  />
+                                </StrengthBar>
+                                <StrengthText level={strengthLevel}>
+                                  {score === 5 ? (
+                                    <>
+                                      <Shield size={16} /> Senha forte
+                                    </>
+                                  ) : score >= 3 ? (
+                                    <>
+                                      <ShieldAlert size={16} /> Senha média
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ShieldX size={16} /> Senha fraca
+                                    </>
+                                  )}
+                                </StrengthText>
+                                <CheckList>
+                                  <CheckItem valid={checks.length}>
+                                    {checks.length ? (
+                                      <Check size={12} />
+                                    ) : (
+                                      <X size={12} />
+                                    )}{" "}
+                                    Mínimo 8 caracteres
+                                  </CheckItem>
+                                  <CheckItem valid={checks.uppercase}>
+                                    {checks.uppercase ? (
+                                      <Check size={12} />
+                                    ) : (
+                                      <X size={12} />
+                                    )}{" "}
+                                    Letra maiúscula
+                                  </CheckItem>
+                                  <CheckItem valid={checks.lowercase}>
+                                    {checks.lowercase ? (
+                                      <Check size={12} />
+                                    ) : (
+                                      <X size={12} />
+                                    )}{" "}
+                                    Letra minúscula
+                                  </CheckItem>
+                                  <CheckItem valid={checks.number}>
+                                    {checks.number ? (
+                                      <Check size={12} />
+                                    ) : (
+                                      <X size={12} />
+                                    )}{" "}
+                                    Número
+                                  </CheckItem>
+                                  <CheckItem valid={checks.special}>
+                                    {checks.special ? (
+                                      <Check size={12} />
+                                    ) : (
+                                      <X size={12} />
+                                    )}{" "}
+                                    Caractere especial
+                                  </CheckItem>
+                                </CheckList>
+                              </>
+                            );
+                          })()}
+                        </PasswordStrength>
+                      )}
+                    </FormGroup>
 
-              <ButtonGroup>
-                <Button type="submit" disabled={passwordLoading}>
-                  {passwordLoading ? "Alterando..." : "Alterar Senha"}
-                </Button>
-                <Button
-                  type="button"
-                  $variant="secondary"
-                  onClick={handlePasswordCancel}
-                >
-                  Cancelar
-                </Button>
-              </ButtonGroup>
-            </form>
+                    <FormGroup>
+                      <Input
+                        label="Confirmar Nova Senha"
+                        name="confirmNewPassword"
+                        type="password"
+                        value={passwordData.confirmNewPassword}
+                        onChange={handlePasswordInputChange}
+                        required
+                        placeholder="Confirme sua nova senha"
+                      />
+                    </FormGroup>
+                  </FormGrid>
+
+                  <ActionButtons>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={passwordLoading}
+                      leftIcon={
+                        passwordLoading ? undefined : <Save size={18} />
+                      }
+                    >
+                      {passwordLoading ? "Alterando..." : "Alterar Senha"}
+                    </Button>
+                    <CancelButton
+                      type="button"
+                      onClick={handlePasswordCancel}
+                      disabled={passwordLoading}
+                      leftIcon={<X size={18} />}
+                    >
+                      Cancelar
+                    </CancelButton>
+                  </ActionButtons>
+                </form>
+              </ProfileSection>
+            </ProfileCard>
           ) : isEditing ? (
-            <form onSubmit={handleSubmit}>
-              <FormGroup>
-                <Input
-                  label="Nome"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
+            <ProfileCard>
+              <ProfileSection>
+                <SectionTitle>
+                  <Edit size={20} />
+                  Editar Perfil
+                </SectionTitle>
+                <SectionDescription>
+                  Atualize suas informações pessoais
+                </SectionDescription>
 
-              <FormGroup>
-                <Input
-                  label="Nome de Usuário"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  required
-                  disabled={user.usernameChanges?.remaining === 0}
-                />
-                <FieldNote>
-                  {user.usernameChanges?.remaining === 0 ? (
-                    <>
-                      🚫 Nome de usuário bloqueado.
-                      {user.usernameChanges?.blockedUntil &&
-                        ` Disponível em ${new Date(
-                          user.usernameChanges.blockedUntil
-                        ).toLocaleDateString("pt-BR")}.`}
-                    </>
-                  ) : (
-                    <>
-                      ⚠️ Você pode alterar o nome de usuário{" "}
-                      {user.usernameChanges?.remaining || 2} vez(es).
-                    </>
-                  )}
-                </FieldNote>
-              </FormGroup>
+                <form onSubmit={handleSubmit}>
+                  <FormGrid>
+                    <FormGroup>
+                      <Input
+                        label="Nome"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Seu nome completo"
+                      />
+                    </FormGroup>
 
-              <FormGroup>
-                <Input
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  disabled={user.emailChanges?.remaining === 0}
-                />
-                <FieldNote>
-                  {user.emailChanges?.remaining === 0 ? (
-                    <>
-                      🚫 Email bloqueado.
-                      {user.emailChanges?.blockedUntil &&
-                        ` Disponível em ${new Date(
-                          user.emailChanges.blockedUntil
-                        ).toLocaleDateString("pt-BR")}.`}
-                    </>
-                  ) : (
-                    <>
-                      ⚠️ Você pode alterar o email{" "}
-                      {user.emailChanges?.remaining || 2} vez(es).
-                    </>
-                  )}
-                </FieldNote>
-              </FormGroup>
+                    <FormGroup>
+                      <Input
+                        label="Nome de Usuário"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        required
+                        disabled={user.usernameChanges?.remaining === 0}
+                        placeholder="Seu nome de usuário"
+                      />
+                      <FieldNote>
+                        {user.usernameChanges?.remaining === 0 ? (
+                          <>
+                            <X size={16} /> Nome de usuário bloqueado.
+                            {user.usernameChanges?.blockedUntil &&
+                              ` Disponível em ${new Date(
+                                user.usernameChanges.blockedUntil
+                              ).toLocaleDateString("pt-BR")}.`}
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle size={16} /> Você pode alterar o nome
+                            de usuário {user.usernameChanges?.remaining ?? 2}{" "}
+                            vez(es).
+                          </>
+                        )}
+                      </FieldNote>
+                    </FormGroup>
 
-              {(formData.email !== user.email ||
-                formData.username !== user.username) && (
-                <FormGroup>
-                  <Input
-                    label="Senha Atual"
-                    name="currentPassword"
-                    type="password"
-                    value={formData.currentPassword}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Digite sua senha atual para confirmar as alterações"
-                  />
-                  <FieldNote>
-                    🔒 Senha obrigatória para alterar email ou nome de usuário
-                  </FieldNote>
-                </FormGroup>
-              )}
+                    <FormGroup>
+                      <Input
+                        label="Email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        disabled={user.emailChanges?.remaining === 0}
+                        placeholder="seu@email.com"
+                      />
+                      <FieldNote>
+                        {user.emailChanges?.remaining === 0 ? (
+                          <>
+                            <X size={16} /> Email bloqueado.
+                            {user.emailChanges?.blockedUntil &&
+                              ` Disponível em ${new Date(
+                                user.emailChanges.blockedUntil
+                              ).toLocaleDateString("pt-BR")}.`}
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle size={16} /> Você pode alterar o
+                            email {user.emailChanges?.remaining ?? 2} vez(es).
+                          </>
+                        )}
+                      </FieldNote>
+                    </FormGroup>
 
-              <ButtonGroup>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Salvando..." : "Salvar Alterações"}
-                </Button>
-                <Button
-                  type="button"
-                  $variant="secondary"
-                  onClick={handleCancel}
-                >
-                  Cancelar
-                </Button>
-              </ButtonGroup>
-            </form>
+                    {(formData.email !== user.email ||
+                      formData.username !== user.username) && (
+                      <FormGroup style={{ gridColumn: "1 / -1" }}>
+                        <Input
+                          label="Senha Atual"
+                          name="currentPassword"
+                          type="password"
+                          value={formData.currentPassword}
+                          onChange={handleInputChange}
+                          required
+                          placeholder="Digite sua senha atual para confirmar as alterações"
+                        />
+                        <FieldNote>
+                          <Key size={16} /> Senha obrigatória para alterar email
+                          ou nome de usuário
+                        </FieldNote>
+                      </FormGroup>
+                    )}
+                  </FormGrid>
+
+                  <ActionButtons>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={loading}
+                      leftIcon={loading ? undefined : <Save size={18} />}
+                    >
+                      {loading ? "Salvando..." : "Salvar Alterações"}
+                    </Button>
+                    <CancelButton
+                      type="button"
+                      onClick={handleCancel}
+                      disabled={loading}
+                      leftIcon={<X size={18} />}
+                    >
+                      Cancelar
+                    </CancelButton>
+                  </ActionButtons>
+                </form>
+              </ProfileSection>
+            </ProfileCard>
           ) : (
-            <ProfileInfo>
-              <InfoItem>
-                <InfoLabel>Nome:</InfoLabel>
-                <InfoValue>{user.name}</InfoValue>
-              </InfoItem>
+            <ProfileCard>
+              <ProfileSection>
+                <SectionTitle>
+                  <UserCircle size={20} />
+                  Informações do Perfil
+                </SectionTitle>
+                <SectionDescription>
+                  Suas informações pessoais e configurações de conta
+                </SectionDescription>
 
-              <InfoItem>
-                <InfoLabel>Nome de usuário:</InfoLabel>
-                <InfoValue>{user.username}</InfoValue>
-              </InfoItem>
+                <InfoGrid>
+                  <InfoItem>
+                    <InfoLabel>
+                      <User size={16} />
+                      Nome
+                    </InfoLabel>
+                    <InfoValue>{user.name}</InfoValue>
+                  </InfoItem>
 
-              <InfoItem>
-                <InfoLabel>Email:</InfoLabel>
-                <InfoValue>{user.email}</InfoValue>
-              </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>
+                      <UserCircle size={16} />
+                      Nome de usuário
+                    </InfoLabel>
+                    <InfoValue>@{user.username}</InfoValue>
+                  </InfoItem>
 
-              <InfoItem>
-                <InfoLabel>Tipo de conta:</InfoLabel>
-                <InfoValue>
-                  <RoleBadge role={user.role}>
-                    {user.role === "admin" ? "Administrador" : "Cliente"}
-                  </RoleBadge>
-                </InfoValue>
-              </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>
+                      <Mail size={16} />
+                      Email
+                    </InfoLabel>
+                    <InfoValue>{user.email}</InfoValue>
+                  </InfoItem>
 
-              <InfoItem>
-                <InfoLabel>Membro desde:</InfoLabel>
-                <InfoValue>
-                  {new Date(user.createdAt).toLocaleDateString("pt-BR")}
-                </InfoValue>
-              </InfoItem>
-            </ProfileInfo>
+                  <InfoItem>
+                    <InfoLabel>
+                      <Crown size={16} />
+                      Tipo de conta
+                    </InfoLabel>
+                    <InfoValue>
+                      <RoleBadge $role={user.role}>
+                        {user.role === "admin" ? "Administrador" : "Cliente"}
+                      </RoleBadge>
+                    </InfoValue>
+                  </InfoItem>
+
+                  <InfoItem style={{ gridColumn: "1 / -1" }}>
+                    <InfoLabel>
+                      <Calendar size={16} />
+                      Membro desde
+                    </InfoLabel>
+                    <InfoValue>
+                      {new Date(user.createdAt).toLocaleDateString("pt-BR", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </InfoValue>
+                  </InfoItem>
+                </InfoGrid>
+              </ProfileSection>
+            </ProfileCard>
           )}
-        </ProfileCard>
-      </Container>
-    </>
+
+          {/* Seção de Deletar Conta */}
+          {!isEditing && !isChangingPassword && (
+            <ProfileCard>
+              <ProfileSection>
+                <SectionTitle style={{ color: "#dc3545" }}>
+                  <Trash2 size={20} />
+                  Deletar Conta
+                </SectionTitle>
+                <SectionDescription>
+                  Esta ação é irreversível. Todas as suas reservas serão
+                  canceladas e seus dados serão permanentemente excluídos.
+                </SectionDescription>
+
+                <ActionButtons>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteModal(true)}
+                    leftIcon={<Trash2 size={18} />}
+                    style={{
+                      borderColor: "#dc3545",
+                      color: "#dc3545",
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    Excluir Conta
+                  </Button>
+                </ActionButtons>
+              </ProfileSection>
+            </ProfileCard>
+          )}
+        </Content>
+
+        {/* Modal de Confirmação para Deletar Conta */}
+        <ConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteAccount}
+          type="danger"
+          title="Excluir Conta Permanentemente"
+          message={
+            <div>
+              <p style={{ margin: "0 0 16px 0" }}>
+                Esta ação não pode ser desfeita. Todas as suas reservas serão
+                canceladas e seus dados serão permanentemente excluídos.
+              </p>
+              <Input
+                label="Digite sua senha para confirmar"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Sua senha atual"
+                required
+              />
+            </div>
+          }
+          confirmText="Sim, Excluir Conta"
+          cancelText="Cancelar"
+          isLoading={deleteLoading}
+        />
+      </LayoutContainer>
+    </PageWrapper>
   );
 }
-
-const Container = styled.div`
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 0 2rem;
-`;
-
-const ProfileCard = styled.div`
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-`;
-
-const ProfileHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
-
-  h1 {
-    color: #333;
-    margin: 0;
-  }
-`;
-
-const ProfileInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-`;
-
-const InfoLabel = styled.span`
-  font-weight: 500;
-  color: #666;
-  min-width: 140px;
-`;
-
-const InfoValue = styled.span`
-  color: #333;
-`;
-
-const RoleBadge = styled.span<{ role: string }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  background: ${(props) => (props.role === "admin" ? "#e3f2fd" : "#f3e5f5")};
-  color: ${(props) => (props.role === "admin" ? "#1565c0" : "#7b1fa2")};
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-`;
-
-const HeaderButtonGroup = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  color: #d32f2f;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const FieldNote = styled.div`
-  font-size: 0.875rem;
-  color: #666;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #f5f5f5;
-  border-radius: 4px;
-  border-left: 3px solid #ff9800;
-`;
-
-const PasswordStrength = styled.div`
-  margin-top: 0.5rem;
-`;
-
-const StrengthBar = styled.div<{ level: string }>`
-  width: 100%;
-  height: 4px;
-  background: #e0e0e0;
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-`;
-
-const StrengthFill = styled.div<{ level: string; score: number }>`
-  height: 100%;
-  width: ${(props) => (props.score / 5) * 100}%;
-  background: ${(props) =>
-    props.level === "strong"
-      ? "#4caf50"
-      : props.level === "medium"
-      ? "#ff9800"
-      : "#f44336"};
-  transition: all 0.3s ease;
-`;
-
-const StrengthText = styled.div<{ level: string }>`
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: ${(props) =>
-    props.level === "strong"
-      ? "#4caf50"
-      : props.level === "medium"
-      ? "#ff9800"
-      : "#f44336"};
-`;
-
-const CheckList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-`;
-
-const CheckItem = styled.div<{ valid: boolean }>`
-  font-size: 0.75rem;
-  color: ${(props) => (props.valid ? "#4caf50" : "#666")};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;

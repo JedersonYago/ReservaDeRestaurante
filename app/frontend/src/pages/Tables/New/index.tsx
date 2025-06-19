@@ -1,13 +1,27 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useToast } from "../../../components/Toast";
 import { format } from "date-fns";
 import { eachDayOfInterval } from "date-fns/eachDayOfInterval";
 import { parseISO } from "date-fns/parseISO";
-import { Container, Title } from "../styles";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  AlertTriangle,
+  Calendar,
+  Clock,
+  Users,
+  Settings2,
+  CheckCircle,
+  Save,
+  Utensils,
+} from "lucide-react";
+
 import { Button } from "../../../components/Button";
+import { CancelButton } from "../../../components/Button/CancelButton";
 import { Input } from "../../../components/Input";
-import { Select } from "../../../components/Select";
+import { Container as LayoutContainer } from "../../../components/Layout/Container";
 import { useTables } from "../../../hooks/useTables";
 import { useConfig } from "../../../hooks/useConfig";
 import {
@@ -21,6 +35,38 @@ import {
   validateMultipleTimeIntervals,
 } from "../../../utils/timeValidation";
 
+import {
+  PageWrapper,
+  Header,
+  HeaderContent,
+  TitleSection,
+  Title,
+  Subtitle,
+  HeaderActions,
+  Content,
+  FormSection,
+  SectionTitle,
+  SectionDescription,
+  FormGrid,
+  FormGroup,
+  ErrorMessage,
+  AvailabilitySection,
+  AvailabilityModeSelector,
+  ModeOption,
+  AvailabilityBlock,
+  BlockHeader,
+  BlockActions,
+  BlockContent,
+  TimeInputContainer,
+  TimeSlot,
+  TimeSlotActions,
+  WarningBadge,
+  EmptyTimeSlots,
+  AddBlockButton,
+  AddActionButton,
+  ActionButtons,
+} from "./styles";
+
 type TimeInterval = {
   startTime: string;
   endTime: string;
@@ -33,8 +79,12 @@ type AvailabilityItem = {
 
 type AvailabilityMode = "by_period" | "custom";
 
+const todayStr = getTodayString();
+const currentTimeStr = getCurrentTimeString();
+
 export function NewTable() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { createTable, tables } = useTables();
   const { config } = useConfig();
 
@@ -100,8 +150,6 @@ export function NewTable() {
       return;
     }
 
-    // Validação de horário de funcionamento é feita individualmente na exibição
-
     setTimeIntervals([
       ...timeIntervals,
       { startTime: currentStartTime, endTime: currentEndTime },
@@ -149,6 +197,7 @@ export function NewTable() {
       toast.error("Esse horário já foi adicionado para essa data");
       return;
     }
+
     const existing = customAvailability.find(
       (item) => item.date === customDate
     );
@@ -161,48 +210,52 @@ export function NewTable() {
       toast.error("Horário sobreposto para essa data");
       return;
     }
-    // Validação de horário de funcionamento é feita individualmente na exibição
 
-    const newInterval = {
-      startTime: currentStartTime,
-      endTime: currentEndTime,
-    };
-    setCustomAvailability((prev) => {
-      const existingDate = prev.find((item) => item.date === customDate);
-      if (existingDate) {
-        return prev.map((item) =>
+    if (existing) {
+      setCustomAvailability((prev) =>
+        prev.map((item) =>
           item.date === customDate
-            ? { ...item, intervals: [...item.intervals, newInterval] }
+            ? {
+                ...item,
+                intervals: [
+                  ...item.intervals,
+                  { startTime: currentStartTime, endTime: currentEndTime },
+                ],
+              }
             : item
-        );
-      }
-      return [...prev, { date: customDate, intervals: [newInterval] }];
-    });
+        )
+      );
+    } else {
+      setCustomAvailability((prev) => [
+        ...prev,
+        {
+          date: customDate,
+          intervals: [{ startTime: currentStartTime, endTime: currentEndTime }],
+        },
+      ]);
+    }
     setCurrentStartTime("");
     setCurrentEndTime("");
-    setTimeout(() => startTimeRef.current?.focus(), 100);
   };
 
   const handleRemoveCustomAvailability = (
     date: string,
     intervalIndex: number
   ) => {
-    setCustomAvailability(
-      (prev) =>
-        prev
-          .map((item) => {
-            if (item.date === date) {
-              const newIntervals = item.intervals.filter(
-                (_, i) => i !== intervalIndex
-              );
-              return newIntervals.length > 0
-                ? { ...item, intervals: newIntervals }
-                : null;
-            }
-            return item;
-          })
-          .filter(Boolean) as AvailabilityItem[]
-    );
+    setCustomAvailability((prev) => {
+      const updated = prev
+        .map((item) => {
+          if (item.date === date) {
+            const newIntervals = item.intervals.filter(
+              (_, i) => i !== intervalIndex
+            );
+            return { ...item, intervals: newIntervals };
+          }
+          return item;
+        })
+        .filter((item) => item.intervals.length > 0);
+      return updated;
+    });
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,11 +282,6 @@ export function NewTable() {
     }
   };
 
-  // Obter data e hora atuais para validações
-  const todayStr = getTodayString();
-  const currentTimeStr = getCurrentTimeString();
-
-  // Função para verificar se um horário específico está fora do funcionamento
   const getBusinessHoursWarningForInterval = (
     startTime: string,
     endTime: string
@@ -249,41 +297,51 @@ export function NewTable() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !capacity) {
-      toast.error("Preencha todos os campos obrigatórios");
+      toast.error("Por favor, preencha todos os campos obrigatórios");
       return;
     }
-    let availability: AvailabilityItem[] = [];
+    if (nameError || capacityError || dateError || timeError) {
+      toast.error("Corrija os erros antes de salvar");
+      return;
+    }
+
+    let availability: { date: string; times: string[] }[] = [];
+
     if (availabilityMode === "by_period") {
       if (!startDate || !endDate || timeIntervals.length === 0) {
         toast.error("Preencha todos os campos de disponibilidade");
         return;
       }
+
       const dates = eachDayOfInterval({
         start: parseISO(startDate),
         end: parseISO(endDate),
       });
-      availability = dates.map((date: Date) => ({
+      availability = dates.map((date) => ({
         date: format(date, "yyyy-MM-dd"),
-        intervals: timeIntervals,
+        times: timeIntervals.map(
+          (interval) => `${interval.startTime}-${interval.endTime}`
+        ),
       }));
     } else {
       if (customAvailability.length === 0) {
         toast.error("Adicione pelo menos uma disponibilidade");
         return;
       }
-      availability = customAvailability;
+      availability = customAvailability.map((item) => ({
+        date: item.date,
+        times: item.intervals.map(
+          (interval) => `${interval.startTime}-${interval.endTime}`
+        ),
+      }));
     }
+
     setIsSaving(true);
     try {
       await createTable({
         name,
         capacity: parseInt(capacity),
-        availability: availability.map(({ date, intervals }) => ({
-          date,
-          times: intervals.map(
-            (interval) => `${interval.startTime}-${interval.endTime}`
-          ),
-        })),
+        availability,
       });
       setName("");
       setCapacity("");
@@ -303,279 +361,346 @@ export function NewTable() {
   };
 
   return (
-    <Container>
-      <Title>Nova Mesa</Title>
-      <Button $variant="secondary" onClick={() => navigate("/tables")}>
-        Voltar
-      </Button>
-
-      <form onSubmit={handleSubmit}>
-        <Input
-          label="Nome da Mesa"
-          value={name}
-          onChange={handleNameChange}
-          required
-          maxLength={20}
-        />
-        {nameError && (
-          <div style={{ color: "red", marginTop: 4 }}>{nameError}</div>
-        )}
-
-        <Input
-          label="Capacidade"
-          type="number"
-          value={capacity}
-          onChange={handleCapacityChange}
-          required
-          min={1}
-        />
-        {capacityError && (
-          <div style={{ color: "red", marginTop: 4 }}>{capacityError}</div>
-        )}
-
-        <div style={{ margin: "2rem 0" }}>
-          <h3>Disponibilidade</h3>
-
-          <Select
-            label="Modo de Disponibilidade"
-            value={availabilityMode}
-            onChange={(e) =>
-              setAvailabilityMode(e.target.value as AvailabilityMode)
-            }
-          >
-            <option value="by_period">Por Período</option>
-            <option value="custom">Personalizado</option>
-          </Select>
-
-          {availabilityMode === "by_period" ? (
-            <div style={{ marginTop: "1rem" }}>
-              <Input
-                label="Data Inicial"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-                min={todayStr}
-              />
-
-              <Input
-                label="Data Final"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-                min={startDate || todayStr}
-              />
-              {dateError && (
-                <div style={{ color: "red", marginTop: 4 }}>{dateError}</div>
-              )}
-
-              <div style={{ marginTop: "1rem" }}>
-                <h4>Intervalos de Horário</h4>
-                <div
-                  style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}
-                >
-                  <Input
-                    label="Horário Inicial"
-                    type="time"
-                    value={currentStartTime}
-                    onChange={(e) => setCurrentStartTime(e.target.value)}
-                    min={startDate === todayStr ? currentTimeStr : undefined}
-                  />
-                  <Input
-                    label="Horário Final"
-                    type="time"
-                    value={currentEndTime}
-                    onChange={(e) => setCurrentEndTime(e.target.value)}
-                    min={
-                      currentStartTime ||
-                      (startDate === todayStr ? currentTimeStr : undefined)
-                    }
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddTimeInterval}
-                    style={{ marginTop: "1.5rem" }}
-                  >
-                    Adicionar
-                  </Button>
-                </div>
-                {timeError && (
-                  <div style={{ color: "red", marginTop: 4 }}>{timeError}</div>
-                )}
-
-                {timeIntervals.length === 0 && (
-                  <div style={{ color: "#888" }}>
-                    Nenhum intervalo adicionado.
-                  </div>
-                )}
-
-                {timeIntervals.map((interval, index) => {
-                  const warning = getBusinessHoursWarningForInterval(
-                    interval.startTime,
-                    interval.endTime
-                  );
-                  return (
-                    <div
-                      key={index}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "1rem",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
-                      <span>
-                        {interval.startTime} - {interval.endTime}
-                      </span>
-                      <Button
-                        type="button"
-                        $variant="danger"
-                        onClick={() => handleRemoveTimeInterval(index)}
-                      >
-                        Remover
-                      </Button>
-                      {warning && (
-                        <span
-                          style={{
-                            color: "#ff9800",
-                            fontSize: "0.75rem",
-                            fontWeight: "500",
-                          }}
-                          title="Este horário está fora do funcionamento. Clientes não poderão fazer reservas."
-                        >
-                          ⚠️ Fora do funcionamento
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <div style={{ marginTop: "1rem" }}>
-              <Input
-                label="Data"
-                type="date"
-                value={customDate}
-                onChange={(e) => setCustomDate(e.target.value)}
-                required
-                min={todayStr}
-              />
-              {dateError && (
-                <div style={{ color: "red", marginTop: 4 }}>{dateError}</div>
-              )}
-
-              <div
-                style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}
+    <PageWrapper>
+      <LayoutContainer>
+        <Header>
+          <HeaderContent>
+            <TitleSection>
+              <Title>
+                <Utensils size={32} />
+                Nova Mesa
+              </Title>
+              <Subtitle>
+                Crie uma nova mesa e configure sua disponibilidade
+              </Subtitle>
+            </TitleSection>
+            <HeaderActions>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/tables")}
+                leftIcon={<ArrowLeft size={16} />}
               >
-                <Input
-                  label="Horário Inicial"
-                  type="time"
-                  value={currentStartTime}
-                  onChange={(e) => setCurrentStartTime(e.target.value)}
-                  min={customDate === todayStr ? currentTimeStr : undefined}
-                />
-                <Input
-                  label="Horário Final"
-                  type="time"
-                  value={currentEndTime}
-                  onChange={(e) => setCurrentEndTime(e.target.value)}
-                  min={
-                    currentStartTime ||
-                    (customDate === todayStr ? currentTimeStr : undefined)
-                  }
-                />
-                <Button
-                  type="button"
-                  onClick={handleAddCustomAvailability}
-                  style={{ marginTop: "1.5rem" }}
-                >
-                  Adicionar
-                </Button>
-              </div>
-              {timeError && (
-                <div style={{ color: "red", marginTop: 4 }}>{timeError}</div>
-              )}
+                Voltar
+              </Button>
+            </HeaderActions>
+          </HeaderContent>
+        </Header>
 
-              {customAvailability.length === 0 && (
-                <div style={{ color: "#888" }}>
-                  Nenhuma disponibilidade adicionada.
-                </div>
-              )}
+        <Content onSubmit={handleSubmit}>
+          <FormSection>
+            <SectionTitle>
+              <Users size={20} />
+              Informações Básicas
+            </SectionTitle>
+            <SectionDescription>
+              Defina o nome e capacidade da mesa
+            </SectionDescription>
 
-              {customAvailability.map((item, dateIndex) => (
-                <div key={dateIndex} style={{ marginBottom: "1rem" }}>
-                  <h4>Data: {item.date}</h4>
-                  {item.intervals.length === 0 && (
-                    <div style={{ color: "#888" }}>
-                      Nenhum horário adicionado.
+            <FormGrid>
+              <FormGroup>
+                <Input
+                  label="Nome da Mesa"
+                  value={name}
+                  onChange={handleNameChange}
+                  required
+                  maxLength={20}
+                  placeholder="Ex: Mesa 01, Mesa VIP, etc."
+                />
+                {nameError && <ErrorMessage>{nameError}</ErrorMessage>}
+              </FormGroup>
+
+              <FormGroup>
+                <Input
+                  label="Capacidade"
+                  type="number"
+                  value={capacity}
+                  onChange={handleCapacityChange}
+                  required
+                  min={1}
+                  placeholder="Número de pessoas"
+                />
+                {capacityError && <ErrorMessage>{capacityError}</ErrorMessage>}
+              </FormGroup>
+            </FormGrid>
+          </FormSection>
+
+          <FormSection>
+            <SectionTitle>
+              <Calendar size={20} />
+              Disponibilidade
+            </SectionTitle>
+            <SectionDescription>
+              Configure quando a mesa estará disponível para reservas
+            </SectionDescription>
+
+            <AvailabilityModeSelector>
+              <ModeOption
+                type="button"
+                $active={availabilityMode === "by_period"}
+                onClick={() => setAvailabilityMode("by_period")}
+              >
+                <Settings2 size={16} />
+                Por Período
+              </ModeOption>
+              <ModeOption
+                type="button"
+                $active={availabilityMode === "custom"}
+                onClick={() => setAvailabilityMode("custom")}
+              >
+                <Calendar size={16} />
+                Personalizado
+              </ModeOption>
+            </AvailabilityModeSelector>
+
+            {availabilityMode === "by_period" ? (
+              <>
+                <FormGrid>
+                  <FormGroup>
+                    <Input
+                      label="Data Inicial"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      required
+                      min={todayStr}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Input
+                      label="Data Final"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      required
+                      min={startDate || todayStr}
+                    />
+                    {dateError && <ErrorMessage>{dateError}</ErrorMessage>}
+                  </FormGroup>
+                </FormGrid>
+
+                <TimeInputContainer>
+                  <SectionTitle>
+                    <Clock size={18} />
+                    Horários Disponíveis
+                  </SectionTitle>
+
+                  <TimeSlot>
+                    <Input
+                      label="Horário Inicial"
+                      type="time"
+                      value={currentStartTime}
+                      onChange={(e) => setCurrentStartTime(e.target.value)}
+                      min={startDate === todayStr ? currentTimeStr : undefined}
+                    />
+
+                    <Input
+                      label="Horário Final"
+                      type="time"
+                      value={currentEndTime}
+                      onChange={(e) => setCurrentEndTime(e.target.value)}
+                      min={
+                        currentStartTime ||
+                        (startDate === todayStr ? currentTimeStr : undefined)
+                      }
+                    />
+                  </TimeSlot>
+
+                  <TimeSlotActions>
+                    <AddActionButton
+                      type="button"
+                      onClick={handleAddTimeInterval}
+                    >
+                      <Plus size={14} />
+                      Adicionar Horário
+                    </AddActionButton>
+                  </TimeSlotActions>
+
+                  {timeError && <ErrorMessage>{timeError}</ErrorMessage>}
+
+                  {timeIntervals.length === 0 ? (
+                    <EmptyTimeSlots>
+                      <Clock size={24} />
+                      Nenhum horário adicionado
+                    </EmptyTimeSlots>
+                  ) : (
+                    <div>
+                      {timeIntervals.map((interval, index) => {
+                        const hasWarning = getBusinessHoursWarningForInterval(
+                          interval.startTime,
+                          interval.endTime
+                        );
+
+                        return (
+                          <AvailabilityBlock key={index}>
+                            <BlockHeader>
+                              <div>
+                                <Clock size={16} />
+                                <span>
+                                  {interval.startTime} - {interval.endTime}
+                                  {hasWarning && (
+                                    <WarningBadge>
+                                      <AlertTriangle size={12} />
+                                      Fora do funcionamento
+                                    </WarningBadge>
+                                  )}
+                                </span>
+                              </div>
+                              <BlockActions>
+                                <Button
+                                  type="button"
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleRemoveTimeInterval(index)
+                                  }
+                                >
+                                  <Trash2 size={12} />
+                                </Button>
+                              </BlockActions>
+                            </BlockHeader>
+                          </AvailabilityBlock>
+                        );
+                      })}
                     </div>
                   )}
-                  {item.intervals.map((interval, intervalIndex) => {
-                    const warning = getBusinessHoursWarningForInterval(
-                      interval.startTime,
-                      interval.endTime
-                    );
-                    return (
-                      <div
-                        key={intervalIndex}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "1rem",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        <span>
-                          {interval.startTime} - {interval.endTime}
-                        </span>
-                        <Button
-                          type="button"
-                          $variant="danger"
-                          onClick={() =>
-                            handleRemoveCustomAvailability(
-                              item.date,
-                              intervalIndex
-                            )
-                          }
-                        >
-                          Remover
-                        </Button>
-                        {warning && (
-                          <span
-                            style={{
-                              color: "#ff9800",
-                              fontSize: "0.75rem",
-                              fontWeight: "500",
-                            }}
-                            title="Este horário está fora do funcionamento. Clientes não poderão fazer reservas."
-                          >
-                            ⚠️ Fora do funcionamento
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                </TimeInputContainer>
+              </>
+            ) : (
+              <>
+                <FormGrid>
+                  <FormGroup>
+                    <Input
+                      label="Data"
+                      type="date"
+                      value={customDate}
+                      onChange={(e) => setCustomDate(e.target.value)}
+                      required
+                      min={todayStr}
+                    />
+                    {dateError && <ErrorMessage>{dateError}</ErrorMessage>}
+                  </FormGroup>
+                </FormGrid>
 
-        <Button
-          type="submit"
-          disabled={
-            isSaving ||
-            !!nameError ||
-            !!capacityError ||
-            !!dateError ||
-            !!timeError
-          }
-        >
-          Criar Mesa
-        </Button>
-      </form>
-    </Container>
+                <TimeInputContainer>
+                  <SectionTitle>
+                    <Clock size={18} />
+                    Horários Disponíveis
+                  </SectionTitle>
+
+                  <TimeSlot>
+                    <Input
+                      label="Horário Inicial"
+                      type="time"
+                      value={currentStartTime}
+                      onChange={(e) => setCurrentStartTime(e.target.value)}
+                      min={customDate === todayStr ? currentTimeStr : undefined}
+                    />
+
+                    <Input
+                      label="Horário Final"
+                      type="time"
+                      value={currentEndTime}
+                      onChange={(e) => setCurrentEndTime(e.target.value)}
+                      min={
+                        currentStartTime ||
+                        (customDate === todayStr ? currentTimeStr : undefined)
+                      }
+                    />
+                  </TimeSlot>
+
+                  <TimeSlotActions>
+                    <AddActionButton
+                      type="button"
+                      onClick={handleAddCustomAvailability}
+                    >
+                      <Plus size={14} />
+                      Adicionar Horário
+                    </AddActionButton>
+                  </TimeSlotActions>
+
+                  {timeError && <ErrorMessage>{timeError}</ErrorMessage>}
+
+                  {customAvailability.length === 0 ? (
+                    <EmptyTimeSlots>
+                      <Clock size={24} />
+                      Nenhuma disponibilidade adicionada
+                    </EmptyTimeSlots>
+                  ) : (
+                    <div>
+                      {customAvailability.map((item, dateIndex) => (
+                        <div key={dateIndex}>
+                          <SectionTitle>
+                            <Calendar size={16} />
+                            {format(parseISO(item.date), "dd/MM/yyyy")}
+                          </SectionTitle>
+
+                          {item.intervals.map((interval, intervalIndex) => {
+                            const hasWarning =
+                              getBusinessHoursWarningForInterval(
+                                interval.startTime,
+                                interval.endTime
+                              );
+
+                            return (
+                              <AvailabilityBlock key={intervalIndex}>
+                                <BlockHeader>
+                                  <div>
+                                    <Clock size={16} />
+                                    <span>
+                                      {interval.startTime} - {interval.endTime}
+                                      {hasWarning && (
+                                        <WarningBadge>
+                                          <AlertTriangle size={12} />
+                                          Fora do funcionamento
+                                        </WarningBadge>
+                                      )}
+                                    </span>
+                                  </div>
+                                  <BlockActions>
+                                    <Button
+                                      type="button"
+                                      variant="danger"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleRemoveCustomAvailability(
+                                          item.date,
+                                          intervalIndex
+                                        )
+                                      }
+                                    >
+                                      <Trash2 size={12} />
+                                    </Button>
+                                  </BlockActions>
+                                </BlockHeader>
+                              </AvailabilityBlock>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TimeInputContainer>
+              </>
+            )}
+          </FormSection>
+
+          <ActionButtons>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving}
+              leftIcon={isSaving ? undefined : <Save size={18} />}
+            >
+              {isSaving ? "Criando Mesa..." : "Criar Mesa"}
+            </Button>
+            <CancelButton onClick={() => navigate("/tables")}>
+              Cancelar
+            </CancelButton>
+          </ActionButtons>
+        </Content>
+      </LayoutContainer>
+    </PageWrapper>
   );
 }
