@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Home } from "../pages/Home";
 import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
 import { Dashboard } from "../pages/Dashboard";
@@ -20,16 +21,7 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/dashboard" />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
@@ -103,17 +95,18 @@ export function AppRoutes() {
           path="/profile"
           element={isAuthenticated ? <Profile /> : <Navigate to="/login" />}
         />
-      </Route>
 
-      {/* Outras rotas */}
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute adminOnly>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/settings"
+          element={
+            isAuthenticated && user?.role === "admin" ? (
+              <Settings />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+      </Route>
     </Routes>
   );
 }

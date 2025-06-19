@@ -6,7 +6,10 @@
 export type ReservationStatus = "pending" | "confirmed" | "cancelled";
 
 // Status de mesa padronizado
-export type TableStatus = "available" | "occupied" | "reserved" | "maintenance";
+// - "available": Mesa operacional e disponível para configuração de horários
+// - "maintenance": Mesa fora de operação, não aceita reservas
+// - "reserved": Mesa totalmente reservada (caso especial, não usado automaticamente)
+export type TableStatus = "available" | "reserved" | "maintenance";
 
 // Roles de usuário
 export type UserRole = "client" | "admin";

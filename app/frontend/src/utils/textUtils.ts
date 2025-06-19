@@ -63,9 +63,9 @@ export function getStatusText(status: string): string {
     maintenance: "Manutenção",
 
     // Reservation status
-    pending: "⏳ Pendente",
-    confirmed: "✅ Confirmada",
-    cancelled: "❌ Cancelada",
+    pending: "Pendente",
+    confirmed: "Confirmada",
+    cancelled: "Cancelada",
 
     // General status
     active: "Ativo",

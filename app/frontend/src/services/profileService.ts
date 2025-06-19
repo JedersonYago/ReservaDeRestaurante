@@ -16,6 +16,10 @@ export interface ChangePasswordData {
   confirmNewPassword: string;
 }
 
+export interface DeleteAccountData {
+  currentPassword: string;
+}
+
 export const profileService = {
   async getProfile(username: string): Promise<User> {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -70,6 +74,23 @@ export const profileService = {
         },
       }
     );
+    return response.data;
+  },
+
+  async deleteAccount(username: string, data: DeleteAccountData): Promise<any> {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      throw new Error("Token não encontrado");
+    }
+
+    const response = await api.request({
+      method: "DELETE",
+      url: `/profile/${username}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data,
+    });
     return response.data;
   },
 };
