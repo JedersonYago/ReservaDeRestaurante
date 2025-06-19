@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { reservationService } from "../services/reservationService";
 import type { UpdateReservationData, Reservation } from "../types";
-import { toast } from "react-toastify";
+import { useToast } from "../components/Toast";
 import { useAuth } from "./useAuth";
 
 // Interface local para reserva com tableId populado
@@ -12,6 +12,7 @@ interface PopulatedReservation extends Omit<Reservation, "tableId"> {
 export const useReservations = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const toast = useToast();
 
   const {
     data: reservations = [],
@@ -139,7 +140,10 @@ export function useReservationsByTable(tableId: string) {
   } = useQuery({
     queryKey: ["reservations"],
     queryFn: reservationService.list,
-    staleTime: 30000,
+    staleTime: 10000, // 10 segundos para dados mais frescos
+    refetchInterval: 15000, // Atualiza a cada 15 segundos
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const reservations = allReservations.filter((res: PopulatedReservation) => {

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { useToast } from "../components/Toast";
 import { tableService } from "../services/tableService";
 import type { Table } from "../types";
 
 export function useReservationValidation() {
   const [availableTables, setAvailableTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   const validateDateTime = (date: string, time: string) => {
     const selectedDate = new Date(`${date}T${time}`);

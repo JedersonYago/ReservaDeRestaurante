@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
+import { useToast } from "../components/Toast";
 import { tableService } from "../services/tableService";
 import type { CreateTableData, UpdateTableData, Table } from "../types";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ const TOKEN_KEY = "token";
 export function useTables() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const { data: tables, isLoading } = useQuery<Table[], Error>({
     queryKey: ["tables"],
