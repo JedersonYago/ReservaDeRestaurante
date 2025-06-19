@@ -87,6 +87,14 @@ export const changePasswordSchema = Joi.object({
     }),
 });
 
+// Esquema de validação para deletar conta
+export const deleteAccountSchema = Joi.object({
+  currentPassword: Joi.string().required().messages({
+    "string.empty": "A senha atual é obrigatória para deletar a conta",
+    "any.required": "A senha atual é obrigatória para deletar a conta",
+  }),
+});
+
 // Esquema de validação para registro (reutiliza userSchema)
 export const registerSchema = userSchema;
 

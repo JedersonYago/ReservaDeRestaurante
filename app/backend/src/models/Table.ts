@@ -10,7 +10,7 @@ export interface ITable extends Document {
   _id: Types.ObjectId;
   name: string;
   capacity: number;
-  status: "available" | "occupied" | "reserved" | "maintenance";
+  status: "available" | "reserved" | "maintenance";
   reservations?: Types.ObjectId[];
   availability: AvailabilityBlock[];
 }
@@ -21,7 +21,7 @@ const tableSchema = new Schema<ITable>(
     capacity: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["available", "occupied", "reserved", "maintenance"],
+      enum: ["available", "reserved", "maintenance"],
       default: "available",
     },
     reservations: [{ type: Schema.Types.ObjectId, ref: "Reservation" }],

@@ -97,7 +97,7 @@ export const isTableAvailable = async (
 
 export const updateTableStatus = async (
   tableId: string,
-  status: "available" | "occupied" | "reserved" | "maintenance"
+  status: "available" | "reserved" | "maintenance"
 ): Promise<void> => {
   await Table.findByIdAndUpdate(tableId, { status });
 };

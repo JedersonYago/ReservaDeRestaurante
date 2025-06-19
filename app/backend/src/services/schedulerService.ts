@@ -1,6 +1,5 @@
 import Reservation from "../models/Reservation";
 import Config from "../models/Config";
-import { updateTableStatus } from "../utils/reservationUtils";
 import { AUTO_APPROVAL_MINUTES } from "../config/constants";
 
 // Sistema de backup para confirmar reservas pendentes
@@ -107,8 +106,11 @@ const approveReservation = async (reservationId: string) => {
       reservation.status = "confirmed";
       await reservation.save();
 
-      // Atualiza o status da mesa
-      await updateTableStatus(reservation.tableId.toString(), "reserved");
+      // Atualizar status da mesa com a nova lógica (apenas se TODOS os horários estão ocupados)
+      const { updateTableStatus } = await import(
+        "../controllers/reservationController"
+      );
+      await updateTableStatus(reservation.tableId.toString());
 
       console.log(`✅ Reserva ${reservationId} confirmada automaticamente`);
     } else {

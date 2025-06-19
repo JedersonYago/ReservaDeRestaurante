@@ -3,6 +3,7 @@ import { validateSchema } from "../middlewares/validateSchema";
 import {
   updateProfileSchema,
   changePasswordSchema,
+  deleteAccountSchema,
 } from "../validations/schemas";
 import { auth } from "../middlewares/auth";
 import { profileController } from "../controllers/profileController";
@@ -23,6 +24,11 @@ router.put(
   "/:username/password",
   validateSchema(changePasswordSchema),
   profileController.changePassword
+);
+router.delete(
+  "/:username",
+  validateSchema(deleteAccountSchema),
+  profileController.deleteAccount
 );
 
 export default router;
