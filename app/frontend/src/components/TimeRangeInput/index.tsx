@@ -39,7 +39,7 @@ export function TimeRangeInput({ value, onChange }: TimeRangeInputProps) {
             </span>
             <Button
               type="button"
-              $variant="danger"
+              variant="danger"
               onClick={() => handleRemoveRange(index)}
             >
               Remover
