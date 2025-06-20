@@ -1,0 +1,75 @@
+@startuml
+actor Cliente
+actor Administrador
+
+rectangle "Sistema ReservaFácil" {
+
+  package "Autenticação" {
+    (Realizar Login) as UC_Login
+    (Logout) as UC_Logout
+    (Recuperar Senha) as UC_RecuperarSenha
+    (Verificar Credenciais) as UC_VerificarCredenciais <<include>>
+  }
+
+  package "Cadastro de Usuários" {
+    (Cadastrar Cliente) as UC_CadastrarCliente
+    (Cadastrar Administrador) as UC_CadastrarAdmin
+  }
+
+  package "Gerenciamento de Reservas" {
+    (Realizar Reserva) as UC_Reserva
+    (Verificar Disponibilidade de Mesas) as UC_VerificarDisponibilidade <<include>>
+    (Visualizar Reservas - Cliente) as UC_VerReservasCliente
+    (Visualizar Reservas - Admin) as UC_VerReservasAdmin
+    (Editar Reserva) as UC_EditarReserva
+    (Excluir Reserva) as UC_ExcluirReserva
+  }
+
+  package "Gestão de Mesas e Capacidade" {
+    (Gerenciar Capacidade por Horário) as UC_Capacidade
+    (Cadastrar Mesas) as UC_CadastrarMesa
+    (Visualizar Mesas) as UC_VisualizarMesa
+    (Editar Mesas) as UC_EditarMesa
+    (Excluir Mesas) as UC_ExcluirMesa
+  }
+
+  ' Relações de include
+  UC_Login --> UC_VerificarCredenciais : <<include>>
+  UC_Reserva --> UC_VerificarDisponibilidade : <<include>>
+}
+
+' Associação de atores com casos de uso
+Cliente --> UC_CadastrarCliente
+Administrador --> UC_CadastrarAdmin
+
+Cliente --> UC_Login
+Administrador --> UC_Login
+
+Cliente --> UC_Logout
+Administrador --> UC_Logout
+
+Cliente --> UC_RecuperarSenha
+Administrador --> UC_RecuperarSenha
+
+Cliente --> UC_Reserva
+Administrador --> UC_Reserva
+
+Cliente --> UC_VerReservasCliente
+Administrador --> UC_VerReservasAdmin
+
+Cliente --> UC_EditarReserva
+Administrador --> UC_EditarReserva
+
+Cliente --> UC_ExcluirReserva
+Administrador --> UC_ExcluirReserva
+
+Administrador --> UC_Capacidade
+
+Administrador --> UC_CadastrarMesa
+Administrador --> UC_VisualizarMesa
+Administrador --> UC_EditarMesa
+Administrador --> UC_ExcluirMesa
+
+Cliente --> UC_VerificarDisponibilidade
+Administrador --> UC_VerificarDisponibilidade
+@enduml
