@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Table, CreateTableData } from "../types";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "/api";
 const TOKEN_KEY = "token";
 
 export const tableService = {

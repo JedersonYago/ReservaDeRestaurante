@@ -4,7 +4,7 @@ import { authService } from "./authService";
 const TOKEN_KEY = "token";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "/api",
 });
 
 // Interceptor para adicionar o token em todas as requisições
