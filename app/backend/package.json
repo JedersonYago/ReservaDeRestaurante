@@ -13,6 +13,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "overrides": {
+    "glob": "^10.3.10",
+    "inflight": "npm:@isaacs/inflight@^1.0.1"
+  },
   "dependencies": {
     "@types/joi": "^17.2.2",
     "bcryptjs": "^2.4.3",
