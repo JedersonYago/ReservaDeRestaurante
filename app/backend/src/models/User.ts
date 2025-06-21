@@ -8,7 +8,6 @@ export interface IUser extends Document {
   username: string;
   password: string;
   role: "client" | "admin";
-  phone?: string;
   // Controle de mudanças de email
   emailChanges: {
     count: number;
@@ -33,7 +32,6 @@ const UserSchema = new Schema<IUser>(
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["client", "admin"], default: "client" },
-    phone: { type: String },
     // Controle de mudanças de email
     emailChanges: {
       count: { type: Number, default: 0 },
