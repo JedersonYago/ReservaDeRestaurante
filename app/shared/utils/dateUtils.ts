@@ -1,4 +1,3 @@
-import { formatToDMY } from "./dateFormat";
 import {
   MAX_DAYS_AHEAD,
   OPENING_TIME,
@@ -116,14 +115,6 @@ export function isWithinTableAvailability(
 
   // Verifica se o horário está dentro do horário de funcionamento
   return isValidReservationTime(time);
-}
-
-/**
- * Formata uma data para exibição (delegando para formatToDMY)
- */
-export function formatDate(date: string | Date): string {
-  // Delegar para a função especializada
-  return formatToDMY(date);
 }
 
 /**
