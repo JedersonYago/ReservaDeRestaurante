@@ -45,8 +45,7 @@ export const getClientStats = async (req: Request, res: Response) => {
       .filter((r) => r.status !== "cancelled" && r.date >= today)
       .sort(
         (a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time)
-      )
-      .slice(0, 3);
+      );
 
     // Estatísticas pessoais
     const totalReservations = userReservations.length;

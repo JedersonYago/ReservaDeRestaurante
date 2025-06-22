@@ -15,7 +15,6 @@ import {
   Content,
   Section,
   SectionTitle,
-  ReservationsList,
   AlertsList,
   EmptyTitle,
   EmptyDescription,
@@ -35,7 +34,6 @@ import {
   ReservationTable,
   ReservationCardContent,
   ReservationDetail,
-  ReservationCardAction,
   ModernEmptyState,
   EmptyStateIcon,
   EmptyStateContent,
@@ -63,6 +61,7 @@ import {
   RefreshButton,
   AutoUpdateIndicator,
   UpdateDot,
+  ClientReservationsList,
 } from "./styles";
 import {
   BarChart3,
@@ -80,7 +79,7 @@ import {
   TrendingUp,
   Activity,
   AlertTriangle,
-  ChevronRight,
+  Eye,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -211,43 +210,53 @@ function ClientDashboard({ stats }: { stats: any }) {
         </SectionHeader>
 
         {stats.personal.upcomingReservations.length > 0 ? (
-          <ReservationsList>
-            {stats.personal.upcomingReservations.map((reservation: any) => (
-              <ModernReservationCard
-                key={reservation._id}
-                onClick={() => navigate(`/reservations/${reservation._id}`)}
-              >
-                <ReservationCardHeader>
-                  <ReservationTable>
-                    <Utensils size={20} />
-                    <span>{reservation.tableId?.name || "Mesa"}</span>
-                  </ReservationTable>
-                  <StatusBadge status={reservation.status}>
-                    {getStatusText(reservation.status)}
-                  </StatusBadge>
-                </ReservationCardHeader>
+          <AlertsCard>
+            <ClientReservationsList>
+              {stats.personal.upcomingReservations.map((reservation: any) => (
+                <ModernReservationCard key={reservation._id}>
+                  <ReservationCardHeader>
+                    <ReservationTable>
+                      <Utensils size={20} />
+                      <span>{reservation.tableId?.name || "Mesa"}</span>
+                    </ReservationTable>
+                    <StatusBadge status={reservation.status}>
+                      {getStatusText(reservation.status)}
+                    </StatusBadge>
+                  </ReservationCardHeader>
 
-                <ReservationCardContent>
-                  <ReservationDetail>
-                    <CalendarDays size={16} />
-                    <span>
-                      {formatDate(reservation.date)} às{" "}
-                      {formatTime(reservation.time)}
-                    </span>
-                  </ReservationDetail>
-                  <ReservationDetail>
-                    <User size={16} />
-                    <span>{reservation.customerName}</span>
-                  </ReservationDetail>
-                </ReservationCardContent>
+                  <ReservationCardContent>
+                    <ReservationDetail>
+                      <CalendarDays size={16} />
+                      <span>
+                        {formatDate(reservation.date)} às{" "}
+                        {formatTime(reservation.time)}
+                      </span>
+                    </ReservationDetail>
+                    <ReservationDetail>
+                      <User size={16} />
+                      <span>{reservation.customerName}</span>
+                    </ReservationDetail>
+                  </ReservationCardContent>
 
-                <ReservationCardAction>
-                  <span>Ver Detalhes</span>
-                  <ChevronRight size={16} />
-                </ReservationCardAction>
-              </ModernReservationCard>
-            ))}
-          </ReservationsList>
+                  <ActionButton
+                    onClick={() => navigate(`/reservations/${reservation._id}`)}
+                    $variant="secondary"
+                    style={{
+                      width: "100%",
+                      fontSize: "14px",
+                      padding: "8px 16px",
+                      marginTop: "8px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Eye size={16} />
+                    Detalhes
+                  </ActionButton>
+                </ModernReservationCard>
+              ))}
+            </ClientReservationsList>
+          </AlertsCard>
         ) : (
           <ModernEmptyState>
             <EmptyStateIcon>
@@ -431,7 +440,10 @@ function AdminDashboard({ stats }: { stats: any }) {
               {stats.alerts.reservationsNeedingAttention
                 .slice(0, 6)
                 .map((reservation: any) => (
-                  <ModernAlertItem key={reservation._id}>
+                  <ModernAlertItem
+                    key={reservation._id}
+                    onClick={() => navigate(`/reservations/${reservation._id}`)}
+                  >
                     <AlertContent>
                       <AlertTableName>
                         <Utensils size={16} />
@@ -446,6 +458,20 @@ function AdminDashboard({ stats }: { stats: any }) {
                         </span>
                       </AlertDateTime>
                     </AlertContent>
+                    <ActionButton
+                      $variant="secondary"
+                      style={{
+                        width: "100%",
+                        fontSize: "14px",
+                        padding: "8px 16px",
+                        marginTop: "4px",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Eye size={16} />
+                      Detalhes
+                    </ActionButton>
                   </ModernAlertItem>
                 ))}
             </AlertsList>

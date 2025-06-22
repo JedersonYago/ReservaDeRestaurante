@@ -101,6 +101,47 @@ export const AlertsList = styled.div`
   }
 `;
 
+export const ClientReservationsList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacing[4]};
+  max-height: 280px; /* Altura para mostrar exatamente 1 linha de cards */
+  overflow-y: auto;
+  padding-right: ${({ theme }) => theme.spacing[2]};
+
+  /* Garantir que mostra apenas uma "linha" de 3 itens visível */
+  grid-auto-rows: min-content;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    grid-template-columns: repeat(2, 1fr);
+    max-height: 280px; /* Altura para mostrar 1 linha de 2 cards */
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    grid-template-columns: 1fr;
+    max-height: 280px; /* Altura para mostrar 1 card por vez */
+  }
+
+  /* Estilização da scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: ${({ theme }) => theme.colors.neutral[100]};
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.neutral[300]};
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.colors.neutral[400]};
+  }
+`;
+
 export const EmptyTitle = styled.h3`
   color: ${({ theme }) => theme.colors.text.primary};
   margin-bottom: ${({ theme }) => theme.spacing[2]};
@@ -187,15 +228,14 @@ export const SectionIcon = styled.div`
 `;
 
 export const ModernReservationCard = styled(Card)`
-  cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.duration[200]}
     ${({ theme }) => theme.transitions.timing.out};
   animation: ${fadeIn} 0.3s ease-out;
   border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.lg};
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.md};
     border-color: ${({ theme }) => theme.colors.primary.main}40;
   }
 `;
@@ -482,18 +522,21 @@ export const AlertsCard = styled.div`
 
 export const ModernAlertItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: ${({ theme }) => theme.spacing[4]};
   background: ${({ theme }) => theme.colors.neutral[50]};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   transition: all ${({ theme }) => theme.transitions.duration[200]}
     ${({ theme }) => theme.transitions.timing.out};
+  cursor: pointer;
+  gap: ${({ theme }) => theme.spacing[3]};
 
   &:hover {
     background: ${({ theme }) => theme.colors.neutral[100]};
     border-color: ${({ theme }) => theme.colors.primary.main}40;
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.md};
   }
 `;
 
