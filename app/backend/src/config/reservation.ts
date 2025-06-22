@@ -25,17 +25,8 @@ export const getReservationLimits = async () => {
   };
 };
 
-// Configurações padrão para inicialização do banco de dados
-export const DEFAULT_CONFIG = {
-  maxReservationsPerUser: 5, // Máximo de reservas por usuário
-  reservationLimitHours: 24, // Período de limitação em horas
-  minIntervalBetweenReservations: 10, // Tempo padrão de confirmação: 10 minutos
-  openingHour: "11:00",
-  closingHour: "23:00",
-  isReservationLimitEnabled: true, // Controla limite por usuário
-  isIntervalEnabled: true, // Controla tempo de confirmação automática
-  isOpeningHoursEnabled: true,
-} as const;
+// Configurações padrão removidas - agora usar a versão do shared
+// import { DEFAULT_CONFIG } from "../../../shared/constants";
 
 export const reservationConfig = {
   openingHour: process.env.OPENING_HOUR || "11:00",

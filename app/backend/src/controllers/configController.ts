@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Config from "../models/Config";
-import { DEFAULT_CONFIG } from "../config/constants";
+import { DEFAULT_CONFIG } from "../../../shared/constants";
 import {
   validateTimeSlot,
   validateTimeInterval,
@@ -97,7 +97,7 @@ export const updateConfig = async (req: Request, res: Response) => {
 
     return res.json(config);
   } catch (error) {
-    console.error("❌ Erro ao atualizar configurações:", error);
+    console.error("Erro ao atualizar configurações:", error);
 
     // Se for erro de validação do Mongoose/Joi, retornar 400
     if (

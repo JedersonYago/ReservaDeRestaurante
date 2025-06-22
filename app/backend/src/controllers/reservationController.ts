@@ -269,6 +269,28 @@ export const createReservation = async (req: Request, res: Response) => {
       });
     }
 
+    // Buscar configurações para validação
+    const config = await Config.findOne().sort({ updatedAt: -1 });
+    if (!config) {
+      return res.status(500).json({
+        error: "Configurações do sistema não encontradas",
+      });
+    }
+
+    // Aplicar validações de configuração (incluindo horários de funcionamento)
+    const configValidation = await applyConfigToReservation(
+      config,
+      date.slice(0, 10),
+      time,
+      []
+    );
+
+    if (!configValidation.isValid) {
+      return res.status(400).json({
+        error: configValidation.error,
+      });
+    }
+
     // Validar limite de reservas por usuário baseado na configuração
     const limitValidation = await validateUserReservationLimit(userId);
     if (!limitValidation.isValid) {
@@ -411,6 +433,24 @@ export const updateReservation = async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "Horário já está reservado",
         });
+      }
+
+      // Buscar configurações para validação de horários de funcionamento
+      const config = await Config.findOne().sort({ updatedAt: -1 });
+      if (config) {
+        // Aplicar validações de configuração (incluindo horários de funcionamento)
+        const configValidation = await applyConfigToReservation(
+          config,
+          date.slice(0, 10),
+          time,
+          []
+        );
+
+        if (!configValidation.isValid) {
+          return res.status(400).json({
+            error: configValidation.error,
+          });
+        }
       }
     }
 

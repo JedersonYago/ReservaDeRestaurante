@@ -1,5 +1,5 @@
 import { Schema, model, Document } from "mongoose";
-import { DEFAULT_CONFIG, VALIDATION_LIMITS } from "../config/constants";
+import { DEFAULT_CONFIG, VALIDATION_LIMITS } from "../../../shared/constants";
 import { VALIDATION_PATTERNS } from "../config/validationPatterns";
 
 export interface IConfig extends Document {
