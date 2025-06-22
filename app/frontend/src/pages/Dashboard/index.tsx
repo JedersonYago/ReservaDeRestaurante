@@ -1,15 +1,69 @@
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../hooks/useAuth";
-import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
 import { StatusBadge } from "../../components/StatusBadge";
 import { formatDate, formatTime } from "../../utils/dateUtils";
 import { getStatusText } from "../../utils/textUtils";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
-import { fadeIn, spin, pulse } from "../../styles/animations";
 import { PageWrapper as BasePageWrapper } from "../../components/Layout/PageWrapper";
+import {
+  LoadingMessage,
+  ErrorMessage,
+  Header,
+  Subtitle,
+  Content,
+  Section,
+  SectionTitle,
+  ReservationsList,
+  AlertsList,
+  EmptyTitle,
+  EmptyDescription,
+  HeaderContent,
+  TitleSection,
+  UserName,
+  WelcomeMessage,
+  LoadingSpinner,
+  LoadingState,
+  LoadingIcon,
+  ErrorState,
+  ErrorIcon,
+  SectionHeader,
+  SectionIcon,
+  ModernReservationCard,
+  ReservationCardHeader,
+  ReservationTable,
+  ReservationCardContent,
+  ReservationDetail,
+  ReservationCardAction,
+  ModernEmptyState,
+  EmptyStateIcon,
+  EmptyStateContent,
+  ModernStatsGrid,
+  ModernStatCard,
+  StatIcon,
+  StatContent,
+  StatTitle,
+  StatValue,
+  ActionsCard,
+  ActionButton,
+  ActionContent,
+  ActionTitle,
+  ActionDescription,
+  RestaurantInfoGrid,
+  ReservationStatusGrid,
+  AlertsCard,
+  ModernAlertItem,
+  AlertContent,
+  AlertTableName,
+  AlertCustomer,
+  AlertDateTime,
+  AdminActionsGrid,
+  HeaderActions,
+  RefreshButton,
+  AutoUpdateIndicator,
+  UpdateDot,
+} from "./styles";
 import {
   BarChart3,
   Calendar,
@@ -21,18 +75,14 @@ import {
   Clock,
   Users,
   XCircle,
-  Wrench,
   Settings,
   CalendarDays,
-  CalendarCheck,
   TrendingUp,
   Activity,
   AlertTriangle,
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
-
-// Animações removidas - agora usando arquivo centralizado
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -46,11 +96,10 @@ export function Dashboard() {
     setIsRefreshing(true);
     try {
       await refetch();
-      // Feedback visual opcional - você pode adicionar um toast aqui se houver
     } catch (error) {
       console.error("Erro ao atualizar dashboard:", error);
     } finally {
-      setTimeout(() => setIsRefreshing(false), 500); // Pequeno delay para feedback visual
+      setTimeout(() => setIsRefreshing(false), 500);
     }
   };
 
@@ -202,108 +251,24 @@ function ClientDashboard({ stats }: { stats: any }) {
         ) : (
           <ModernEmptyState>
             <EmptyStateIcon>
-              <Calendar size={64} />
+              <Calendar size={48} />
             </EmptyStateIcon>
             <EmptyStateContent>
-              <EmptyTitle>Nenhuma reserva próxima</EmptyTitle>
+              <EmptyTitle>Nenhuma reserva encontrada</EmptyTitle>
               <EmptyDescription>
-                Que tal fazer uma nova reserva e descobrir nossos sabores?
+                Você não possui reservas próximas. Que tal fazer uma nova
+                reserva?
               </EmptyDescription>
               <Button
                 variant="primary"
                 onClick={() => navigate("/reservations/new")}
+                leftIcon={<Plus size={18} />}
               >
-                <Plus size={20} />
                 Nova Reserva
               </Button>
             </EmptyStateContent>
           </ModernEmptyState>
         )}
-      </Section>
-
-      {/* Estatísticas Pessoais */}
-      <Section>
-        <SectionHeader>
-          <SectionIcon>
-            <BarChart3 size={24} />
-          </SectionIcon>
-          <SectionTitle>Suas Estatísticas</SectionTitle>
-        </SectionHeader>
-        <ModernStatsGrid>
-          <ModernStatCard $color="primary">
-            <StatIcon>
-              <BarChart3 size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Total de Reservas</StatTitle>
-              <StatValue>{stats.personal.totalReservations}</StatValue>
-            </StatContent>
-          </ModernStatCard>
-
-          <ModernStatCard $color="info">
-            <StatIcon>
-              <CalendarCheck size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Este Mês</StatTitle>
-              <StatValue>{stats.personal.thisMonthReservations}</StatValue>
-            </StatContent>
-          </ModernStatCard>
-
-          <ModernStatCard $color="success">
-            <StatIcon>
-              <CheckCircle size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Confirmadas</StatTitle>
-              <StatValue>{stats.personal.confirmedReservations}</StatValue>
-            </StatContent>
-          </ModernStatCard>
-        </ModernStatsGrid>
-      </Section>
-
-      {/* Ações Rápidas */}
-      <Section>
-        <SectionHeader>
-          <SectionIcon>
-            <TrendingUp size={24} />
-          </SectionIcon>
-          <SectionTitle>Ações Rápidas</SectionTitle>
-        </SectionHeader>
-        <ActionsCard>
-          <ActionButton
-            onClick={() => navigate("/reservations/new")}
-            $variant="primary"
-          >
-            <Plus size={24} />
-            <ActionContent>
-              <ActionTitle>Nova Reserva</ActionTitle>
-              <ActionDescription>Fazer uma nova reserva</ActionDescription>
-            </ActionContent>
-          </ActionButton>
-
-          <ActionButton
-            onClick={() => navigate("/reservations")}
-            $variant="secondary"
-          >
-            <FileText size={24} />
-            <ActionContent>
-              <ActionTitle>Minhas Reservas</ActionTitle>
-              <ActionDescription>Ver todas as reservas</ActionDescription>
-            </ActionContent>
-          </ActionButton>
-
-          <ActionButton
-            onClick={() => navigate("/profile")}
-            $variant="secondary"
-          >
-            <User size={24} />
-            <ActionContent>
-              <ActionTitle>Meu Perfil</ActionTitle>
-              <ActionDescription>Editar informações</ActionDescription>
-            </ActionContent>
-          </ActionButton>
-        </ActionsCard>
       </Section>
 
       {/* Informações do Restaurante */}
@@ -314,26 +279,45 @@ function ClientDashboard({ stats }: { stats: any }) {
           </SectionIcon>
           <SectionTitle>Informações do Restaurante</SectionTitle>
         </SectionHeader>
-        <RestaurantInfoGrid>
-          <ModernStatCard $color="info">
-            <StatIcon>
-              <Utensils size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Total de Mesas</StatTitle>
-              <StatValue>{stats.restaurant.totalTables}</StatValue>
-            </StatContent>
-          </ModernStatCard>
 
-          <ModernStatCard $color="success">
-            <StatIcon>
-              <CheckCircle size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Disponíveis Hoje</StatTitle>
-              <StatValue>{stats.restaurant.availableTablesToday}</StatValue>
-            </StatContent>
-          </ModernStatCard>
+        <RestaurantInfoGrid>
+          <ActionsCard>
+            <SectionHeader>
+              <SectionIcon>
+                <Calendar size={20} />
+              </SectionIcon>
+              <SectionTitle>Fazer Reserva</SectionTitle>
+            </SectionHeader>
+            <ActionButton
+              onClick={() => navigate("/reservations/new")}
+              $variant="primary"
+            >
+              <Plus size={24} />
+              <ActionContent>
+                <ActionTitle>Nova Reserva</ActionTitle>
+                <ActionDescription>Reservar uma mesa</ActionDescription>
+              </ActionContent>
+            </ActionButton>
+          </ActionsCard>
+
+          <ActionsCard>
+            <SectionHeader>
+              <SectionIcon>
+                <FileText size={20} />
+              </SectionIcon>
+              <SectionTitle>Suas Reservas</SectionTitle>
+            </SectionHeader>
+            <ActionButton
+              onClick={() => navigate("/reservations")}
+              $variant="secondary"
+            >
+              <FileText size={24} />
+              <ActionContent>
+                <ActionTitle>Ver Todas</ActionTitle>
+                <ActionDescription>Gerenciar reservas</ActionDescription>
+              </ActionContent>
+            </ActionButton>
+          </ActionsCard>
         </RestaurantInfoGrid>
       </Section>
     </Content>
@@ -348,28 +332,29 @@ function AdminDashboard({ stats }: { stats: any }) {
 
   return (
     <Content>
-      {/* Visão Geral */}
+      {/* Estatísticas */}
       <Section>
         <SectionHeader>
           <SectionIcon>
-            <TrendingUp size={24} />
+            <BarChart3 size={24} />
           </SectionIcon>
-          <SectionTitle>Visão Geral</SectionTitle>
+          <SectionTitle>Estatísticas do Restaurante</SectionTitle>
         </SectionHeader>
+
         <ModernStatsGrid>
-          <ModernStatCard $color="primary">
-            <StatIcon>
-              <BarChart3 size={32} />
+          <ModernStatCard $color="#10b981">
+            <StatIcon $color="#10b981">
+              <Users />
             </StatIcon>
             <StatContent>
-              <StatTitle>Total de Reservas</StatTitle>
-              <StatValue>{stats.overview.totalReservations}</StatValue>
+              <StatTitle>Total de Clientes</StatTitle>
+              <StatValue>{stats.overview.uniqueClients}</StatValue>
             </StatContent>
           </ModernStatCard>
 
-          <ModernStatCard $color="info">
-            <StatIcon>
-              <Calendar size={32} />
+          <ModernStatCard $color="#3b82f6">
+            <StatIcon $color="#3b82f6">
+              <Calendar />
             </StatIcon>
             <StatContent>
               <StatTitle>Reservas Hoje</StatTitle>
@@ -377,23 +362,13 @@ function AdminDashboard({ stats }: { stats: any }) {
             </StatContent>
           </ModernStatCard>
 
-          <ModernStatCard $color="success">
-            <StatIcon>
-              <CalendarCheck size={32} />
+          <ModernStatCard $color="#f59e0b">
+            <StatIcon $color="#f59e0b">
+              <Utensils />
             </StatIcon>
             <StatContent>
-              <StatTitle>Este Mês</StatTitle>
-              <StatValue>{stats.overview.thisMonthReservations}</StatValue>
-            </StatContent>
-          </ModernStatCard>
-
-          <ModernStatCard $color="warning">
-            <StatIcon>
-              <Users size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Clientes Únicos</StatTitle>
-              <StatValue>{stats.overview.uniqueClients}</StatValue>
+              <StatTitle>Mesas Disponíveis</StatTitle>
+              <StatValue>{stats.tables.available}</StatValue>
             </StatContent>
           </ModernStatCard>
         </ModernStatsGrid>
@@ -403,24 +378,15 @@ function AdminDashboard({ stats }: { stats: any }) {
       <Section>
         <SectionHeader>
           <SectionIcon>
-            <Activity size={24} />
+            <TrendingUp size={24} />
           </SectionIcon>
           <SectionTitle>Status das Reservas</SectionTitle>
         </SectionHeader>
-        <ReservationStatusGrid>
-          <ModernStatCard $color="warning">
-            <StatIcon>
-              <Clock size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Pendentes</StatTitle>
-              <StatValue>{stats.reservationsByStatus.pending}</StatValue>
-            </StatContent>
-          </ModernStatCard>
 
-          <ModernStatCard $color="success">
-            <StatIcon>
-              <CheckCircle size={32} />
+        <ReservationStatusGrid>
+          <ModernStatCard $color="#10b981">
+            <StatIcon $color="#10b981">
+              <CheckCircle />
             </StatIcon>
             <StatContent>
               <StatTitle>Confirmadas</StatTitle>
@@ -428,9 +394,19 @@ function AdminDashboard({ stats }: { stats: any }) {
             </StatContent>
           </ModernStatCard>
 
-          <ModernStatCard $color="primary">
-            <StatIcon>
-              <XCircle size={32} />
+          <ModernStatCard $color="#f59e0b">
+            <StatIcon $color="#f59e0b">
+              <Clock />
+            </StatIcon>
+            <StatContent>
+              <StatTitle>Pendentes</StatTitle>
+              <StatValue>{stats.reservationsByStatus.pending}</StatValue>
+            </StatContent>
+          </ModernStatCard>
+
+          <ModernStatCard $color="#ef4444">
+            <StatIcon $color="#ef4444">
+              <XCircle />
             </StatIcon>
             <StatContent>
               <StatTitle>Canceladas</StatTitle>
@@ -440,97 +416,64 @@ function AdminDashboard({ stats }: { stats: any }) {
         </ReservationStatusGrid>
       </Section>
 
-      {/* Status das Mesas */}
+      {/* Alertas e Próximas Reservas */}
       <Section>
         <SectionHeader>
           <SectionIcon>
-            <Utensils size={24} />
+            <AlertTriangle size={24} />
           </SectionIcon>
-          <SectionTitle>Status das Mesas</SectionTitle>
+          <SectionTitle>Reservas que Precisam de Atenção</SectionTitle>
         </SectionHeader>
-        <ModernStatsGrid>
-          <ModernStatCard $color="success">
-            <StatIcon>
-              <CheckCircle size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Disponíveis</StatTitle>
-              <StatValue>{stats.tables.available}</StatValue>
-            </StatContent>
-          </ModernStatCard>
 
-          <ModernStatCard $color="warning">
-            <StatIcon>
-              <Clock size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Reservadas</StatTitle>
-              <StatValue>{stats.tables.reserved}</StatValue>
-            </StatContent>
-          </ModernStatCard>
-
-          <ModernStatCard $color="info">
-            <StatIcon>
-              <Wrench size={32} />
-            </StatIcon>
-            <StatContent>
-              <StatTitle>Manutenção</StatTitle>
-              <StatValue>{stats.tables.maintenance}</StatValue>
-            </StatContent>
-          </ModernStatCard>
-        </ModernStatsGrid>
-      </Section>
-
-      {/* Alertas */}
-      {stats.alerts.reservationsNeedingAttention.length > 0 && (
-        <Section>
-          <SectionHeader>
-            <SectionIcon>
-              <AlertTriangle size={24} />
-            </SectionIcon>
-            <SectionTitle>Reservas Pendentes</SectionTitle>
-          </SectionHeader>
+        {stats.alerts.reservationsNeedingAttention.length > 0 ? (
           <AlertsCard>
             <AlertsList>
-              {stats.alerts.reservationsNeedingAttention.map(
-                (reservation: any) => (
+              {stats.alerts.reservationsNeedingAttention
+                .slice(0, 6)
+                .map((reservation: any) => (
                   <ModernAlertItem key={reservation._id}>
                     <AlertContent>
                       <AlertTableName>
                         <Utensils size={16} />
-                        {reservation.tableId?.name}
+                        <span>{reservation.tableId?.name || "Mesa"}</span>
                       </AlertTableName>
                       <AlertCustomer>{reservation.customerName}</AlertCustomer>
                       <AlertDateTime>
-                        <CalendarDays size={14} />
-                        {formatDate(reservation.date)} às{" "}
-                        {formatTime(reservation.time)}
+                        <Clock size={16} />
+                        <span>
+                          {formatDate(reservation.date)} às{" "}
+                          {formatTime(reservation.time)}
+                        </span>
                       </AlertDateTime>
                     </AlertContent>
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        navigate(`/reservations/${reservation._id}`)
-                      }
-                    >
-                      Ver Detalhes
-                    </Button>
                   </ModernAlertItem>
-                )
-              )}
+                ))}
             </AlertsList>
           </AlertsCard>
-        </Section>
-      )}
+        ) : (
+          <ModernEmptyState>
+            <EmptyStateIcon>
+              <Calendar size={48} />
+            </EmptyStateIcon>
+            <EmptyStateContent>
+              <EmptyTitle>Nenhuma reserva pendente</EmptyTitle>
+              <EmptyDescription>
+                Todas as reservas estão organizadas e confirmadas.
+              </EmptyDescription>
+            </EmptyStateContent>
+          </ModernEmptyState>
+        )}
+      </Section>
 
-      {/* Ações Administrativas */}
+      {/* Ações Rápidas */}
       <Section>
         <SectionHeader>
           <SectionIcon>
             <Settings size={24} />
           </SectionIcon>
-          <SectionTitle>Ações Administrativas</SectionTitle>
+          <SectionTitle>Ações Rápidas</SectionTitle>
         </SectionHeader>
+
         <AdminActionsGrid>
           <ActionButton
             onClick={() => navigate("/reservations/new")}
@@ -539,7 +482,7 @@ function AdminDashboard({ stats }: { stats: any }) {
             <Plus size={24} />
             <ActionContent>
               <ActionTitle>Nova Reserva</ActionTitle>
-              <ActionDescription>Criar nova reserva</ActionDescription>
+              <ActionDescription>Criar reserva</ActionDescription>
             </ActionContent>
           </ActionButton>
 
@@ -569,621 +512,3 @@ function AdminDashboard({ stats }: { stats: any }) {
     </Content>
   );
 }
-
-// PageWrapper removido - usando componente centralizado
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.text.secondary};
-  font-size: ${({ theme }) => theme.typography.fontSize.lg};
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.semantic.error};
-  font-size: ${({ theme }) => theme.typography.fontSize.lg};
-  margin-bottom: ${({ theme }) => theme.spacing[6]};
-`;
-
-const Header = styled.header`
-  margin-bottom: ${({ theme }) => theme.spacing[8]};
-  text-align: center;
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    text-align: left;
-    margin-bottom: ${({ theme }) => theme.spacing[10]};
-  }
-`;
-
-const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSize.md};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
-`;
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[6]};
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    gap: ${({ theme }) => theme.spacing[8]};
-  }
-`;
-
-const Section = styled.section`
-  margin-bottom: ${({ theme }) => theme.spacing[2]};
-`;
-
-const SectionTitle = styled.h2`
-  font-size: ${({ theme }) => theme.typography.fontSize.xl};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  color: ${({ theme }) => theme.colors.text.primary};
-  margin: 0;
-  line-height: 1.2;
-  display: flex;
-  align-items: center;
-`;
-
-const ReservationsList = styled.div`
-  display: grid;
-  gap: 1rem;
-`;
-
-const AlertsList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing[4]};
-  max-height: 200px;
-  overflow-y: auto;
-  padding-right: ${({ theme }) => theme.spacing[2]};
-
-  /* Garantir que mostra apenas uma "linha" de 3 itens */
-  grid-auto-rows: min-content;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(2, 1fr);
-    max-height: 300px; /* Altura ajustada para 2 colunas */
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: 1fr;
-    max-height: 250px; /* Altura ajustada para 1 coluna */
-  }
-
-  /* Estilização da scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: ${({ theme }) => theme.colors.neutral[100]};
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors.neutral[300]};
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => theme.colors.neutral[400]};
-  }
-`;
-
-const EmptyTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.text.primary};
-  margin-bottom: ${({ theme }) => theme.spacing[2]};
-  font-size: ${({ theme }) => theme.typography.fontSize.lg};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-`;
-
-const EmptyDescription = styled.p`
-  color: ${({ theme }) => theme.colors.text.secondary};
-  margin-bottom: ${({ theme }) => theme.spacing[6]};
-  font-size: ${({ theme }) => theme.typography.fontSize.md};
-`;
-
-// Modern Styled Components
-const HeaderContent = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-`;
-
-const TitleSection = styled.div`
-  flex: 1;
-`;
-
-const UserName = styled.span`
-  color: ${({ theme }) => theme.colors.primary.main};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-`;
-
-const WelcomeMessage = styled.div`
-  margin-top: ${({ theme }) => theme.spacing[2]};
-`;
-
-const LoadingSpinner = styled.div`
-  width: 24px;
-  height: 24px;
-  border: 2px solid ${({ theme }) => theme.colors.neutral[200]};
-  border-top: 2px solid ${({ theme }) => theme.colors.primary.main};
-  border-radius: 50%;
-  animation: ${spin} 1s linear infinite;
-`;
-
-const LoadingState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: ${({ theme }) => theme.spacing[12]} 0;
-  gap: ${({ theme }) => theme.spacing[6]};
-`;
-
-const LoadingIcon = styled.div`
-  color: ${({ theme }) => theme.colors.primary.main};
-  animation: ${pulse} 2s infinite;
-`;
-
-const ErrorState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: ${({ theme }) => theme.spacing[12]} 0;
-  gap: ${({ theme }) => theme.spacing[6]};
-`;
-
-const ErrorIcon = styled.div`
-  color: ${({ theme }) => theme.colors.semantic.error};
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[3]};
-  margin-bottom: ${({ theme }) => theme.spacing[6]};
-`;
-
-const SectionIcon = styled.div`
-  color: ${({ theme }) => theme.colors.primary.main};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  line-height: 1;
-`;
-
-const ModernReservationCard = styled(Card)`
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.duration[200]}
-    ${({ theme }) => theme.transitions.timing.out};
-  animation: ${fadeIn} 0.3s ease-out;
-  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-    border-color: ${({ theme }) => theme.colors.primary.main}40;
-  }
-`;
-
-const ReservationCardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing[4]};
-`;
-
-const ReservationTable = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  color: ${({ theme }) => theme.colors.text.primary};
-
-  svg {
-    color: ${({ theme }) => theme.colors.primary.main};
-  }
-`;
-
-const ReservationCardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[2]};
-  margin-bottom: ${({ theme }) => theme.spacing[4]};
-`;
-
-const ReservationDetail = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  svg {
-    color: ${({ theme }) => theme.colors.primary.main};
-    flex-shrink: 0;
-  }
-`;
-
-const ReservationCardAction = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  color: ${({ theme }) => theme.colors.primary.main};
-  padding-top: ${({ theme }) => theme.spacing[3]};
-  border-top: 1px solid ${({ theme }) => theme.colors.neutral[100]};
-`;
-
-const ModernEmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: ${({ theme }) => theme.spacing[12]}
-    ${({ theme }) => theme.spacing[6]};
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.background.primary},
-    ${({ theme }) => theme.colors.neutral[50]}
-  );
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
-  border: 2px dashed ${({ theme }) => theme.colors.neutral[200]};
-`;
-
-const EmptyStateIcon = styled.div`
-  color: ${({ theme }) => theme.colors.neutral[400]};
-  margin-bottom: ${({ theme }) => theme.spacing[4]};
-`;
-
-const EmptyStateContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[4]};
-`;
-
-const ModernStatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing[6]};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: ${({ theme }) => theme.spacing[4]};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing[4]};
-  }
-`;
-
-const ModernStatCard = styled.div<{ $color: string }>`
-  background: ${({ theme }) => theme.colors.background.primary};
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
-  padding: ${({ theme }) => theme.spacing[6]};
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[4]};
-  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
-  transition: all ${({ theme }) => theme.transitions.duration[200]}
-    ${({ theme }) => theme.transitions.timing.out};
-  animation: ${fadeIn} 0.3s ease-out;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: ${({ theme, $color }) => {
-      switch ($color) {
-        case "primary":
-          return theme.colors.primary.main;
-        case "success":
-          return theme.colors.semantic.success;
-        case "warning":
-          return theme.colors.semantic.warning;
-        case "info":
-          return theme.colors.semantic.info;
-        default:
-          return theme.colors.primary.main;
-      }
-    }};
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
-`;
-
-const StatIcon = styled.div<{ $color?: string }>`
-  padding: ${({ theme }) => theme.spacing[3]};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
-  background: ${({ theme, $color }) => {
-    switch ($color) {
-      case "primary":
-        return `${theme.colors.primary.main}15`;
-      case "success":
-        return `${theme.colors.semantic.success}15`;
-      case "warning":
-        return `${theme.colors.semantic.warning}15`;
-      case "info":
-        return `${theme.colors.semantic.info}15`;
-      default:
-        return `${theme.colors.primary.main}15`;
-    }
-  }};
-  color: ${({ theme, $color }) => {
-    switch ($color) {
-      case "primary":
-        return theme.colors.primary.main;
-      case "success":
-        return theme.colors.semantic.success;
-      case "warning":
-        return theme.colors.semantic.warning;
-      case "info":
-        return theme.colors.semantic.info;
-      default:
-        return theme.colors.primary.main;
-    }
-  }};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const StatContent = styled.div`
-  flex: 1;
-`;
-
-const StatTitle = styled.h4`
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  color: ${({ theme }) => theme.colors.text.secondary};
-  margin: 0 0 ${({ theme }) => theme.spacing[2]} 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const StatValue = styled.div`
-  font-size: ${({ theme }) => theme.typography.fontSize["xl"]};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-  color: ${({ theme }) => theme.colors.text.primary};
-  margin: 0;
-`;
-
-const ActionsCard = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing[6]};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: ${({ theme }) => theme.spacing[4]};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing[4]};
-  }
-`;
-
-const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[4]};
-  padding: ${({ theme }) => theme.spacing[6]};
-  background: ${({ theme, $variant }) =>
-    $variant === "primary"
-      ? `linear-gradient(135deg, ${theme.colors.primary.main}, ${theme.colors.secondary.main})`
-      : theme.colors.background.primary};
-  color: ${({ theme, $variant }) =>
-    $variant === "primary"
-      ? theme.colors.primary.contrast
-      : theme.colors.text.primary};
-  border: 1px solid
-    ${({ theme, $variant }) =>
-      $variant === "primary" ? "transparent" : theme.colors.neutral[200]};
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.duration[200]}
-    ${({ theme }) => theme.transitions.timing.out};
-  text-align: left;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-    border-color: ${({ theme, $variant }) =>
-      $variant === "primary" ? "transparent" : theme.colors.primary.main};
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-`;
-
-const ActionContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[1]};
-`;
-
-const ActionTitle = styled.span`
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  font-size: ${({ theme }) => theme.typography.fontSize.md};
-`;
-
-const ActionDescription = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  opacity: 0.8;
-`;
-
-const RestaurantInfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: ${({ theme }) => theme.spacing[6]};
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.xl}) {
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-    gap: ${({ theme }) => theme.spacing[8]};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing[4]};
-  }
-`;
-
-const ReservationStatusGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing[6]};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: ${({ theme }) => theme.spacing[4]};
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing[4]};
-  }
-`;
-
-const AlertsCard = styled.div`
-  background: ${({ theme }) => theme.colors.background.primary};
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
-  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
-  padding: ${({ theme }) => theme.spacing[6]};
-`;
-
-const ModernAlertItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: ${({ theme }) => theme.spacing[4]};
-  background: ${({ theme }) => theme.colors.neutral[50]};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
-  transition: all ${({ theme }) => theme.transitions.duration[200]}
-    ${({ theme }) => theme.transitions.timing.out};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.neutral[100]};
-    border-color: ${({ theme }) => theme.colors.primary.main}40;
-  }
-`;
-
-const AlertContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[2]};
-  flex: 1;
-`;
-
-const AlertTableName = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  color: ${({ theme }) => theme.colors.text.primary};
-
-  svg {
-    color: ${({ theme }) => theme.colors.primary.main};
-  }
-`;
-
-const AlertCustomer = styled.div`
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
-
-const AlertDateTime = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  svg {
-    color: ${({ theme }) => theme.colors.primary.main};
-  }
-`;
-
-const AdminActionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: ${({ theme }) => theme.spacing[4]};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[4]};
-`;
-
-const RefreshButton = styled.button<{ disabled: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  padding: ${({ theme }) => theme.spacing[4]};
-  background: ${({ theme, disabled }) =>
-    disabled ? theme.colors.neutral[200] : theme.colors.primary.main};
-  color: ${({ theme, disabled }) =>
-    disabled ? theme.colors.text.secondary : theme.colors.primary.contrast};
-  border: 1px solid
-    ${({ theme, disabled }) =>
-      disabled ? theme.colors.neutral[200] : theme.colors.primary.main};
-  border-radius: ${({ theme }) => theme.borderRadius.xl};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.duration[200]}
-    ${({ theme }) => theme.transitions.timing.out};
-  text-align: left;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-    border-color: ${({ theme, disabled }) =>
-      disabled ? theme.colors.neutral[200] : theme.colors.primary.main};
-  }
-
-  svg {
-    flex-shrink: 0;
-
-    &.spinning {
-      animation: ${spin} 1s linear infinite;
-    }
-  }
-`;
-
-const AutoUpdateIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
-
-const UpdateDot = styled.div<{ $active: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: ${({ theme, $active }) =>
-    $active ? theme.colors.semantic.success : theme.colors.neutral[400]};
-`;
