@@ -26,7 +26,7 @@ export const checkPendingReservations = async () => {
     for (const reservation of expiredPendingReservations) {
       await approveReservation(String(reservation._id));
       console.log(
-        `🔄 Reserva ${String(
+        `Reserva ${String(
           reservation._id
         )} confirmada via verificação periódica`
       );
@@ -34,7 +34,7 @@ export const checkPendingReservations = async () => {
 
     if (expiredPendingReservations.length > 0) {
       console.log(
-        `✅ Verificação periódica: ${expiredPendingReservations.length} reservas confirmadas`
+        `Verificação periódica: ${expiredPendingReservations.length} reservas confirmadas`
       );
     }
   } catch (error) {
@@ -45,7 +45,7 @@ export const checkPendingReservations = async () => {
 // Iniciar verificação periódica (a cada 30 segundos)
 export const startPeriodicCheck = () => {
   setInterval(checkPendingReservations, 30 * 1000);
-  console.log("🕐 Sistema de verificação periódica de reservas iniciado (30s)");
+  console.log("Sistema de verificação periódica de reservas iniciado (30s)");
 };
 
 export const scheduleAutoApproval = async (reservationId: string) => {
@@ -76,7 +76,7 @@ export const scheduleAutoApproval = async (reservationId: string) => {
     }, confirmationTimeMinutes * 60 * 1000); // Converte minutos para milissegundos
 
     console.log(
-      `⏰ Reserva ${reservationId} agendada para confirmação automática em ${confirmationTimeMinutes} minutos`
+      `Reserva ${reservationId} agendada para confirmação automática em ${confirmationTimeMinutes} minutos`
     );
   } catch (error) {
     console.error("Erro ao agendar aprovação automática:", error);
@@ -86,19 +86,19 @@ export const scheduleAutoApproval = async (reservationId: string) => {
 // Função auxiliar para aprovar uma reserva
 const approveReservation = async (reservationId: string) => {
   try {
-    console.log(`🔍 Verificando reserva ${reservationId} para confirmação...`);
+    console.log(`Verificando reserva ${reservationId} para confirmação...`);
 
     const reservation = await Reservation.findById(reservationId);
 
     if (!reservation) {
       console.error(
-        `❌ Reserva ${reservationId} não encontrada para aprovação automática`
+        `Reserva ${reservationId} não encontrada para aprovação automática`
       );
       return;
     }
 
     console.log(
-      `📋 Reserva ${reservationId} encontrada. Status atual: ${reservation.status}`
+      `Reserva ${reservationId} encontrada. Status atual: ${reservation.status}`
     );
 
     // Só aprova se ainda estiver pendente
@@ -112,15 +112,15 @@ const approveReservation = async (reservationId: string) => {
       );
       await updateTableStatus(reservation.tableId.toString());
 
-      console.log(`✅ Reserva ${reservationId} confirmada automaticamente`);
+      console.log(`Reserva ${reservationId} confirmada automaticamente`);
     } else {
       console.log(
-        `ℹ️  Reserva ${reservationId} já não está pendente. Status: ${reservation.status}`
+        `Reserva ${reservationId} já não está pendente. Status: ${reservation.status}`
       );
     }
   } catch (error) {
     console.error(
-      `❌ Erro ao aprovar reserva ${reservationId} automaticamente:`,
+      `Erro ao aprovar reserva ${reservationId} automaticamente:`,
       error
     );
   }

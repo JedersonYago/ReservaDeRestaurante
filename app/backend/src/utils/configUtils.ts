@@ -7,29 +7,35 @@ export async function applyConfigToReservation(
   reservationTime: string,
   existingReservations: { date: string; time: string }[]
 ): Promise<{ isValid: boolean; error?: string }> {
-  // Verificar horários de funcionamento
+  // Verificar horários de funcionamento - controla QUANDO é possível fazer reservas
   if (config.isOpeningHoursEnabled) {
-    const reservationDateTime = parseISO(
-      `${reservationDate}T${reservationTime}`
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(
+      now.getMinutes()
+    ).padStart(2, "0")}`;
+
+    const currentDateTime = parseISO(
+      `${now.toISOString().slice(0, 10)}T${currentTime}`
     );
     const openingDateTime = parseISO(
-      `${reservationDate}T${config.openingHour}`
+      `${now.toISOString().slice(0, 10)}T${config.openingHour}`
     );
     const closingDateTime = parseISO(
-      `${reservationDate}T${config.closingHour}`
+      `${now.toISOString().slice(0, 10)}T${config.closingHour}`
     );
 
-    if (isBefore(reservationDateTime, openingDateTime)) {
+    // Verificar se estamos dentro do horário de funcionamento ATUAL
+    if (isBefore(currentDateTime, openingDateTime)) {
       return {
         isValid: false,
-        error: `Reserva não pode ser feita antes do horário de abertura (${config.openingHour})`,
+        error: `Sistema de reservas disponível apenas a partir das ${config.openingHour}`,
       };
     }
 
-    if (isAfter(reservationDateTime, closingDateTime)) {
+    if (isAfter(currentDateTime, closingDateTime)) {
       return {
         isValid: false,
-        error: `Reserva não pode ser feita após o horário de fechamento (${config.closingHour})`,
+        error: `Sistema de reservas encerrado. Horário de funcionamento: ${config.openingHour} - ${config.closingHour}`,
       };
     }
   }
@@ -50,9 +56,12 @@ export function generateAvailableTimeSlots(
   date: string,
   existingReservations: { date: string; time: string }[]
 ): string[] {
-  // Gerar todos os horários de 00:00 às 23:00 (intervalo de 1 hora)
+  // Esta função gera horários disponíveis baseado nas reservas existentes
+  // NÃO filtra por horário de funcionamento, pois isso é controlado
+  // na validação de quando é possível fazer reservas
   const slots: string[] = [];
 
+  // Gerar todos os horários de 00:00 às 23:00 (intervalo de 1 hora)
   for (let hour = 0; hour < 24; hour++) {
     const timeString = `${String(hour).padStart(2, "0")}:00`;
 
