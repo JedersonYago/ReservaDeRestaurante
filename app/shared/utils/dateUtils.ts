@@ -1,8 +1,7 @@
-import { formatToYMD } from "./dateFormat";
+import { formatToDMY } from "./dateFormat";
 import {
   MAX_DAYS_AHEAD,
   OPENING_TIME,
-  CLOSING_TIME,
   LAST_RESERVATION_TIME,
 } from "../constants";
 
@@ -120,55 +119,11 @@ export function isWithinTableAvailability(
 }
 
 /**
- * Formata uma data para exibição
+ * Formata uma data para exibição (delegando para formatToDMY)
  */
-export function formatDate(
-  date: string | Date,
-  formatStr: string = "dd/MM/yyyy"
-): string {
-  if (!date) return "";
-
-  try {
-    let dateObj: Date;
-
-    if (typeof date === "string") {
-      // Se for string no formato YYYY-MM-DD
-      if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = date.split("-");
-        dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      }
-      // Se for string no formato ISO (YYYY-MM-DDTHH:mm:ss.sssZ)
-      else if (date.includes("T")) {
-        dateObj = new Date(date);
-      }
-      // Outros formatos de string
-      else {
-        dateObj = new Date(date);
-      }
-    } else {
-      // Se for Date
-      dateObj = date;
-    }
-
-    // Verificar se a data é válida
-    if (isNaN(dateObj.getTime())) {
-      // console.error("Data inválida:", date);
-      return typeof date === "string" ? date : date.toString();
-    }
-
-    // Formatação simples baseada no formatStr
-    if (formatStr === "dd/MM/yyyy") {
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const year = dateObj.getFullYear();
-      return `${day}/${month}/${year}`;
-    }
-
-    return dateObj.toLocaleDateString("pt-BR");
-  } catch (error) {
-    // console.error("Erro ao formatar data:", error);
-    return typeof date === "string" ? date : date.toString();
-  }
+export function formatDate(date: string | Date): string {
+  // Delegar para a função especializada
+  return formatToDMY(date);
 }
 
 /**

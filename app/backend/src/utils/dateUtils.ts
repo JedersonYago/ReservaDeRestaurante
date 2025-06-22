@@ -1,14 +1,18 @@
+// Re-exportações centralizadas para o backend
 export {
-  formatToYMD,
-  formatToDMY,
-  extractYMD,
   generateAvailableHours,
   isDateInRange,
   isValidReservationDate,
   isValidReservationTime,
   isTimeInRange,
   isWithinTableAvailability,
-  formatDate,
-  formatTime,
   isValidDate,
-} from "../../../shared/utils";
+  formatTime,
+} from "../../../shared/utils/dateUtils";
+
+export {
+  formatDate,
+  toYMD,
+  toDMY,
+  onlyYMD,
+} from "../../../shared/utils/dateFormat";

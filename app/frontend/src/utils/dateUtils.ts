@@ -1,7 +1,5 @@
 // Re-exportar funções da biblioteca compartilhada
 export {
-  formatDate,
-  formatTime,
   isDateInRange,
   isTimeInRange,
   isValidDate,
@@ -9,12 +7,14 @@ export {
   isValidReservationDate,
   isValidReservationTime,
   isWithinTableAvailability,
+  formatTime,
 } from "../../../shared/utils/dateUtils";
 
 export {
-  formatToYMD as toYMD,
-  formatToDMY as toDMY,
-  extractYMD as onlyYMD,
+  formatDate,
+  toYMD,
+  toDMY,
+  onlyYMD,
 } from "../../../shared/utils/dateFormat";
 
 // Re-exportar constantes

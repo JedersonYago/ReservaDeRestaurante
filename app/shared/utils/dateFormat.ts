@@ -10,7 +10,19 @@ export function formatToYMD(date: string | Date): string {
     let dateObj: Date;
 
     if (typeof date === "string") {
-      dateObj = new Date(date);
+      // Se for string no formato YYYY-MM-DD (evita problema de fuso horário)
+      if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = date.split("-");
+        dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      // Se for string no formato ISO (YYYY-MM-DDTHH:mm:ss.sssZ)
+      else if (date.includes("T")) {
+        dateObj = new Date(date);
+      }
+      // Outros formatos de string
+      else {
+        dateObj = new Date(date);
+      }
     } else {
       dateObj = date;
     }
@@ -43,7 +55,19 @@ export function formatToDMY(date: string | Date): string {
     let dateObj: Date;
 
     if (typeof date === "string") {
-      dateObj = new Date(date);
+      // Se for string no formato YYYY-MM-DD (evita problema de fuso horário)
+      if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = date.split("-");
+        dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      // Se for string no formato ISO (YYYY-MM-DDTHH:mm:ss.sssZ)
+      else if (date.includes("T")) {
+        dateObj = new Date(date);
+      }
+      // Outros formatos de string
+      else {
+        dateObj = new Date(date);
+      }
     } else {
       dateObj = date;
     }
@@ -82,3 +106,9 @@ export function extractYMD(date: string | Date): string {
     return "";
   }
 }
+
+// Aliases mais intuitivos
+export const formatDate = formatToDMY;
+export const toYMD = formatToYMD;
+export const toDMY = formatToDMY;
+export const onlyYMD = extractYMD;
