@@ -68,6 +68,7 @@ export function Reservations() {
   const toast = useToast();
   const {
     reservations,
+    loading,
     deleteReservation,
     clearReservation,
     cancelReservation,
@@ -228,6 +229,16 @@ export function Reservations() {
         return status;
     }
   };
+
+  if (loading) {
+    return (
+      <PageWrapper>
+        <LayoutContainer>
+          <div>Carregando reservas...</div>
+        </LayoutContainer>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
