@@ -1,22 +1,8 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { Button } from "../../../components/Button";
+import { fadeIn } from "../../../styles/animations";
 
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-export const PageWrapper = styled.div`
-  width: 100%;
-  min-height: calc(100vh - 4rem);
-  background: #f9fafb;
-  padding-bottom: 3rem;
-`;
+// PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
   background: white;

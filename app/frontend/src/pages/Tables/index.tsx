@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "../../components/Toast";
 import {
   Users,
   Plus,
@@ -22,8 +21,8 @@ import { Input } from "../../components/Input";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
 import { ConfirmationModal } from "../../components/Modal/ConfirmationModal";
+import { PageWrapper } from "../../components/Layout/PageWrapper";
 import {
-  PageWrapper,
   Header,
   HeaderContent,
   TitleSection,
@@ -87,7 +86,6 @@ const statusConfig: Record<
 export function Tables() {
   const { tables, isLoading, deleteTable } = useTables();
   const navigate = useNavigate();
-  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -265,8 +263,6 @@ export function Tables() {
                 {filteredTables.map((table) => {
                   const hasActiveReservations =
                     (table.reservations?.length ?? 0) > 0;
-                  const config =
-                    statusConfig[table.status] || statusConfig.available;
 
                   return (
                     <TableCard key={table._id}>

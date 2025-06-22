@@ -1,23 +1,32 @@
 import styled, { keyframes } from "styled-components";
+import { fadeIn, spin } from "../../../styles/animations";
 
-// Animações
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+// Animações específicas desta página
+const slideDown = keyframes`
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 400px;
+    opacity: 1;
+  }
 `;
 
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+const bounce = keyframes`
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-3px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
 `;
 
 // Page Layout
-export const PageWrapper = styled.div`
-  width: 100%;
-  min-height: calc(100vh - ${({ theme }) => theme.spacing[16]});
-  background: ${({ theme }) => theme.colors.background.secondary};
-  padding-bottom: ${({ theme }) => theme.spacing[8]};
-`;
+// PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
   margin-bottom: ${({ theme }) => theme.spacing[8]};
@@ -317,16 +326,7 @@ export const AvailabilityPreview = styled.div`
   margin-top: ${({ theme }) => theme.spacing[2]};
 `;
 
-const slideDown = keyframes`
-  from {
-    max-height: 0;
-    opacity: 0;
-  }
-  to {
-    max-height: 400px;
-    opacity: 1;
-  }
-`;
+// slideDown movido para o topo do arquivo
 
 export const ScrollableTimesList = styled.div`
   max-height: 280px;
@@ -355,17 +355,7 @@ export const ScrollableTimesList = styled.div`
   }
 `;
 
-const bounce = keyframes`
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-3px);
-  }
-  60% {
-    transform: translateY(-2px);
-  }
-`;
+// bounce movido para o topo do arquivo
 
 export const ScrollIndicator = styled.div`
   display: flex;

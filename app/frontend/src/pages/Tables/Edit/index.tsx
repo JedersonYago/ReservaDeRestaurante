@@ -25,11 +25,11 @@ import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import { Input } from "../../../components/Input";
 import { Select } from "../../../components/Select";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
+import { PageWrapper } from "../../../components/Layout/PageWrapper";
 import { useToast } from "../../../components/Toast";
 import { format } from "date-fns";
 import { validateTimeIntervalAgainstBusinessHours } from "../../../utils/timeValidation";
 import {
-  PageWrapper,
   Header,
   HeaderContent,
   TitleSection,
@@ -918,7 +918,7 @@ export function EditTable() {
                         marginBottom: "8px",
                       }}
                     >
-                      ⚠️ Atenção: {removalConfig.affectedReservations.length}{" "}
+                      Atenção: {removalConfig.affectedReservations.length}{" "}
                       reserva(s) será(ão) cancelada(s):
                     </p>
                     <ul

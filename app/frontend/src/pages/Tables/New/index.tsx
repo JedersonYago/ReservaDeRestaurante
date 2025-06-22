@@ -13,7 +13,6 @@ import {
   Clock,
   Users,
   Settings2,
-  CheckCircle,
   Save,
   Utensils,
 } from "lucide-react";
@@ -22,6 +21,7 @@ import { Button } from "../../../components/Button";
 import { CancelButton } from "../../../components/Button/CancelButton";
 import { Input } from "../../../components/Input";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
+import { PageWrapper } from "../../../components/Layout/PageWrapper";
 import { useTables } from "../../../hooks/useTables";
 import { useConfig } from "../../../hooks/useConfig";
 import {
@@ -30,13 +30,9 @@ import {
   getTodayString,
   getCurrentTimeString,
 } from "../../../utils/dateValidation";
-import {
-  validateTimeIntervalAgainstBusinessHours,
-  validateMultipleTimeIntervals,
-} from "../../../utils/timeValidation";
+import { validateTimeIntervalAgainstBusinessHours } from "../../../utils/timeValidation";
 
 import {
-  PageWrapper,
   Header,
   HeaderContent,
   TitleSection,
@@ -50,19 +46,16 @@ import {
   FormGrid,
   FormGroup,
   ErrorMessage,
-  AvailabilitySection,
   AvailabilityModeSelector,
   ModeOption,
   AvailabilityBlock,
   BlockHeader,
   BlockActions,
-  BlockContent,
   TimeInputContainer,
   TimeSlot,
   TimeSlotActions,
   WarningBadge,
   EmptyTimeSlots,
-  AddBlockButton,
   AddActionButton,
   ActionButtons,
 } from "./styles";
@@ -115,7 +108,6 @@ export function NewTable() {
   const [capacityError, setCapacityError] = useState("");
   const [dateError, setDateError] = useState("");
   const [timeError, setTimeError] = useState("");
-  const [businessHoursWarning, setBusinessHoursWarning] = useState("");
 
   const handleAddTimeInterval = () => {
     if (!currentStartTime || !currentEndTime) {

@@ -6,8 +6,8 @@ import { Button } from "../../../components/Button";
 import { useToast } from "../../../components/Toast";
 import { formatDate, formatTime } from "../../../utils/dateUtils";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
+import { PageWrapper } from "../../../components/Layout/PageWrapper";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
-import { CancelButton } from "../../../components/Button/CancelButton";
 import { StatusBadge } from "../../../components/StatusBadge";
 import { ButtonGroup } from "../../../components/ButtonGroup";
 import {
@@ -27,7 +27,6 @@ import {
   MapPin,
 } from "lucide-react";
 import {
-  PageWrapper,
   Header,
   HeaderContent,
   TitleSection,
@@ -203,19 +202,6 @@ export function ReservationDetails() {
         return "Cancelada";
       default:
         return status;
-    }
-  };
-
-  const getStatusDescription = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "Aguardando confirmação";
-      case "confirmed":
-        return "Reserva confirmada";
-      case "cancelled":
-        return "Reserva cancelada";
-      default:
-        return "";
     }
   };
 

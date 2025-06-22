@@ -10,12 +10,7 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
-export const PageWrapper = styled.div`
-  min-height: 100vh;
-  background-color: #f9fafb;
-  padding: 24px 0;
-  animation: ${fadeIn} 0.3s ease-out;
-`;
+// PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
   background: white;

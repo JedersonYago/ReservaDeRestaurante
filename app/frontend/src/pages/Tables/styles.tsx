@@ -1,23 +1,7 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
+import { fadeIn } from "../../styles/animations";
 
-// Animações
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-// Page Layout - Exatamente igual às reservas
-export const PageWrapper = styled.div`
-  width: 100%;
-  min-height: calc(100vh - ${({ theme }) => theme.spacing[16]});
-  background: ${({ theme }) => theme.colors.background.secondary};
-  padding-bottom: ${({ theme }) => theme.spacing[8]};
-`;
+// PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
   margin-bottom: ${({ theme }) => theme.spacing[8]};

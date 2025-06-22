@@ -18,8 +18,8 @@ import { Input } from "../../components/Input";
 
 import { Container as LayoutContainer } from "../../components/Layout/Container";
 import { useToast } from "../../components/Toast";
+import { PageWrapper } from "../../components/Layout/PageWrapper";
 import {
-  PageWrapper,
   HeaderSection,
   HeaderContent,
   TitleSection,
@@ -52,10 +52,11 @@ import {
   MessageText,
 } from "./styles";
 
+// Configuração padrão centralizada - valores sincronizados com shared/constants/time.ts
 const defaultConfig: Config = {
   maxReservationsPerUser: 5,
   reservationLimitHours: 24,
-  minIntervalBetweenReservations: 30,
+  minIntervalBetweenReservations: 10, // Sincronizado com backend (corrigido de 30 para 10)
   openingHour: "11:00",
   closingHour: "23:00",
   isReservationLimitEnabled: true,

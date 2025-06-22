@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "../../../components/Toast";
+
 import { useTableById, useTables } from "../../../hooks/useTables";
 import { useReservationsByTable } from "../../../hooks/useReservations";
 import { Button } from "../../../components/Button";
@@ -13,6 +13,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useReservations } from "../../../hooks/useReservations";
 import { getStatusText } from "../../../utils/textUtils";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
+import { PageWrapper } from "../../../components/Layout/PageWrapper";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import {
   ArrowLeft,
@@ -33,7 +34,6 @@ import {
   ChevronUp,
 } from "lucide-react";
 import {
-  PageWrapper,
   Header,
   HeaderContent,
   TitleSection,
@@ -113,7 +113,6 @@ export function TableDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const toast = useToast();
   const { user } = useAuth();
   const { deleteReservation, confirmReservation, cancelReservation } =
     useReservations();

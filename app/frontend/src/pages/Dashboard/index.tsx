@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../hooks/useAuth";
 import { Card } from "../../components/Card";
@@ -8,6 +8,8 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { formatDate, formatTime } from "../../utils/dateUtils";
 import { getStatusText } from "../../utils/textUtils";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
+import { fadeIn, spin, pulse } from "../../styles/animations";
+import { PageWrapper as BasePageWrapper } from "../../components/Layout/PageWrapper";
 import {
   BarChart3,
   Calendar,
@@ -30,21 +32,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-// Animações
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const pulse = keyframes`
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-`;
+// Animações removidas - agora usando arquivo centralizado
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -69,7 +57,7 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <PageWrapper>
+      <BasePageWrapper>
         <LayoutContainer>
           <Header>
             <HeaderContent>
@@ -83,13 +71,13 @@ export function Dashboard() {
             <LoadingMessage>Carregando dados do dashboard...</LoadingMessage>
           </LoadingState>
         </LayoutContainer>
-      </PageWrapper>
+      </BasePageWrapper>
     );
   }
 
   if (error) {
     return (
-      <PageWrapper>
+      <BasePageWrapper>
         <LayoutContainer>
           <Header>
             <HeaderContent></HeaderContent>
@@ -106,12 +94,12 @@ export function Dashboard() {
             </Button>
           </ErrorState>
         </LayoutContainer>
-      </PageWrapper>
+      </BasePageWrapper>
     );
   }
 
   return (
-    <PageWrapper>
+    <BasePageWrapper>
       <LayoutContainer>
         <Header>
           <HeaderContent>
@@ -153,7 +141,7 @@ export function Dashboard() {
           <ClientDashboard stats={clientStats} />
         )}
       </LayoutContainer>
-    </PageWrapper>
+    </BasePageWrapper>
   );
 }
 
@@ -583,13 +571,7 @@ function AdminDashboard({ stats }: { stats: any }) {
   );
 }
 
-// Styled Components
-const PageWrapper = styled.div`
-  width: 100%;
-  min-height: calc(100vh - ${({ theme }) => theme.spacing[16]});
-  background: ${({ theme }) => theme.colors.background.secondary};
-  padding-bottom: ${({ theme }) => theme.spacing[8]};
-`;
+// PageWrapper removido - usando componente centralizado
 
 const LoadingMessage = styled.div`
   text-align: center;

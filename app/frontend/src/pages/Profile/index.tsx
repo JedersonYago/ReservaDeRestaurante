@@ -28,8 +28,8 @@ import { Button, CancelButton } from "../../components/Button";
 import { Input } from "../../components/Input";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
 import { ConfirmationModal } from "../../components/Modal/ConfirmationModal";
+import { PageWrapper } from "../../components/Layout/PageWrapper";
 import {
-  PageWrapper,
   Header,
   HeaderContent,
   TitleSection,

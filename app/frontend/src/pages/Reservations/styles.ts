@@ -7,12 +7,7 @@ const fadeIn = keyframes`
 `;
 
 // Page Layout
-export const PageWrapper = styled.div`
-  width: 100%;
-  min-height: calc(100vh - ${({ theme }) => theme.spacing[16]});
-  background: ${({ theme }) => theme.colors.background.secondary};
-  padding-bottom: ${({ theme }) => theme.spacing[8]};
-`;
+// PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
   margin-bottom: ${({ theme }) => theme.spacing[8]};
