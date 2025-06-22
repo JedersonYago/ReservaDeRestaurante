@@ -35,7 +35,6 @@ import { useState } from "react";
 // Animações removidas - agora usando arquivo centralizado
 
 export function Dashboard() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { clientStats, adminStats, loading, error, isAdmin, refetch } =
     useDashboard();
@@ -596,17 +595,6 @@ const Header = styled.header`
   }
 `;
 
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.typography.fontSize.xl};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-  color: ${({ theme }) => theme.colors.text.primary};
-  margin-bottom: ${({ theme }) => theme.spacing[2]};
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    font-size: ${({ theme }) => theme.typography.fontSize["xl"]};
-  }
-`;
-
 const Subtitle = styled.p`
   font-size: ${({ theme }) => theme.typography.fontSize.md};
   color: ${({ theme }) => theme.colors.text.secondary};
@@ -715,22 +703,6 @@ const UserName = styled.span`
 
 const WelcomeMessage = styled.div`
   margin-top: ${({ theme }) => theme.spacing[2]};
-`;
-
-const HeaderDecoration = styled.div`
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.primary.main}20,
-    ${({ theme }) => theme.colors.secondary.main}20
-  );
-  border-radius: ${({ theme }) => theme.borderRadius.full};
-  position: absolute;
-  right: -60px;
-  top: -60px;
-  z-index: -1;
-  opacity: 0.5;
 `;
 
 const LoadingSpinner = styled.div`

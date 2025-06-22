@@ -1,14 +1,5 @@
-import styled, { keyframes } from "styled-components";
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const spin = keyframes`
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-`;
+import styled from "styled-components";
+import { spin } from "../../styles/animations";
 
 // PageWrapper removido - agora usando componente centralizado
 

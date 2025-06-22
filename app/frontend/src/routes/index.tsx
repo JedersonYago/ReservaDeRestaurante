@@ -14,7 +14,6 @@ import { Profile } from "../pages/Profile";
 import { useAuth } from "../hooks/useAuth";
 import { ProtectedLayout } from "../components/ProtectedLayout";
 import { Settings } from "../pages/Settings";
-import { ProtectedRoute } from "../components/ProtectedRoute";
 
 export function AppRoutes() {
   const { isAuthenticated, user } = useAuth();

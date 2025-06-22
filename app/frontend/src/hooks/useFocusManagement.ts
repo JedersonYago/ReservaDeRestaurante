@@ -1,8 +1,6 @@
 import { useEffect, useRef } from "react";
 
 export function useFocusManagement() {
-  const trapRef = useRef<HTMLElement | null>(null);
-
   // Foca no primeiro elemento focável
   const focusFirst = (container: HTMLElement) => {
     const focusableElements = container.querySelectorAll(

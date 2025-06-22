@@ -1,4 +1,4 @@
-import { BaseEntity, ReservationStatus } from "./common";
+import type { BaseEntity, ReservationStatus } from "./common";
 
 /**
  * Interface unificada para reserva

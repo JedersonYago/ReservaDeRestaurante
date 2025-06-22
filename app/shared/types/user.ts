@@ -1,4 +1,4 @@
-import { BaseEntity, UserRole } from "./common";
+import type { BaseEntity, UserRole } from "./common";
 
 /**
  * Interface unificada para usuário

@@ -1,8 +1,6 @@
 import axios from "axios";
 import { authService } from "./authService";
 
-const TOKEN_KEY = "token";
-
 const api = axios.create({
   baseURL: "/api",
 });
