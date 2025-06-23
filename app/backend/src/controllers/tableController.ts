@@ -7,6 +7,7 @@ import { isDateInRange, isTimeInRange } from "../utils/dateUtils";
 import { parseISO, getDay } from "date-fns";
 import mongoose from "mongoose";
 import { formatToYMD } from "../../../shared/utils/dateFormat";
+import { updateTableStatus } from "./reservationController";
 
 function getDayOfWeek(dateStr: string) {
   const dayIdx = getDay(parseISO(dateStr));
@@ -98,6 +99,10 @@ export const tableController = {
       if (!table) {
         return res.status(404).json({ message: "Mesa não encontrada" });
       }
+
+      // Atualizar o status da mesa após a edição
+      await updateTableStatus(table._id.toString());
+
       res.json(table);
     } catch (error: any) {
       console.error("Erro ao atualizar mesa:", error);
