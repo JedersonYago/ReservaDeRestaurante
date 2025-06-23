@@ -3,7 +3,6 @@ import {
   listReservations,
   getReservationById,
   createReservation,
-  updateReservation,
   deleteReservation,
   clearReservation,
   cancelReservation,
@@ -21,7 +20,7 @@ router.get("/", auth, listReservations);
 router.get("/:id", auth, getReservationById);
 router.post("/", auth, validateSchema(reservationSchema), createReservation);
 router.put("/:id/cancel", auth, cancelReservation);
-router.put("/:id", auth, validateSchema(reservationSchema), updateReservation);
+
 router.patch("/:id/clear", auth, clearReservation);
 router.delete("/:id", auth, adminAuth, deleteReservation);
 router.get("/available-times/:date", getAvailableTimes);

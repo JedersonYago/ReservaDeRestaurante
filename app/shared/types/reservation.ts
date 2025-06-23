@@ -27,16 +27,3 @@ export interface CreateReservationData {
   observations?: string;
   userId: string;
 }
-
-/**
- * Dados para atualização de reserva
- */
-export interface UpdateReservationData {
-  tableId?: string;
-  date?: string;
-  time?: string;
-  customerName?: string;
-  customerEmail?: string;
-  observations?: string;
-  status?: ReservationStatus;
-}

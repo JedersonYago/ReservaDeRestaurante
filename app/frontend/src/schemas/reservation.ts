@@ -22,23 +22,6 @@ export const createReservationSchema = yup.object({
   observations: yup.string(),
 });
 
-export const updateReservationSchema = yup.object({
-  date: yup
-    .string()
-    .matches(VALIDATION_PATTERNS.DATE, VALIDATION_MESSAGES.DATE),
-  time: yup
-    .string()
-    .matches(VALIDATION_PATTERNS.TIME, VALIDATION_MESSAGES.TIME),
-  tableId: yup.string(),
-  customerName: yup.string(),
-  customerEmail: yup.string().email("Email inválido"),
-  observations: yup.string(),
-  status: yup.string().oneOf(["pending", "confirmed", "cancelled"]),
-});
-
 export type CreateReservationFormData = yup.InferType<
   typeof createReservationSchema
->;
-export type UpdateReservationFormData = yup.InferType<
-  typeof updateReservationSchema
 >;

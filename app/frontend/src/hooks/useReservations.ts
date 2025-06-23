@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { reservationService } from "../services/reservationService";
-import type { UpdateReservationData, Reservation } from "../types";
+import type { Reservation } from "../types";
 import { useToast } from "../components/Toast";
 import { useAuth } from "./useAuth";
 
@@ -37,18 +37,6 @@ export const useReservations = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || "Erro ao criar reserva");
-    },
-  });
-
-  const updateReservation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateReservationData }) =>
-      reservationService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      toast.success("Reserva atualizada com sucesso!");
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || "Erro ao atualizar reserva");
     },
   });
 
@@ -114,7 +102,6 @@ export const useReservations = () => {
     error,
     refetch,
     createReservation,
-    updateReservation,
     deleteReservation,
     clearReservation,
     cancelReservation,

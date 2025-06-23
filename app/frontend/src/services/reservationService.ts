@@ -1,9 +1,5 @@
 import api from "./api";
-import type {
-  Reservation,
-  CreateReservationData,
-  UpdateReservationData,
-} from "../types/reservation";
+import type { Reservation, CreateReservationData } from "../types/reservation";
 
 export const reservationService = {
   async create(data: CreateReservationData): Promise<Reservation> {
@@ -23,11 +19,6 @@ export const reservationService = {
 
   async cancel(id: string): Promise<Reservation> {
     const response = await api.put<Reservation>(`/reservations/${id}/cancel`);
-    return response.data;
-  },
-
-  async update(id: string, data: UpdateReservationData): Promise<Reservation> {
-    const response = await api.put<Reservation>(`/reservations/${id}`, data);
     return response.data;
   },
 
