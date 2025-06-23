@@ -48,8 +48,9 @@ src/
 
 - `GET /api/reservations` - Listar todas as reservas
 - `POST /api/reservations` - Criar nova reserva
-- `PUT /api/reservations/:id` - Atualizar reserva
-- `DELETE /api/reservations/:id` - Cancelar reserva
+- `PUT /api/reservations/:id/cancel` - Cancelar reserva
+- `PUT /api/reservations/:id/confirm` - Confirmar reserva
+- `DELETE /api/reservations/:id` - Excluir reserva (apenas admin)
 
 ## 🔑 Autenticação
 
