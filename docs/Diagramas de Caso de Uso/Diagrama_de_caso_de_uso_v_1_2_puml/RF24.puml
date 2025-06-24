@@ -1,0 +1,13 @@
+@startuml
+title RF24 - Excluir Conta
+
+actor "Cliente" as Cliente
+
+rectangle "Sistema" {
+  Cliente --> (Excluir Conta)
+  (Excluir Conta) --> (Visualizar Modal de Confirmação)
+  (Visualizar Modal de Confirmação) --> (Confirmar com Senha)
+
+}
+
+@enduml

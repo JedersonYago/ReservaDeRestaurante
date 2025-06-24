@@ -1,0 +1,14 @@
+@startuml
+title RF19 - Detalhes de Mesa (Admin)
+
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Admin --> (Visualizar Detalhes da Mesa)
+  (Visualizar Detalhes da Mesa) --> (Exibir Agenda de Disponibilidade)
+  (Visualizar Detalhes da Mesa) --> (Listar Reservas Ativas)
+  (Visualizar Detalhes da Mesa) --> (Exibir Estatísticas em Tempo Real)
+  (Visualizar Detalhes da Mesa) --> (Executar Ações Administrativas)
+}
+
+@enduml

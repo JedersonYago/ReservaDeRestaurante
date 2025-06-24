@@ -1,0 +1,15 @@
+@startuml
+title RF26 - Dashboard (Admin)
+
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Admin --> (Acessar Dashboard Administrativo)
+  (Acessar Dashboard Administrativo) --> (Exibir Visão Geral)
+  (Acessar Dashboard Administrativo) --> (Exibir Status das Reservas)
+  (Acessar Dashboard Administrativo) --> (Exibir Status das Mesas)
+  (Acessar Dashboard Administrativo) --> (Exibir Reservas Pendentes)
+  (Acessar Dashboard Administrativo) --> (Exibir Ações Administrativas)
+}
+
+@enduml

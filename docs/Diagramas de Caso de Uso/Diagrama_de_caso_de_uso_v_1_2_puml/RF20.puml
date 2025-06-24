@@ -1,0 +1,14 @@
+@startuml
+title RF20 - Editar Mesas
+
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Admin --> (Editar Informações da Mesa)
+  (Editar Informações da Mesa) --> (Validar Nome e Capacidade)
+  (Editar Informações da Mesa) --> (Editar Agenda de Disponibilidade)
+  (Editar Informações da Mesa) --> (Cancelar Reservas Conflitantes)
+  (Editar Informações da Mesa) --> (Salvar Alterações)
+}
+
+@enduml

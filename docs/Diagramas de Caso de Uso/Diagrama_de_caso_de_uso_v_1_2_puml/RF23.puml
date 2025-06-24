@@ -1,0 +1,15 @@
+@startuml
+title RF23 - Alterar Senha
+
+actor "Cliente" as Cliente
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Cliente --> (Acessar Alterar Senha)
+  Admin --> (Acessar Alterar Senha)
+  (Acessar Alterar Senha) --> (Validar Senha Atual)
+  (Validar Senha Atual) --> (Validar Nova Senha)
+  (Validar Nova Senha) --> (Atualizar Senha)
+}
+
+@enduml

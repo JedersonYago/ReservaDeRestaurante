@@ -1,0 +1,14 @@
+@startuml
+title RF28 - Modo Escuro
+
+actor "Cliente" as Cliente
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Cliente --> (Alternar Tema)
+  Admin --> (Alternar Tema)
+  (Alternar Tema) --> (Aplicar Modo Claro/Escuro)
+  (Aplicar Modo Claro/Escuro) --> (Salvar Preferência de Tema)
+}
+
+@enduml

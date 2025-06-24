@@ -1,0 +1,14 @@
+@startuml
+title RF27 - Gerenciar Configurações do Sistema
+
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Admin --> (Acessar Configurações)
+  (Acessar Configurações) --> (Modificar Horários de Funcionamento)
+  (Acessar Configurações) --> (Modificar Tempo de Confirmação)
+  (Acessar Configurações) --> (Modificar Limites de Reserva)
+  (Acessar Configurações) --> (Salvar Configurações)
+}
+
+@enduml

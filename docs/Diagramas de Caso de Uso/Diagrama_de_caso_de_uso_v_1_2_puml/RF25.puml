@@ -1,0 +1,14 @@
+@startuml
+title RF25 - Dashboard (Cliente)
+
+actor "Cliente" as Cliente
+
+rectangle "Sistema" {
+  Cliente --> (Acessar Dashboard Cliente)
+  (Acessar Dashboard Cliente) --> (Exibir Próximas Reservas)
+  (Acessar Dashboard Cliente) --> (Exibir Estatísticas Pessoais)
+  (Acessar Dashboard Cliente) --> (Oferecer Ações Rápidas)
+  (Acessar Dashboard Cliente) --> (Exibir Informações do Restaurante)
+}
+
+@enduml
