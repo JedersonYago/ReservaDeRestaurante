@@ -1,0 +1,21 @@
+@startuml
+title RF22 - Editar Perfil
+
+actor "Cliente" as Cliente
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Cliente --> (Editar Nome)
+  Cliente --> (Editar Email)
+  Cliente --> (Editar Username)
+  Cliente --> (Atualizar Senha)
+  Cliente --> (Salvar Alterações)
+
+  Admin --> (Editar Nome)
+  Admin --> (Editar Email)
+  Admin --> (Editar Username)
+  Admin --> (Atualizar Senha)
+  Admin --> (Salvar Alterações)
+}
+
+@enduml
