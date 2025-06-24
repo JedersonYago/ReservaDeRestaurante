@@ -1,0 +1,13 @@
+@startuml
+title RF21 - Excluir Mesas
+
+actor "Administrador" as Admin
+
+rectangle "Sistema" {
+  Admin --> (Excluir Mesa)
+  (Excluir Mesa) --> (Visualizar Modal de Confirmação)
+  (Visualizar Modal de Confirmação) --> (Confirmar Alteração)
+  Admin --> (Cancelar Reservas Ativas) 
+  (Cancelar Reservas Ativas) --> (Visualizar Modal de Confirmação)
+
+@enduml
