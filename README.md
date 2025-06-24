@@ -6,6 +6,6 @@ O **ReservaFácil** é uma aplicação web desenvolvida para facilitar o agendam
 
 - [Documento de Requisitos](https://docs.google.com/document/d/1oG-CTwgIwojWTciv3wOayO93IBMtrgLJLyYWWCGYM74/edit?tab=t.0#heading=h.h7rdjbvzkuzw)
 
-[Plano de Teste](https://docs.google.com/document/d/1cAYBTZSN1xLo_JrMMViLT4GXAu51xzTRRiW8AFqnbZI/edit?tab=t.0)
+- [Plano de Teste](https://docs.google.com/document/d/1cAYBTZSN1xLo_JrMMViLT4GXAu51xzTRRiW8AFqnbZI/edit?tab=t.0)
 
-[Casos de Teste](https://docs.google.com/document/d/1PjexZuX4VlbBXUluCeE2Vy_ZkMrPa83zDayQ3XjhaBY/edit?tab=t.0)
+- [Casos de Teste](https://docs.google.com/document/d/1PjexZuX4VlbBXUluCeE2Vy_ZkMrPa83zDayQ3XjhaBY/edit?tab=t.0)
