@@ -1,9 +1,3 @@
----
-name: 🐛 Relatório de Bug
-about: Criar um relatório para ajudar a melhorar o sistema
-title: "[BUG] "
----
-
 ## 📋 Descrição do Bug
 
 <!-- Uma descrição clara e concisa do que é o bug -->

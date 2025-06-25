@@ -1,9 +1,3 @@
----
-name: ✨ Solicitação de Funcionalidade
-about: Sugerir uma nova funcionalidade para o sistema
-title: "[FEATURE] "
----
-
 ## 🚀 Resumo da Funcionalidade
 
 <!-- Uma descrição clara e concisa da funcionalidade que você gostaria -->

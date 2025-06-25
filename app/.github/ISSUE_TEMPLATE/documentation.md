@@ -1,9 +1,3 @@
----
-name: 📚 Melhoria na Documentação
-about: Relatar problemas ou sugerir melhorias na documentação
-title: "[DOCS] "
----
-
 ## 📖 Tipo de Melhoria
 
 <!-- Marque o tipo de melhoria necessária -->
