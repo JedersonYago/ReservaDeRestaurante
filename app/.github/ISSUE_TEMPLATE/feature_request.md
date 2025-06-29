@@ -53,4 +53,4 @@
 - [ ] 🔴 Crítica - Essencial para o funcionamento
 - [ ] 🟠 Alta - Muito importante para usuários
 - [ ] 🟡 Média - Melhoria significativa
-- [ ] 🟢 Baixa - Nice to have
+- [ ] 🟢 Baixa - Interessante tê-la
