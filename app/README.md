@@ -46,7 +46,7 @@ Crie um arquivo `.env` na pasta `backend` com as seguintes variáveis:
 cd backend
 ```
 
-Crie o arquivo `.env`:
+Crie o arquivo `.env` (conteúdo usado somente durante o desenvolvimento):
 
 ```env
 # Configurações do MongoDB Atlas
