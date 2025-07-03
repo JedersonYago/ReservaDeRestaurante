@@ -46,21 +46,21 @@ Crie um arquivo `.env` na pasta `backend` com as seguintes variáveis:
 cd backend
 ```
 
-Crie o arquivo `.env`:
+Crie o arquivo `.env` (conteúdo usado somente durante o desenvolvimento):
 
 ```env
-# Configuração do servidor
-PORT=3000
+# Configurações do MongoDB Atlas
+MONGODB_URI=mongodb+srv://reserva-facil:cERrxA0g3n4Zlj9X@cluster0.avzwjwj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+# Configurações do servidor
+PORT=3001
 NODE_ENV=development
 
-# Configuração do banco de dados MongoDB
-MONGODB_URI=mongodb://localhost:27017/restaurant-reservation
+# JWT Secret
+JWT_SECRET=chave-secreta-jwt-aqui-mude-em-producao
 
-# Configuração JWT (substitua por uma chave secreta segura)
-JWT_SECRET=sua_chave_secreta_muito_segura_aqui
-
-# Configuração de CORS
-FRONTEND_URL=http://localhost:5173
+# Codigo Admin
+ADMIN_CODE=ADMIN@12345
 ```
 
 ### 4. Execute o projeto
