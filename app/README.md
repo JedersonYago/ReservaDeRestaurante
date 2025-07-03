@@ -86,7 +86,7 @@ npm run dev
 Após executar todos os comandos acima:
 
 - **Frontend**: Abra [http://localhost:5173](http://localhost:5173) no seu navegador
-- **Backend API**: Disponível em [http://localhost:3000](http://localhost:3000)
+- **Backend API**: Disponível em [http://localhost:3001](http://localhost:3001)
 
 ## 📁 Estrutura do Projeto
 
@@ -145,5 +145,5 @@ ReservaDeRestaurante/
 
 ### Frontend não conecta com Backend
 
-- Verifique se o backend está rodando na porta 3000
+- Verifique se o backend está rodando na porta 3001
 - Confirme se a `FRONTEND_URL` no `.env` está correta
