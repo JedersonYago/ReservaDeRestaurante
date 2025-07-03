@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
+
+// IMPORTANTE: Carrega as variáveis de ambiente ANTES de importar outros módulos
+dotenv.config();
+
 import { databaseConfig } from "./database";
 import { adminConfig } from "./admin";
 import { serverConfig } from "./server";
 import { corsConfig } from "./cors";
-
-// Carrega as variáveis de ambiente
-dotenv.config();
 
 export const config = {
   // Configurações do servidor
