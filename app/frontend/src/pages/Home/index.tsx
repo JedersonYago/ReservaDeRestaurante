@@ -160,8 +160,8 @@ export function Home() {
               </S.FeatureIcon>
               <S.FeatureTitle>Interface Responsiva</S.FeatureTitle>
               <S.FeatureDescription>
-                Acesse de qualquer dispositivo com design moderno e intuitivo
-                otimizado para mobile.
+                Acesse de qualquer dispositivo com design intuitivo e otimizado
+                para mobile.
               </S.FeatureDescription>
             </S.FeatureCard>
             <S.FeatureCard>
@@ -180,8 +180,7 @@ export function Home() {
               </S.FeatureIcon>
               <S.FeatureTitle>Tempo Real</S.FeatureTitle>
               <S.FeatureDescription>
-                Notificações instantâneas e atualizações automáticas para toda a
-                equipe.
+                Atualizações automáticas para toda a equipe.
               </S.FeatureDescription>
             </S.FeatureCard>
             <S.FeatureCard>
@@ -190,8 +189,7 @@ export function Home() {
               </S.FeatureIcon>
               <S.FeatureTitle>Dashboard Completo</S.FeatureTitle>
               <S.FeatureDescription>
-                Relatórios, estatísticas e insights para otimizar o desempenho
-                do restaurante.
+                Estatísticas para otimizar o desempenho do seu restaurante.
               </S.FeatureDescription>
             </S.FeatureCard>
           </S.FeaturesGrid>
@@ -238,9 +236,6 @@ export function Home() {
         <S.Container>
           <S.CTAContent>
             <S.CTATitle>Pronto para transformar seu restaurante?</S.CTATitle>
-            <S.CTASubtitle>
-              Junte-se a centenas de restaurantes que já usam nossa plataforma
-            </S.CTASubtitle>
             <Button
               size="lg"
               onClick={() => navigate("/register")}

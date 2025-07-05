@@ -1,5 +1,13 @@
 import React from "react";
 import styled from "styled-components";
+import {
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Settings,
+  XCircle,
+  TimerOff,
+} from "lucide-react";
 
 export type BadgeVariant =
   | "success"
@@ -7,7 +15,8 @@ export type BadgeVariant =
   | "danger"
   | "info"
   | "neutral"
-  | "primary";
+  | "primary"
+  | "expired";
 
 export type BadgeStatus =
   | "available"
@@ -15,25 +24,99 @@ export type BadgeStatus =
   | "maintenance"
   | "pending"
   | "confirmed"
-  | "cancelled";
+  | "cancelled"
+  | "expired";
 
 interface StatusBadgeProps {
   status?: BadgeStatus;
   variant?: BadgeVariant;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   size?: "sm" | "md" | "lg";
   className?: string;
+  showIcon?: boolean;
+  iconOnly?: boolean;
+}
+
+// Sistema de Status Padronizado - Cores e Ícones
+export const STATUS_CONFIG = {
+  // Estados Positivos/Operacionais (Verde)
+  available: {
+    variant: "success" as BadgeVariant,
+    icon: CheckCircle,
+    label: "Disponível",
+    description: "Pronto para uso/reserva",
+  },
+  confirmed: {
+    variant: "success" as BadgeVariant,
+    icon: CheckCircle,
+    label: "Confirmada",
+    description: "Reserva confirmada e ativa",
+  },
+
+  // Estados em Progresso (Azul)
+  pending: {
+    variant: "info" as BadgeVariant,
+    icon: Clock,
+    label: "Pendente",
+    description: "Aguardando confirmação",
+  },
+
+  // Estados de Atenção/Ocupação (Laranja)
+  reserved: {
+    variant: "warning" as BadgeVariant,
+    icon: AlertCircle,
+    label: "Reservada",
+    description: "Mesa ocupada/reservada",
+  },
+
+  // Estados Inativos/Manutenção (Cinza)
+  maintenance: {
+    variant: "neutral" as BadgeVariant,
+    icon: Settings,
+    label: "Em Manutenção",
+    description: "Indisponível temporariamente",
+  },
+
+  // Estados Cancelados (Vermelho)
+  cancelled: {
+    variant: "danger" as BadgeVariant,
+    icon: XCircle,
+    label: "Cancelada",
+    description: "Cancelado pelo usuário",
+  },
+
+  // Estados Expirados (Vermelho claro)
+  expired: {
+    variant: "expired" as BadgeVariant,
+    icon: TimerOff,
+    label: "Expirada",
+    description: "Expirado automaticamente",
+  },
+} as const;
+
+// Função helper para obter ícone padronizado
+export function getStatusIcon(status: BadgeStatus, size: number = 16) {
+  const IconComponent = STATUS_CONFIG[status]?.icon || Clock;
+  return <IconComponent size={size} />;
+}
+
+// Função helper para obter texto padronizado
+export function getStatusText(status: BadgeStatus): string {
+  return STATUS_CONFIG[status]?.label || status;
+}
+
+// Função helper para obter descrição
+export function getStatusDescription(status: BadgeStatus): string {
+  return STATUS_CONFIG[status]?.description || "";
 }
 
 // Mapeamento de status para variantes
-const statusToVariant: Record<BadgeStatus, BadgeVariant> = {
-  available: "success",
-  confirmed: "success",
-  reserved: "warning",
-  pending: "warning",
-  cancelled: "danger",
-  maintenance: "neutral",
-};
+const statusToVariant: Record<BadgeStatus, BadgeVariant> = Object.entries(
+  STATUS_CONFIG
+).reduce((acc, [status, config]) => {
+  acc[status as BadgeStatus] = config.variant;
+  return acc;
+}, {} as Record<BadgeStatus, BadgeVariant>);
 
 export function StatusBadge({
   status,
@@ -41,13 +124,22 @@ export function StatusBadge({
   children,
   size = "md",
   className,
+  showIcon = true,
+  iconOnly = false,
 }: StatusBadgeProps) {
   // Se status for fornecido, usa o mapeamento; senão usa variant diretamente
   const finalVariant = status ? statusToVariant[status] : variant || "neutral";
 
+  // Se não há children e status é fornecido, usar o texto padrão
+  const content = children || (status ? getStatusText(status) : "");
+
+  // Determinar tamanho do ícone baseado no size do badge
+  const iconSize = size === "sm" ? 12 : size === "lg" ? 18 : 14;
+
   return (
     <Badge $variant={finalVariant} $size={size} className={className}>
-      {children}
+      {showIcon && status && getStatusIcon(status, iconSize)}
+      {!iconOnly && content}
     </Badge>
   );
 }
@@ -125,56 +217,55 @@ const Badge = styled.span<{
     switch ($variant) {
       case "success":
         return `
-          background: ${theme.colors.semantic.success}15;
-          color: #0f5132;
-          border-color: ${theme.colors.semantic.success}30;
+          background: #10B98115;
+          color: #065F46;
+          border-color: #10B98130;
           
           svg {
-            color: ${theme.colors.semantic.success};
-          }
-        `;
-      case "warning":
-        return `
-          background: #FA761F15;
-          color: #8b4513;
-          border-color: #FA761F30;
-          
-          svg {
-            color: #FA761F;
-          }
-        `;
-      case "danger":
-        return `
-          background: ${theme.colors.semantic.error}15;
-          color: #8b1538;
-          border-color: ${theme.colors.semantic.error}30;
-          
-          svg {
-            color: ${theme.colors.semantic.error};
+            color: #10B981;
           }
         `;
       case "info":
         return `
-          background: #0ea5e915;
-          color: #0c4a6e;
-          border-color: #0ea5e930;
+          background: #3B82F615;
+          color: #1E3A8A;
+          border-color: #3B82F630;
           
           svg {
-            color: #0ea5e9;
+            color: #3B82F6;
           }
         `;
-      case "primary":
+      case "warning":
         return `
-          background: #FA761F15;
-          color: #8b4513;
-          border-color: #FA761F30;
+          background: #F59E0B15;
+          color: #92400E;
+          border-color: #F59E0B30;
           
           svg {
-            color: #FA761F;
+            color: #F59E0B;
+          }
+        `;
+      case "danger":
+        return `
+          background: #EF444415;
+          color: #991B1B;
+          border-color: #EF444430;
+          
+          svg {
+            color: #EF4444;
+          }
+        `;
+      case "expired":
+        return `
+          background: #F8717115;
+          color: #7C2D12;
+          border-color: #F8717130;
+          
+          svg {
+            color: #F87171;
           }
         `;
       case "neutral":
-      default:
         return `
           background: ${theme.colors.neutral[100]};
           color: ${theme.colors.neutral[700]};
@@ -182,6 +273,17 @@ const Badge = styled.span<{
           
           svg {
             color: ${theme.colors.neutral[600]};
+          }
+        `;
+      case "primary":
+      default:
+        return `
+          background: #FA761F15;
+          color: #8b4513;
+          border-color: #FA761F30;
+          
+          svg {
+            color: #FA761F;
           }
         `;
     }

@@ -66,6 +66,7 @@ export function getStatusText(status: string): string {
     pending: "Pendente",
     confirmed: "Confirmada",
     cancelled: "Cancelada",
+    expired: "Expirada",
 
     // General status
     active: "Ativo",

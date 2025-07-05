@@ -1,19 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Users,
   Plus,
-  Eye,
-  Edit,
-  Trash2,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Settings,
   Search,
   Filter,
   FilterX,
   Utensils,
+  Users,
+  Eye,
+  Edit2,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { useTables } from "../../hooks/useTables";
 import { Button } from "../../components/Button";
@@ -58,30 +55,7 @@ import {
   DeleteButton,
 } from "./styles";
 
-const statusConfig: Record<
-  string,
-  {
-    label: string;
-    icon: React.ComponentType<{ size?: number }>;
-    status: string;
-  }
-> = {
-  available: {
-    label: "Disponível",
-    icon: CheckCircle,
-    status: "available",
-  },
-  reserved: {
-    label: "Reservada",
-    icon: Clock,
-    status: "reserved",
-  },
-  maintenance: {
-    label: "Em Manutenção",
-    icon: Settings,
-    status: "maintenance",
-  },
-};
+// Removido: agora usando sistema padronizado do StatusBadge
 
 export function Tables() {
   const { tables, isLoading, deleteTable } = useTables();
@@ -106,16 +80,40 @@ export function Tables() {
   const filteredTables = useMemo(() => {
     if (!tables) return [];
 
-    return tables.filter((table) => {
-      const matchesSearch = table.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    // Definir prioridade de status para ordenação
+    const statusPriority: Record<string, number> = {
+      available: 1, // Prioridade máxima - disponível para uso
+      reserved: 2, // Ocupada mas funcional
+      pending: 3, // Em progresso
+      confirmed: 4, // Confirmada
+      maintenance: 5, // Indisponível temporariamente
+      cancelled: 6, // Cancelada
+      expired: 7, // Prioridade mínima - expirada
+    };
 
-      const matchesStatus =
-        statusFilter === "all" || table.status === statusFilter;
+    return tables
+      .filter((table) => {
+        const matchesSearch = table.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-      return matchesSearch && matchesStatus;
-    });
+        const matchesStatus =
+          statusFilter === "all" || table.status === statusFilter;
+
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        // Ordenar por prioridade de status (menor número = maior prioridade)
+        const priorityA = statusPriority[a.status] || 99;
+        const priorityB = statusPriority[b.status] || 99;
+
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+
+        // Se status igual, ordenar por nome
+        return a.name.localeCompare(b.name);
+      });
   }, [tables, searchTerm, statusFilter]);
 
   const handleDeleteClick = (id: string) => {
@@ -152,16 +150,7 @@ export function Tables() {
     setIsDeleting(false);
   };
 
-  const getStatusIcon = (status: string) => {
-    const config = statusConfig[status] || statusConfig.available;
-    const StatusIcon = config.icon;
-    return <StatusIcon size={16} />;
-  };
-
-  const getStatusText = (status: string) => {
-    const config = statusConfig[status] || statusConfig.available;
-    return config.label;
-  };
+  // Removido: agora usando funções helper padronizadas do StatusBadge
 
   if (isLoading) {
     return (
@@ -235,6 +224,7 @@ export function Tables() {
                 <option value="available">Disponível</option>
                 <option value="reserved">Reservada</option>
                 <option value="maintenance">Em Manutenção</option>
+                <option value="expired">Expirada</option>
               </Select>
             </FilterContainer>
 
@@ -272,10 +262,7 @@ export function Tables() {
                           <span>{table.name}</span>
                         </TableInfo>
                         <StatusBadgeContainer>
-                          <StatusBadge status={table.status} size="md">
-                            {getStatusIcon(table.status)}
-                            {getStatusText(table.status)}
-                          </StatusBadge>
+                          <StatusBadge status={table.status as any} size="md" />
                         </StatusBadgeContainer>
                       </CardHeader>
 
@@ -312,7 +299,7 @@ export function Tables() {
                           $variant="secondary"
                           title="Editar mesa"
                         >
-                          <Edit size={16} />
+                          <Edit2 size={16} />
                           <span>Editar</span>
                         </ActionButton>
                       </CardActions>

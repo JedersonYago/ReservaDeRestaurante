@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useReservations } from "../../hooks/useReservations";
 import { useAuth } from "../../hooks/useAuth";
@@ -17,8 +17,6 @@ import {
   Trash2,
   X,
   Clock,
-  CheckCircle,
-  XCircle,
   User,
   Mail,
   Utensils,
@@ -108,26 +106,50 @@ export function Reservations() {
   const filteredReservations = useMemo(() => {
     if (!reservations) return [];
 
-    return reservations.filter((reservation) => {
-      const matchesSearch =
-        reservation.customerName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        reservation.customerEmail
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (reservation.tableId &&
-          typeof reservation.tableId === "object" &&
-          "name" in reservation.tableId &&
-          (reservation.tableId as any).name
+    // Definir prioridade de status para ordenação
+    const statusPriority: Record<string, number> = {
+      confirmed: 1, // Prioridade máxima - reserva confirmada e ativa
+      pending: 2, // Aguardando confirmação
+      cancelled: 3, // Cancelada pelo usuário
+      expired: 4, // Prioridade mínima - expirada automaticamente
+    };
+
+    return reservations
+      .filter((reservation) => {
+        const matchesSearch =
+          reservation.customerName
             .toLowerCase()
-            .includes(searchTerm.toLowerCase()));
+            .includes(searchTerm.toLowerCase()) ||
+          reservation.customerEmail
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          (reservation.tableId &&
+            typeof reservation.tableId === "object" &&
+            "name" in reservation.tableId &&
+            (reservation.tableId as any).name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()));
 
-      const matchesStatus =
-        statusFilter === "all" || reservation.status === statusFilter;
+        const matchesStatus =
+          statusFilter === "all" || reservation.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
-    });
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        // Ordenar por prioridade de status (menor número = maior prioridade)
+        const priorityA = statusPriority[a.status] || 99;
+        const priorityB = statusPriority[b.status] || 99;
+
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+
+        // Se status igual, ordenar por data e hora (mais recentes primeiro)
+        const dateTimeA = new Date(`${a.date}T${a.time}`);
+        const dateTimeB = new Date(`${b.date}T${b.time}`);
+
+        return dateTimeB.getTime() - dateTimeA.getTime();
+      });
   }, [reservations, searchTerm, statusFilter]);
 
   const handleDeleteClick = (id: string) => {
@@ -204,31 +226,7 @@ export function Reservations() {
     setIsProcessing(false);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Clock size={16} />;
-      case "confirmed":
-        return <CheckCircle size={16} />;
-      case "cancelled":
-        return <XCircle size={16} />;
-      default:
-        return <Clock size={16} />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "Pendente";
-      case "confirmed":
-        return "Confirmada";
-      case "cancelled":
-        return "Cancelada";
-      default:
-        return status;
-    }
-  };
+  // Removido: agora usando sistema padronizado do StatusBadge
 
   if (loading) {
     return (
@@ -302,6 +300,7 @@ export function Reservations() {
                 <option value="pending">Pendente</option>
                 <option value="confirmed">Confirmada</option>
                 <option value="cancelled">Cancelada</option>
+                <option value="expired">Expirada</option>
               </Select>
             </FilterContainer>
 
@@ -347,10 +346,10 @@ export function Reservations() {
                         </TableInfo>
                       </ReservationInfo>
                       <StatusBadgeContainer>
-                        <StatusBadge status={reservation.status as any}>
-                          {getStatusIcon(reservation.status)}
-                          {getStatusText(reservation.status)}
-                        </StatusBadge>
+                        <StatusBadge
+                          status={reservation.status as any}
+                          size="md"
+                        />
                       </StatusBadgeContainer>
                     </CardHeader>
 
