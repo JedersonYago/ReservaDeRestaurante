@@ -56,8 +56,12 @@ MONGODB_URI=mongodb+srv://reserva-facil:cERrxA0g3n4Zlj9X@cluster0.avzwjwj.mongod
 PORT=3001
 NODE_ENV=development
 
-# JWT Secret
+# JWT Secret (IMPORTANTE: Mude em produção!)
 JWT_SECRET=chave-secreta-jwt-aqui-mude-em-producao
+
+# Configurações de JWT
+JWT_EXPIRES_IN=1h
+REFRESH_TOKEN_EXPIRES_IN=7d
 
 # Codigo Admin
 ADMIN_CODE=ADMIN@12345
