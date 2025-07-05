@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
@@ -10,7 +10,6 @@ interface UserDropdownProps {
 
 export function UserDropdown({ className }: UserDropdownProps) {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -49,7 +48,6 @@ export function UserDropdown({ className }: UserDropdownProps) {
 
   const handleLogout = () => {
     signOut();
-    navigate("/login");
     setIsOpen(false);
   };
 

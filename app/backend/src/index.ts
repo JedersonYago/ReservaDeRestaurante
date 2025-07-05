@@ -14,6 +14,7 @@ import {
   startPeriodicCheck,
   startDailyCleanup,
 } from "./services/schedulerService";
+import { apiLimiter } from "./config/rateLimit";
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use(express.json());
 app.use(helmetConfig);
 app.use(rateLimiter);
 app.use(sanitizeData);
+
+// Rate limiting geral para todas as rotas da API
+app.use("/api", apiLimiter);
 
 // Rotas
 app.use("/api", routes);

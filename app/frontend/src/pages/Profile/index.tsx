@@ -15,6 +15,7 @@ import {
   Crown,
   UserCircle,
   Trash2,
+  Monitor,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import {
@@ -64,7 +65,7 @@ import {
 } from "./styles";
 
 export function Profile() {
-  const { user, updateUser, signOut } = useAuth();
+  const { user, updateUser, signOut, logoutAll, isLoading } = useAuth();
   const toast = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -84,6 +85,7 @@ export function Profile() {
     newPassword: "",
     confirmNewPassword: "",
   });
+  const [showLogoutAllModal, setShowLogoutAllModal] = useState(false);
 
   // Função para verificar força da senha
   const checkPasswordStrength = (password: string) => {
@@ -639,73 +641,99 @@ export function Profile() {
               </ProfileSection>
             </ProfileCard>
           ) : (
-            <ProfileCard>
-              <ProfileSection>
-                <SectionTitle>
-                  <UserCircle size={20} />
-                  Informações do Perfil
-                </SectionTitle>
-                <SectionDescription>
-                  Suas informações pessoais e configurações de conta
-                </SectionDescription>
+            <>
+              <ProfileCard>
+                <ProfileSection>
+                  <SectionTitle>
+                    <UserCircle size={20} />
+                    Informações do Perfil
+                  </SectionTitle>
+                  <SectionDescription>
+                    Suas informações pessoais e configurações de conta
+                  </SectionDescription>
 
-                <InfoGrid>
-                  <InfoItem>
-                    <InfoLabel>
-                      <User size={16} />
-                      Nome
-                    </InfoLabel>
-                    <InfoValue>{user.name}</InfoValue>
-                  </InfoItem>
+                  <InfoGrid>
+                    <InfoItem>
+                      <InfoLabel>
+                        <User size={16} />
+                        Nome
+                      </InfoLabel>
+                      <InfoValue>{user.name}</InfoValue>
+                    </InfoItem>
 
-                  <InfoItem>
-                    <InfoLabel>
-                      <UserCircle size={16} />
-                      Nome de usuário
-                    </InfoLabel>
-                    <InfoValue>@{user.username}</InfoValue>
-                  </InfoItem>
+                    <InfoItem>
+                      <InfoLabel>
+                        <UserCircle size={16} />
+                        Nome de usuário
+                      </InfoLabel>
+                      <InfoValue>@{user.username}</InfoValue>
+                    </InfoItem>
 
-                  <InfoItem>
-                    <InfoLabel>
-                      <Mail size={16} />
-                      Email
-                    </InfoLabel>
-                    <InfoValue>{user.email}</InfoValue>
-                  </InfoItem>
+                    <InfoItem>
+                      <InfoLabel>
+                        <Mail size={16} />
+                        Email
+                      </InfoLabel>
+                      <InfoValue>{user.email}</InfoValue>
+                    </InfoItem>
 
-                  <InfoItem>
-                    <InfoLabel>
-                      <Crown size={16} />
-                      Tipo de conta
-                    </InfoLabel>
-                    <InfoValue>
-                      <RoleBadge $role={user.role}>
-                        {user.role === "admin" ? "Administrador" : "Cliente"}
-                      </RoleBadge>
-                    </InfoValue>
-                  </InfoItem>
+                    <InfoItem>
+                      <InfoLabel>
+                        <Crown size={16} />
+                        Tipo de conta
+                      </InfoLabel>
+                      <InfoValue>
+                        <RoleBadge $role={user.role}>
+                          {user.role === "admin" ? "Administrador" : "Cliente"}
+                        </RoleBadge>
+                      </InfoValue>
+                    </InfoItem>
 
-                  <InfoItem style={{ gridColumn: "1 / -1" }}>
-                    <InfoLabel>
-                      <Calendar size={16} />
-                      Membro desde
-                    </InfoLabel>
-                    <InfoValue>
-                      {new Date(user.createdAt).toLocaleDateString("pt-BR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </InfoValue>
-                  </InfoItem>
-                </InfoGrid>
-              </ProfileSection>
-            </ProfileCard>
+                    <InfoItem style={{ gridColumn: "1 / -1" }}>
+                      <InfoLabel>
+                        <Calendar size={16} />
+                        Membro desde
+                      </InfoLabel>
+                      <InfoValue>
+                        {new Date(user.createdAt).toLocaleDateString("pt-BR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </InfoValue>
+                    </InfoItem>
+                  </InfoGrid>
+                </ProfileSection>
+              </ProfileCard>
+
+              {/* Box de Segurança da Conta */}
+              <ProfileCard>
+                <ProfileSection>
+                  <SectionTitle>
+                    <Shield size={20} />
+                    Segurança da Conta
+                  </SectionTitle>
+                  <SectionDescription>
+                    Encerre todas as sessões abertas em outros dispositivos.
+                    Útil caso você tenha perdido acesso a algum dispositivo ou
+                    queira garantir sua segurança.
+                  </SectionDescription>
+                  <Button
+                    variant="danger"
+                    leftIcon={<Monitor size={18} />}
+                    onClick={() => setShowLogoutAllModal(true)}
+                    loading={isLoading}
+                    style={{ marginTop: 16, maxWidth: 320 }}
+                  >
+                    Sair de todos os dispositivos
+                  </Button>
+                </ProfileSection>
+              </ProfileCard>
+            </>
           )}
 
-          {/* Seção de Deletar Conta */}
-          {!isEditing && !isChangingPassword && (
+          {/* Seção de Deletar Conta (apenas para não-admin) */}
+          {!isEditing && !isChangingPassword && user.role !== "admin" && (
             <ProfileCard>
               <ProfileSection>
                 <SectionTitle style={{ color: "#dc3545" }}>
@@ -762,6 +790,21 @@ export function Profile() {
           confirmText="Sim, Excluir Conta"
           cancelText="Cancelar"
           isLoading={deleteLoading}
+        />
+
+        <ConfirmationModal
+          isOpen={showLogoutAllModal}
+          onClose={() => setShowLogoutAllModal(false)}
+          onConfirm={() => {
+            setShowLogoutAllModal(false);
+            logoutAll();
+          }}
+          title="Sair de todos os dispositivos?"
+          message="Isso irá encerrar sua sessão em todos os dispositivos conectados. Você precisará fazer login novamente em todos eles. Deseja continuar?"
+          type="danger"
+          confirmText="Sair de todos"
+          cancelText="Cancelar"
+          isLoading={isLoading}
         />
       </LayoutContainer>
     </PageWrapper>
