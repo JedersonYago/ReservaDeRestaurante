@@ -179,31 +179,7 @@ export function ReservationDetails() {
     setIsProcessing(false);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Clock size={16} />;
-      case "confirmed":
-        return <CheckCircle size={16} />;
-      case "cancelled":
-        return <XCircle size={16} />;
-      default:
-        return <Clock size={16} />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "Pendente";
-      case "confirmed":
-        return "Confirmada";
-      case "cancelled":
-        return "Cancelada";
-      default:
-        return status;
-    }
-  };
+  // Removido: agora usando sistema padronizado do StatusBadge
 
   if (loading) {
     return (
@@ -282,13 +258,14 @@ export function ReservationDetails() {
                       </Button>
                     )}
 
-                  {/* Botão Cancelar - aparece para status pending ou confirmed, mas não cancelled */}
-                  {reservation.status !== "cancelled" && (
-                    <CancelActionButton onClick={handleCancelClick}>
-                      <XCircle size={16} />
-                      Cancelar
-                    </CancelActionButton>
-                  )}
+                  {/* Botão Cancelar - aparece para status pending ou confirmed, mas não cancelled ou expired */}
+                  {reservation.status !== "cancelled" &&
+                    reservation.status !== "expired" && (
+                      <CancelActionButton onClick={handleCancelClick}>
+                        <XCircle size={16} />
+                        Cancelar
+                      </CancelActionButton>
+                    )}
 
                   {/* Botão Excluir - só para admin */}
                   {user?.role === "admin" && (
@@ -311,10 +288,7 @@ export function ReservationDetails() {
                 </ButtonGroup>
 
                 <StatusBadgeContainer>
-                  <StatusBadge status={reservation.status as any}>
-                    {getStatusIcon(reservation.status)}
-                    Reserva {getStatusText(reservation.status)}
-                  </StatusBadge>
+                  <StatusBadge status={reservation.status as any} size="md" />
                 </StatusBadgeContainer>
               </ActionsContainer>
             </HeaderActions>

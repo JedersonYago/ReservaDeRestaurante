@@ -56,8 +56,12 @@ MONGODB_URI=mongodb+srv://reserva-facil:cERrxA0g3n4Zlj9X@cluster0.avzwjwj.mongod
 PORT=3001
 NODE_ENV=development
 
-# JWT Secret
+# JWT Secret (IMPORTANTE: Mude em produção!)
 JWT_SECRET=chave-secreta-jwt-aqui-mude-em-producao
+
+# Configurações de JWT
+JWT_EXPIRES_IN=1h
+REFRESH_TOKEN_EXPIRES_IN=7d
 
 # Codigo Admin
 ADMIN_CODE=ADMIN@12345
@@ -86,7 +90,7 @@ npm run dev
 Após executar todos os comandos acima:
 
 - **Frontend**: Abra [http://localhost:5173](http://localhost:5173) no seu navegador
-- **Backend API**: Disponível em [http://localhost:3000](http://localhost:3000)
+- **Backend API**: Disponível em [http://localhost:3001](http://localhost:3001)
 
 ## 📁 Estrutura do Projeto
 
@@ -145,5 +149,5 @@ ReservaDeRestaurante/
 
 ### Frontend não conecta com Backend
 
-- Verifique se o backend está rodando na porta 3000
+- Verifique se o backend está rodando na porta 3001
 - Confirme se a `FRONTEND_URL` no `.env` está correta

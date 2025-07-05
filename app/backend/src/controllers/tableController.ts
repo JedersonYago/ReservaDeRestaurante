@@ -93,9 +93,24 @@ export const tableController = {
         return res.status(400).json({ message: error.details[0].message });
       }
 
+      const currentTable = await Table.findById(req.params.id);
+      if (!currentTable) {
+        return res.status(404).json({ message: "Mesa não encontrada" });
+      }
+
+      // Se mesa estava expirada e admin está adicionando availability, reativar mesa
+      if (
+        currentTable.status === "expired" &&
+        req.body.availability &&
+        req.body.availability.length > 0
+      ) {
+        req.body.status = "available";
+      }
+
       const table = await Table.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
       });
+
       if (!table) {
         return res.status(404).json({ message: "Mesa não encontrada" });
       }
@@ -200,10 +215,10 @@ export const tableController = {
           .json({ message: "Parâmetros obrigatórios ausentes" });
       }
 
-      // Buscar todas as mesas que não estão em manutenção
+      // Buscar todas as mesas que não estão em manutenção ou expiradas
       // (uma mesa pode ter reservas em outros horários e ainda estar disponível para este horário específico)
       const tables = await Table.find({
-        status: { $ne: "maintenance" }, // Apenas exclui mesas em manutenção
+        status: { $nin: ["maintenance", "expired"] }, // Exclui mesas em manutenção e expiradas
         capacity: { $gte: Number(numberOfPeople) },
       });
 

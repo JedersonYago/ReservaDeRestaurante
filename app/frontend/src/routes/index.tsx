@@ -55,7 +55,7 @@ export function AppRoutes() {
             isAuthenticated && user?.role === "admin" ? (
               <Tables />
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/dashboard" />
             )
           }
         />
@@ -65,7 +65,7 @@ export function AppRoutes() {
             isAuthenticated && user?.role === "admin" ? (
               <NewTable />
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/dashboard" />
             )
           }
         />
@@ -75,7 +75,7 @@ export function AppRoutes() {
             isAuthenticated && user?.role === "admin" ? (
               <TableDetails />
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/dashboard" />
             )
           }
         />
@@ -85,7 +85,7 @@ export function AppRoutes() {
             isAuthenticated && user?.role === "admin" ? (
               <EditTable />
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/dashboard" />
             )
           }
         />
@@ -101,7 +101,7 @@ export function AppRoutes() {
             isAuthenticated && user?.role === "admin" ? (
               <Settings />
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/dashboard" />
             )
           }
         />

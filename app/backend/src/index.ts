@@ -10,7 +10,11 @@ import {
 } from "./middlewares/security";
 import routes from "./routes";
 import { config } from "./config";
-import { startPeriodicCheck } from "./services/schedulerService";
+import {
+  startPeriodicCheck,
+  startDailyCleanup,
+} from "./services/schedulerService";
+import { apiLimiter } from "./config/rateLimit";
 
 const app = express();
 
@@ -21,12 +25,15 @@ app.use(helmetConfig);
 app.use(rateLimiter);
 app.use(sanitizeData);
 
+// Rate limiting geral para todas as rotas da API
+app.use("/api", apiLimiter);
+
 // Rotas
 app.use("/api", routes);
 
 // Rota de teste
 app.get("/", (_req, res) => {
-  res.json({ message: "API do Sistema de Reservas de Restaurante" });
+  res.json({ message: "API do Reserva Fácil" });
 });
 
 // Tratamento de erros
@@ -52,6 +59,9 @@ const startServer = async () => {
 
     // Iniciar sistema de verificação periódica de reservas
     startPeriodicCheck();
+
+    // Iniciar limpeza diária de mesas e reservas expiradas
+    startDailyCleanup();
 
     // Iniciar o servidor
     const server = app.listen(config.server.port, () => {

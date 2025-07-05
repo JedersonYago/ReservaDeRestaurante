@@ -2,11 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "../config";
 import User from "../models/User";
+import { verifyToken, isTokenExpired } from "../utils/jwt";
 
 interface JwtPayload {
   _id: string;
   role: string;
   username: string;
+  type: "access" | "refresh";
   iat: number;
   exp: number;
 }
@@ -35,20 +37,45 @@ export const authenticate = async (
       return res.status(401).json({ message: "Token não fornecido" });
     }
 
-    const decoded = jwt.verify(
-      token,
-      config.auth.jwtSecret as jwt.Secret
-    ) as JwtPayload;
+    // Verificar se o token expirou
+    if (isTokenExpired(token)) {
+      return res.status(401).json({ message: "Token expirado" });
+    }
 
+    // Verificar e decodificar o token
+    const decoded = verifyToken(token) as JwtPayload;
+
+    // Verificar se é um access token
+    if (decoded.type !== "access") {
+      return res.status(401).json({ message: "Tipo de token inválido" });
+    }
+
+    // Buscar usuário no banco
     const user = await User.findById(decoded._id);
     if (!user) {
       return res.status(401).json({ message: "Usuário não encontrado" });
     }
 
-    req.user = user;
+    // Adicionar usuário à requisição
+    req.user = {
+      _id: user._id,
+      role: user.role,
+      username: user.username,
+    };
+
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Token inválido" });
+    console.error("[authenticate] Erro:", error);
+
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ message: "Token expirado" });
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+
+    return res.status(401).json({ message: "Erro de autenticação" });
   }
 };
 
@@ -63,6 +90,7 @@ export const isAdmin = async (
     }
     next();
   } catch (error) {
+    console.error("[isAdmin] Erro:", error);
     return res.status(500).json({ message: "Erro ao verificar permissões" });
   }
 };
@@ -84,4 +112,45 @@ export const roleAuth = (roles: string[]) => {
 
     next();
   };
+};
+
+// Middleware opcional de autenticação (não falha se não autenticado)
+export const optionalAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return next(); // Continua sem autenticação
+    }
+
+    if (isTokenExpired(token)) {
+      return next(); // Continua sem autenticação
+    }
+
+    const decoded = verifyToken(token) as JwtPayload;
+
+    if (decoded.type !== "access") {
+      return next(); // Continua sem autenticação
+    }
+
+    const user = await User.findById(decoded._id);
+    if (!user) {
+      return next(); // Continua sem autenticação
+    }
+
+    req.user = {
+      _id: user._id,
+      role: user.role,
+      username: user.username,
+    };
+
+    next();
+  } catch (error) {
+    // Em caso de erro, continua sem autenticação
+    next();
+  }
 };

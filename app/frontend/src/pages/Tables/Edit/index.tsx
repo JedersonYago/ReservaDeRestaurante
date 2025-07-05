@@ -85,7 +85,7 @@ export function EditTable() {
   const [name, setName] = useState("");
   const [capacity, setCapacity] = useState("");
   const [status, setStatus] = useState<
-    "available" | "reserved" | "maintenance"
+    "available" | "reserved" | "maintenance" | "expired"
   >("available");
   const [availability, setAvailability] = useState<
     { date: string; times: string[] }[]
@@ -543,6 +543,7 @@ export function EditTable() {
                           | "available"
                           | "reserved"
                           | "maintenance"
+                          | "expired"
                       )
                     }
                     required
@@ -550,12 +551,23 @@ export function EditTable() {
                     <option value="available">Disponível</option>
                     <option value="reserved">Reservada</option>
                     <option value="maintenance">Em Manutenção</option>
+                    <option value="expired">Expirada</option>
                   </Select>
                   {status === "maintenance" && (
                     <InfoMessage>
                       <Settings size={14} />
                       <span>
                         Mesa em manutenção não aparecerá para novas reservas
+                      </span>
+                    </InfoMessage>
+                  )}
+                  {status === "expired" && (
+                    <InfoMessage>
+                      <AlertTriangle size={14} />
+                      <span>
+                        Mesa expirada não aparecerá para novas reservas.
+                        Adicione novos horários de disponibilidade para
+                        reativar.
                       </span>
                     </InfoMessage>
                   )}

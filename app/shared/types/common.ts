@@ -3,13 +3,18 @@
  */
 
 // Status de reserva padronizado
-export type ReservationStatus = "pending" | "confirmed" | "cancelled";
+export type ReservationStatus =
+  | "pending"
+  | "confirmed"
+  | "cancelled"
+  | "expired";
 
 // Status de mesa padronizado
 // - "available": Mesa operacional e disponível para configuração de horários
 // - "maintenance": Mesa fora de operação, não aceita reservas
 // - "reserved": Mesa totalmente reservada (caso especial, não usado automaticamente)
-export type TableStatus = "available" | "reserved" | "maintenance";
+// - "expired": Mesa sem availability válida (datas de disponibilidade expiraram)
+export type TableStatus = "available" | "reserved" | "maintenance" | "expired";
 
 // Roles de usuário
 export type UserRole = "client" | "admin";

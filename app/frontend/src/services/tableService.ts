@@ -1,24 +1,11 @@
-import axios from "axios";
+import api from "./api";
 import type { Table, CreateTableData } from "../types";
-
-const API_URL = "/api";
-const TOKEN_KEY = "token";
 
 export const tableService = {
   async list(date?: string): Promise<Table[]> {
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (!token) {
-        throw new Error("Token não encontrado");
-      }
-
       const params = date ? { date } : {};
-      const response = await axios.get<Table[]>(`${API_URL}/tables`, {
-        params,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.get<Table[]>("/tables", { params });
       return response.data;
     } catch (error) {
       console.error("Erro ao listar mesas:", error);
@@ -27,59 +14,23 @@ export const tableService = {
   },
 
   async getById(id: string): Promise<Table> {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      throw new Error("Token não encontrado");
-    }
-
-    const response = await axios.get<Table>(`${API_URL}/tables/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.get<Table>(`/tables/${id}`);
     return response.data;
   },
 
   async create(data: CreateTableData): Promise<Table> {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      throw new Error("Token não encontrado");
-    }
-
-    const response = await axios.post<Table>(`${API_URL}/tables`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.post<Table>("/tables", data);
     return response.data;
   },
 
   async update(id: string, data: Partial<CreateTableData>): Promise<Table> {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      throw new Error("Token não encontrado");
-    }
-
-    const response = await axios.put<Table>(`${API_URL}/tables/${id}`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.put<Table>(`/tables/${id}`, data);
     return response.data;
   },
 
   async delete(id: string): Promise<void> {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      throw new Error("Token não encontrado");
-    }
-
     try {
-      await axios.delete(`${API_URL}/tables/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.delete(`/tables/${id}`);
     } catch (error: any) {
       if (error.response?.status === 404) {
         throw new Error("Mesa não encontrada");
@@ -93,20 +44,9 @@ export const tableService = {
     date: string,
     time: string
   ): Promise<boolean> {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      throw new Error("Token não encontrado");
-    }
-
-    const response = await axios.get<boolean>(
-      `${API_URL}/tables/${id}/availability`,
-      {
-        params: { date, time },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await api.get<boolean>(`/tables/${id}/availability`, {
+      params: { date, time },
+    });
     return response.data;
   },
 
@@ -115,26 +55,16 @@ export const tableService = {
     time: string,
     numberOfPeople: number
   ): Promise<Table[]> {
-    const response = await axios.get<Table[]>("/tables/available", {
+    const response = await api.get<Table[]>("/tables/available", {
       params: { date, time, numberOfPeople },
     });
     return response.data;
   },
 
   async getStatus(id: string, date: string): Promise<{ status: string }> {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      throw new Error("Token não encontrado");
-    }
-    const response = await axios.get<{ status: string }>(
-      `${API_URL}/tables/${id}/status`,
-      {
-        params: { date },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await api.get<{ status: string }>(`/tables/${id}/status`, {
+      params: { date },
+    });
     return response.data;
   },
 };
