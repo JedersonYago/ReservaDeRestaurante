@@ -7,7 +7,7 @@ export interface IReservation extends Document {
   date: string;
   time: string;
   observations?: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "cancelled" | "expired";
   hiddenFromUser: boolean; // Campo para esconder reserva do usuário (mantendo no histórico admin)
   createdAt: Date;
   updatedAt: Date;
@@ -42,7 +42,7 @@ const reservationSchema = new Schema<IReservation>(
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
+      enum: ["pending", "confirmed", "cancelled", "expired"],
       default: "pending",
     },
     hiddenFromUser: {

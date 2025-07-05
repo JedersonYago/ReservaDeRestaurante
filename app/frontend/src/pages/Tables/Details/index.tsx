@@ -11,7 +11,7 @@ import { formatDate, formatTime } from "../../../utils/dateUtils";
 import { StatusBadge, type BadgeStatus } from "../../../components/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
 import { useReservations } from "../../../hooks/useReservations";
-import { getStatusText } from "../../../utils/textUtils";
+// Removido: agora usando sistema padronizado do StatusBadge
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
 import { PageWrapper } from "../../../components/Layout/PageWrapper";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
@@ -23,7 +23,6 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Settings,
   Eye,
   Edit,
   Trash2,
@@ -84,30 +83,7 @@ import {
   AvailabilityPreview,
 } from "./styles";
 
-const statusConfig: Record<
-  string,
-  {
-    label: string;
-    icon: React.ComponentType<{ size?: number }>;
-    status: string;
-  }
-> = {
-  available: {
-    label: "Disponível",
-    icon: CheckCircle,
-    status: "available",
-  },
-  reserved: {
-    label: "Reservada",
-    icon: Clock,
-    status: "reserved",
-  },
-  maintenance: {
-    label: "Em Manutenção",
-    icon: Settings,
-    status: "maintenance",
-  },
-};
+// Removido: agora usando sistema padronizado do StatusBadge
 
 export function TableDetails() {
   const { id } = useParams();
@@ -497,8 +473,7 @@ export function TableDetails() {
     );
   }
 
-  const tableStatus = statusConfig[globalTableStatus] || statusConfig.available;
-  const TableStatusIcon = tableStatus.icon;
+  // Removido: agora usando sistema padronizado do StatusBadge
 
   return (
     <PageWrapper>
@@ -569,12 +544,9 @@ export function TableDetails() {
                   <InfoLabel>Status Global</InfoLabel>
                   <InfoValue>
                     <StatusBadge
-                      status={tableStatus.status as BadgeStatus}
+                      status={globalTableStatus as BadgeStatus}
                       size="sm"
-                    >
-                      <TableStatusIcon size={12} />
-                      {tableStatus.label}
-                    </StatusBadge>
+                    />
                     {globalTableStats.totalSlots > 0 && (
                       <div
                         style={{
@@ -620,13 +592,7 @@ export function TableDetails() {
                       <StatusBadge
                         status={dynamicStatus as BadgeStatus}
                         size="sm"
-                      >
-                        {React.createElement(
-                          statusConfig[dynamicStatus]?.icon || Settings,
-                          { size: 12 }
-                        )}
-                        {getStatusText(dynamicStatus)}
-                      </StatusBadge>
+                      />
                     )
                   )}
                 </div>
@@ -642,14 +608,12 @@ export function TableDetails() {
               <Legend>
                 <LegendItem>
                   <StatusBadge status="available" size="sm">
-                    <CheckCircle size={12} />
                     Livre
                   </StatusBadge>
                   <span>Horário livre para reserva</span>
                 </LegendItem>
                 <LegendItem>
                   <StatusBadge status="reserved" size="sm">
-                    <Clock size={12} />
                     Reservado
                   </StatusBadge>
                   <span>Horário já ocupado</span>
@@ -783,18 +747,7 @@ export function TableDetails() {
                         <StatusBadge
                           status={reservation.status as BadgeStatus}
                           size="sm"
-                        >
-                          {reservation.status === "confirmed" && (
-                            <CheckCircle size={12} />
-                          )}
-                          {reservation.status === "pending" && (
-                            <Clock size={12} />
-                          )}
-                          {reservation.status === "cancelled" && (
-                            <XCircle size={12} />
-                          )}
-                          {getStatusText(reservation.status)}
-                        </StatusBadge>
+                        />
                       </ReservationStatus>
                     </ReservationHeader>
 

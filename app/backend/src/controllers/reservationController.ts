@@ -151,8 +151,8 @@ export async function updateTableStatus(tableId: string | null) {
   const table = await Table.findById(tableId);
   if (!table) return;
 
-  // Não alterar status se a mesa estiver em manutenção (controlado pelo admin)
-  if (table.status === "maintenance") {
+  // Não alterar status se a mesa estiver em manutenção ou expirada (controlado pelo admin)
+  if (table.status === "maintenance" || table.status === "expired") {
     return;
   }
 
@@ -224,10 +224,16 @@ export const createReservation = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Mesa não encontrada" });
     }
 
-    // Verificar se a mesa está em manutenção
+    // Verificar se a mesa está em manutenção ou expirada
     if (tableExists.status === "maintenance") {
       return res.status(400).json({
         error: "Mesa está em manutenção e não está disponível para reserva",
+      });
+    }
+
+    if (tableExists.status === "expired") {
+      return res.status(400).json({
+        error: "Mesa expirou e não está disponível para reserva",
       });
     }
 
