@@ -6,16 +6,18 @@ interface CancelButtonProps
   children: React.ReactNode;
   leftIcon?: React.ReactNode;
   disabled?: boolean;
+  type?: "button" | "submit" | "reset"; // Adicionar type explicitamente
 }
 
 export function CancelButton({
   children,
   leftIcon,
   disabled = false,
+  type = "button", // Adicionar type="button" por padrão
   ...props
 }: CancelButtonProps) {
   return (
-    <StyledCancelButton disabled={disabled} {...props}>
+    <StyledCancelButton disabled={disabled} type={type} {...props}>
       {leftIcon && <IconWrapper>{leftIcon}</IconWrapper>}
       {children}
     </StyledCancelButton>
