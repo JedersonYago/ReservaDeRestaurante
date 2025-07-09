@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
@@ -55,11 +55,15 @@ import {
 export function NewReservation() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preSelectedTableId = searchParams.get("tableId");
   const toast = useToast();
   const { tables } = useTables();
   const { createReservation } = useReservations();
   const { config } = useConfig();
-  const [selectedTable, setSelectedTable] = useState<string>("");
+  const [selectedTable, setSelectedTable] = useState<string>(
+    preSelectedTableId || ""
+  );
   const [availableHours, setAvailableHours] = useState<
     { start: string; end: string; reserved: boolean }[]
   >([]);
@@ -84,6 +88,20 @@ export function NewReservation() {
       navigate("/login");
     }
   }, [user, navigate]);
+
+  // Validar se a mesa pré-selecionada existe e está disponível
+  useEffect(() => {
+    if (preSelectedTableId && tables) {
+      const table = tables.find((t) => t._id === preSelectedTableId);
+      if (!table) {
+        toast.error("Mesa não encontrada");
+        setSelectedTable("");
+      } else if (table.status !== "available") {
+        toast.error("Mesa não está disponível para reserva");
+        setSelectedTable("");
+      }
+    }
+  }, [preSelectedTableId, tables, toast]);
 
   if (!user) {
     return null;

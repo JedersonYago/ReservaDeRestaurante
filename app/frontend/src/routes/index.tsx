@@ -51,13 +51,7 @@ export function AppRoutes() {
 
         <Route
           path="/tables"
-          element={
-            isAuthenticated && user?.role === "admin" ? (
-              <Tables />
-            ) : (
-              <Navigate to="/dashboard" />
-            )
-          }
+          element={isAuthenticated ? <Tables /> : <Navigate to="/login" />}
         />
         <Route
           path="/tables/new"
@@ -72,11 +66,7 @@ export function AppRoutes() {
         <Route
           path="/tables/:id"
           element={
-            isAuthenticated && user?.role === "admin" ? (
-              <TableDetails />
-            ) : (
-              <Navigate to="/dashboard" />
-            )
+            isAuthenticated ? <TableDetails /> : <Navigate to="/login" />
           }
         />
         <Route

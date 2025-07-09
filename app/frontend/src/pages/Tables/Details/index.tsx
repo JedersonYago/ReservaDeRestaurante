@@ -485,7 +485,11 @@ export function TableDetails() {
                 <Utensils size={32} />
                 {table.name}
               </Title>
-              <Subtitle>Detalhes e reservas da mesa</Subtitle>
+              <Subtitle>
+                {user?.role === "admin"
+                  ? "Detalhes e reservas da mesa"
+                  : "Informações da mesa e disponibilidade"}
+              </Subtitle>
             </TitleSection>
             <HeaderActions>
               <Button
@@ -496,22 +500,36 @@ export function TableDetails() {
               >
                 Voltar
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => navigate(`/tables/${table._id}/edit`)}
-                leftIcon={<Edit size={16} />}
-              >
-                Editar Mesa
-              </Button>
-              {user?.role === "admin" && (
+              {user?.role === "admin" ? (
+                <>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => navigate(`/tables/${table._id}/edit`)}
+                    leftIcon={<Edit size={16} />}
+                  >
+                    Editar Mesa
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleDeleteTableClick}
+                    leftIcon={<Trash2 size={16} />}
+                  >
+                    Excluir Mesa
+                  </Button>
+                </>
+              ) : (
                 <Button
-                  variant="danger"
+                  variant="primary"
                   size="sm"
-                  onClick={handleDeleteTableClick}
-                  leftIcon={<Trash2 size={16} />}
+                  onClick={() =>
+                    navigate(`/reservations/new?tableId=${table._id}`)
+                  }
+                  leftIcon={<Calendar size={16} />}
+                  disabled={table.status !== "available"}
                 >
-                  Excluir Mesa
+                  Reservar Mesa
                 </Button>
               )}
             </HeaderActions>
@@ -722,169 +740,181 @@ export function TableDetails() {
             </AvailabilitySection>
           </MainGrid>
 
-          <ReservationsSection>
-            <SectionTitle>
-              <Calendar size={20} />
-              Reservas da Mesa
-              {reservations.length > 0 && <span>({reservations.length})</span>}
-            </SectionTitle>
+          {user?.role === "admin" && (
+            <ReservationsSection>
+              <SectionTitle>
+                <Calendar size={20} />
+                Reservas da Mesa
+                {reservations.length > 0 && (
+                  <span>({reservations.length})</span>
+                )}
+              </SectionTitle>
 
-            {loadingReservations ? (
-              <LoadingContainer>
-                <LoadingSpinner />
-                <LoadingText>Carregando reservas...</LoadingText>
-              </LoadingContainer>
-            ) : reservations.length > 0 ? (
-              <ReservationsGrid>
-                {reservations.map((reservation) => (
-                  <ReservationCard key={reservation._id}>
-                    <ReservationHeader>
-                      <ReservationNumber>
-                        <Hash size={16} />#
-                        {getReservationNumber(reservation._id)}
-                      </ReservationNumber>
-                      <ReservationStatus>
-                        <StatusBadge
-                          status={reservation.status as BadgeStatus}
-                          size="sm"
-                        />
-                      </ReservationStatus>
-                    </ReservationHeader>
+              {loadingReservations ? (
+                <LoadingContainer>
+                  <LoadingSpinner />
+                  <LoadingText>Carregando reservas...</LoadingText>
+                </LoadingContainer>
+              ) : reservations.length > 0 ? (
+                <ReservationsGrid>
+                  {reservations.map((reservation) => (
+                    <ReservationCard key={reservation._id}>
+                      <ReservationHeader>
+                        <ReservationNumber>
+                          <Hash size={16} />#
+                          {getReservationNumber(reservation._id)}
+                        </ReservationNumber>
+                        <ReservationStatus>
+                          <StatusBadge
+                            status={reservation.status as BadgeStatus}
+                            size="sm"
+                          />
+                        </ReservationStatus>
+                      </ReservationHeader>
 
-                    <ReservationInfo>
-                      <CustomerInfo>
-                        <div>
-                          <User size={16} />
-                          <span>{reservation.customerName}</span>
-                        </div>
-                        <div>
-                          <Mail size={16} />
-                          <span>{reservation.customerEmail}</span>
-                        </div>
-                      </CustomerInfo>
+                      <ReservationInfo>
+                        <CustomerInfo>
+                          <div>
+                            <User size={16} />
+                            <span>{reservation.customerName}</span>
+                          </div>
+                          <div>
+                            <Mail size={16} />
+                            <span>{reservation.customerEmail}</span>
+                          </div>
+                        </CustomerInfo>
 
-                      <DateTimeInfo>
-                        <div>
-                          <Calendar size={16} />
-                          <span>{formatDate(reservation.date)}</span>
-                        </div>
-                        <div>
-                          <Clock size={16} />
-                          <span>{formatTime(reservation.time)}</span>
-                        </div>
-                      </DateTimeInfo>
-                    </ReservationInfo>
+                        <DateTimeInfo>
+                          <div>
+                            <Calendar size={16} />
+                            <span>{formatDate(reservation.date)}</span>
+                          </div>
+                          <div>
+                            <Clock size={16} />
+                            <span>{formatTime(reservation.time)}</span>
+                          </div>
+                        </DateTimeInfo>
+                      </ReservationInfo>
 
-                    <ReservationActions>
-                      <ActionButton
-                        onClick={() =>
-                          navigate(`/reservations/${reservation._id}`)
-                        }
-                        $variant="secondary"
-                      >
-                        <Eye size={16} />
-                        Detalhes
-                      </ActionButton>
+                      <ReservationActions>
+                        <ActionButton
+                          onClick={() =>
+                            navigate(`/reservations/${reservation._id}`)
+                          }
+                          $variant="secondary"
+                        >
+                          <Eye size={16} />
+                          Detalhes
+                        </ActionButton>
 
-                      {reservation.status === "pending" &&
-                        user?.role === "admin" && (
+                        {reservation.status === "pending" &&
+                          user?.role === "admin" && (
+                            <ActionButton
+                              onClick={() =>
+                                handleConfirmClick(reservation._id)
+                              }
+                              $variant="success"
+                            >
+                              <CheckCircle size={16} />
+                              Confirmar
+                            </ActionButton>
+                          )}
+
+                        {reservation.status !== "cancelled" && (
                           <ActionButton
-                            onClick={() => handleConfirmClick(reservation._id)}
-                            $variant="success"
+                            onClick={() => handleCancelClick(reservation._id)}
+                            $variant="cancel"
                           >
-                            <CheckCircle size={16} />
-                            Confirmar
+                            <XCircle size={16} />
+                            Cancelar
                           </ActionButton>
                         )}
 
-                      {reservation.status !== "cancelled" && (
-                        <ActionButton
-                          onClick={() => handleCancelClick(reservation._id)}
-                          $variant="cancel"
-                        >
-                          <XCircle size={16} />
-                          Cancelar
-                        </ActionButton>
-                      )}
-
-                      {user?.role === "admin" && (
-                        <ActionButton
-                          onClick={() => handleDeleteClick(reservation._id)}
-                          $variant="danger"
-                        >
-                          <Trash2 size={16} />
-                          Excluir
-                        </ActionButton>
-                      )}
-                    </ReservationActions>
-                  </ReservationCard>
-                ))}
-              </ReservationsGrid>
-            ) : (
-              <EmptyReservations>
-                <Calendar size={64} />
-                <div>
-                  <h4>Nenhuma reserva encontrada</h4>
-                  <p>Esta mesa ainda não possui reservas</p>
-                </div>
-              </EmptyReservations>
-            )}
-          </ReservationsSection>
+                        {user?.role === "admin" && (
+                          <ActionButton
+                            onClick={() => handleDeleteClick(reservation._id)}
+                            $variant="danger"
+                          >
+                            <Trash2 size={16} />
+                            Excluir
+                          </ActionButton>
+                        )}
+                      </ReservationActions>
+                    </ReservationCard>
+                  ))}
+                </ReservationsGrid>
+              ) : (
+                <EmptyReservations>
+                  <Calendar size={64} />
+                  <div>
+                    <h4>Nenhuma reserva encontrada</h4>
+                    <p>Esta mesa ainda não possui reservas</p>
+                  </div>
+                </EmptyReservations>
+              )}
+            </ReservationsSection>
+          )}
         </Content>
 
-        <ConfirmationModal
-          isOpen={showDeleteReservationModal}
-          onClose={handleCancelDeleteReservation}
-          onConfirm={handleConfirmDeleteReservation}
-          type="danger"
-          title="Excluir Reserva"
-          message="Tem certeza que deseja excluir esta reserva? Esta ação não pode ser desfeita."
-          confirmText="Sim, Excluir"
-          cancelText="Cancelar"
-          isLoading={isDeleting}
-        />
+        {user?.role === "admin" && (
+          <>
+            <ConfirmationModal
+              isOpen={showDeleteReservationModal}
+              onClose={handleCancelDeleteReservation}
+              onConfirm={handleConfirmDeleteReservation}
+              type="danger"
+              title="Excluir Reserva"
+              message="Tem certeza que deseja excluir esta reserva? Esta ação não pode ser desfeita."
+              confirmText="Sim, Excluir"
+              cancelText="Cancelar"
+              isLoading={isDeleting}
+            />
 
-        <ConfirmationModal
-          isOpen={showDeleteTableModal}
-          onClose={handleCancelDeleteTable}
-          onConfirm={handleConfirmDeleteTable}
-          type="danger"
-          title="Excluir Mesa"
-          message={
-            reservations.length > 0
-              ? `Esta mesa possui ${reservations.length} reserva(s). Ao excluí-la, todas as reservas serão canceladas. Deseja continuar?`
-              : "Tem certeza que deseja excluir esta mesa? Esta ação não pode ser desfeita."
-          }
-          confirmText="Sim, Excluir"
-          cancelText="Cancelar"
-          isLoading={isDeleting}
-        />
+            <ConfirmationModal
+              isOpen={showDeleteTableModal}
+              onClose={handleCancelDeleteTable}
+              onConfirm={handleConfirmDeleteTable}
+              type="danger"
+              title="Excluir Mesa"
+              message={
+                reservations.length > 0
+                  ? `Esta mesa possui ${reservations.length} reserva(s). Ao excluí-la, todas as reservas serão canceladas. Deseja continuar?`
+                  : "Tem certeza que deseja excluir esta mesa? Esta ação não pode ser desfeita."
+              }
+              confirmText="Sim, Excluir"
+              cancelText="Cancelar"
+              isLoading={isDeleting}
+            />
 
-        <ConfirmationModal
-          isOpen={showReservationActionModal}
-          onClose={handleCancelReservationAction}
-          onConfirm={handleConfirmReservationAction}
-          type={
-            reservationActionConfig?.type === "confirm" ? "success" : "warning"
-          }
-          title={
-            reservationActionConfig?.type === "confirm"
-              ? "Confirmar Reserva"
-              : "Cancelar Reserva"
-          }
-          message={
-            reservationActionConfig?.type === "confirm"
-              ? "Tem certeza que deseja confirmar esta reserva?"
-              : "Tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita."
-          }
-          confirmText={
-            reservationActionConfig?.type === "confirm"
-              ? "Sim, Confirmar"
-              : "Sim, Cancelar"
-          }
-          cancelText="Não"
-          isLoading={isProcessingReservation}
-        />
+            <ConfirmationModal
+              isOpen={showReservationActionModal}
+              onClose={handleCancelReservationAction}
+              onConfirm={handleConfirmReservationAction}
+              type={
+                reservationActionConfig?.type === "confirm"
+                  ? "success"
+                  : "warning"
+              }
+              title={
+                reservationActionConfig?.type === "confirm"
+                  ? "Confirmar Reserva"
+                  : "Cancelar Reserva"
+              }
+              message={
+                reservationActionConfig?.type === "confirm"
+                  ? "Tem certeza que deseja confirmar esta reserva?"
+                  : "Tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita."
+              }
+              confirmText={
+                reservationActionConfig?.type === "confirm"
+                  ? "Sim, Confirmar"
+                  : "Sim, Cancelar"
+              }
+              cancelText="Não"
+              isLoading={isProcessingReservation}
+            />
+          </>
+        )}
       </LayoutContainer>
     </PageWrapper>
   );

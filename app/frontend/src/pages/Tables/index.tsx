@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useTables } from "../../hooks/useTables";
+import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -59,9 +60,12 @@ import {
 
 export function Tables() {
   const { tables, isLoading, deleteTable } = useTables();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>(
+    user?.role === "client" ? "available" : "all"
+  );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<{
     id: string;
@@ -70,11 +74,16 @@ export function Tables() {
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const hasActiveFilters = searchTerm !== "" || statusFilter !== "all";
+  const isAdmin = user?.role === "admin";
+  const hasActiveFilters = isAdmin
+    ? searchTerm !== "" || statusFilter !== "all"
+    : searchTerm !== "";
 
   const clearFilters = () => {
     setSearchTerm("");
-    setStatusFilter("all");
+    if (isAdmin) {
+      setStatusFilter("all");
+    }
   };
 
   const filteredTables = useMemo(() => {
@@ -93,6 +102,19 @@ export function Tables() {
 
     return tables
       .filter((table) => {
+        // Para clientes, aplicar busca apenas no nome (sem filtros de status)
+        if (!isAdmin) {
+          const matchesSearch = table.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
+
+          // Clientes só veem mesas disponíveis
+          const isAvailable = table.status === "available";
+
+          return matchesSearch && isAvailable;
+        }
+
+        // Para admins, usar a lógica completa de filtros
         const matchesSearch = table.name
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
@@ -100,7 +122,11 @@ export function Tables() {
         const matchesStatus =
           statusFilter === "all" || table.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        // Para admins, mostrar todas as mesas conforme filtros
+        const isAccessibleToAdmin =
+          table.status !== "maintenance" && table.status !== "expired";
+
+        return matchesSearch && matchesStatus && isAccessibleToAdmin;
       })
       .sort((a, b) => {
         // Ordenar por prioridade de status (menor número = maior prioridade)
@@ -114,7 +140,7 @@ export function Tables() {
         // Se status igual, ordenar por nome
         return a.name.localeCompare(b.name);
       });
-  }, [tables, searchTerm, statusFilter]);
+  }, [tables, searchTerm, statusFilter, isAdmin]);
 
   const handleDeleteClick = (id: string) => {
     const table = tables?.find((t) => t._id === id);
@@ -172,16 +198,22 @@ export function Tables() {
                 <Utensils size={32} />
                 Mesas
               </Title>
-              <Subtitle>Gerencie todas as mesas do restaurante</Subtitle>
+              <Subtitle>
+                {isAdmin
+                  ? "Gerencie todas as mesas do restaurante"
+                  : "Escolha uma mesa para fazer sua reserva"}
+              </Subtitle>
             </TitleSection>
             <HeaderActions>
-              <Button
-                variant="primary"
-                onClick={() => navigate("/tables/new")}
-                leftIcon={<Plus size={18} />}
-              >
-                Nova Mesa
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="primary"
+                  onClick={() => navigate("/tables/new")}
+                  leftIcon={<Plus size={18} />}
+                >
+                  Nova Mesa
+                </Button>
+              )}
             </HeaderActions>
           </HeaderContent>
         </Header>
@@ -209,24 +241,26 @@ export function Tables() {
               </div>
             </SearchContainer>
 
-            <FilterContainer>
-              <label>
-                <Filter size={16} />
-                Status
-              </label>
-              <Select
-                value={statusFilter}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setStatusFilter(e.target.value)
-                }
-              >
-                <option value="all">Todos os status</option>
-                <option value="available">Disponível</option>
-                <option value="reserved">Reservada</option>
-                <option value="maintenance">Em Manutenção</option>
-                <option value="expired">Expirada</option>
-              </Select>
-            </FilterContainer>
+            {isAdmin && (
+              <FilterContainer>
+                <label>
+                  <Filter size={16} />
+                  Status
+                </label>
+                <Select
+                  value={statusFilter}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setStatusFilter(e.target.value)
+                  }
+                >
+                  <option value="all">Todos os status</option>
+                  <option value="available">Disponível</option>
+                  <option value="reserved">Reservada</option>
+                  <option value="maintenance">Em Manutenção</option>
+                  <option value="expired">Expirada</option>
+                </Select>
+              </FilterContainer>
+            )}
 
             <ClearFiltersButton
               onClick={clearFilters}
@@ -274,7 +308,7 @@ export function Tables() {
                           </div>
                         </CapacityInfo>
 
-                        {hasActiveReservations && (
+                        {hasActiveReservations && isAdmin && (
                           <WarningInfo>
                             <AlertTriangle size={16} />
                             <span>
@@ -285,34 +319,56 @@ export function Tables() {
                         )}
                       </CardContent>
 
-                      <CardActions>
-                        <ActionButton
-                          onClick={() => navigate(`/tables/${table._id}`)}
-                          $variant="secondary"
-                          title="Ver detalhes da mesa"
-                        >
-                          <Eye size={16} />
-                          <span>Detalhes</span>
-                        </ActionButton>
-                        <ActionButton
-                          onClick={() => navigate(`/tables/${table._id}/edit`)}
-                          $variant="secondary"
-                          title="Editar mesa"
-                        >
-                          <Edit2 size={16} />
-                          <span>Editar</span>
-                        </ActionButton>
-                      </CardActions>
+                      <div style={{ marginTop: "auto" }}>
+                        <CardActions>
+                          <ActionButton
+                            onClick={() => navigate(`/tables/${table._id}`)}
+                            $variant="secondary"
+                            title="Ver detalhes da mesa"
+                          >
+                            <Eye size={16} />
+                            <span>Detalhes</span>
+                          </ActionButton>
+                          {isAdmin ? (
+                            <ActionButton
+                              onClick={() =>
+                                navigate(`/tables/${table._id}/edit`)
+                              }
+                              $variant="secondary"
+                              title="Editar mesa"
+                            >
+                              <Edit2 size={16} />
+                              <span>Editar</span>
+                            </ActionButton>
+                          ) : (
+                            <ActionButton
+                              onClick={() =>
+                                navigate(
+                                  `/reservations/new?tableId=${table._id}`
+                                )
+                              }
+                              $variant="primary"
+                              title="Fazer reserva nesta mesa"
+                              disabled={table.status !== "available"}
+                            >
+                              <Plus size={16} />
+                              <span>Reservar</span>
+                            </ActionButton>
+                          )}
+                        </CardActions>
 
-                      <DeleteButtonContainer>
-                        <DeleteButton
-                          onClick={() => handleDeleteClick(table._id)}
-                          title="Excluir mesa"
-                        >
-                          <Trash2 size={16} />
-                          <span>Excluir</span>
-                        </DeleteButton>
-                      </DeleteButtonContainer>
+                        {isAdmin && (
+                          <DeleteButtonContainer>
+                            <DeleteButton
+                              onClick={() => handleDeleteClick(table._id)}
+                              title="Excluir mesa"
+                            >
+                              <Trash2 size={16} />
+                              <span>Excluir</span>
+                            </DeleteButton>
+                          </DeleteButtonContainer>
+                        )}
+                      </div>
                     </TableCard>
                   );
                 })}
@@ -325,16 +381,20 @@ export function Tables() {
               </EmptyStateIcon>
               <EmptyStateContent>
                 <EmptyTitle>
-                  {searchTerm || statusFilter !== "all"
+                  {searchTerm
                     ? "Nenhuma mesa encontrada"
-                    : "Nenhuma mesa ainda"}
+                    : isAdmin
+                    ? "Nenhuma mesa ainda"
+                    : "Nenhuma mesa disponível"}
                 </EmptyTitle>
                 <EmptyDescription>
-                  {searchTerm || statusFilter !== "all"
+                  {searchTerm
                     ? "Tente ajustar os filtros de busca"
-                    : "Comece criando sua primeira mesa"}
+                    : isAdmin
+                    ? "Comece criando sua primeira mesa"
+                    : "Tente novamente mais tarde ou entre em contato conosco"}
                 </EmptyDescription>
-                {!searchTerm && statusFilter === "all" && (
+                {!searchTerm && statusFilter === "all" && isAdmin && (
                   <Button
                     onClick={() => navigate("/tables/new")}
                     variant="primary"
@@ -348,21 +408,23 @@ export function Tables() {
           )}
         </ContentSection>
 
-        <ConfirmationModal
-          isOpen={showDeleteModal}
-          onClose={handleCancelDelete}
-          onConfirm={handleConfirmDelete}
-          type="danger"
-          title="Excluir Mesa"
-          message={
-            tableToDelete?.hasReservations
-              ? `Tem certeza que deseja excluir a mesa "${tableToDelete.name}"? Esta mesa possui reservas ativas que serão canceladas.`
-              : `Tem certeza que deseja excluir a mesa "${tableToDelete?.name}"?`
-          }
-          confirmText="Sim, Excluir"
-          cancelText="Cancelar"
-          isLoading={isDeleting}
-        />
+        {isAdmin && (
+          <ConfirmationModal
+            isOpen={showDeleteModal}
+            onClose={handleCancelDelete}
+            onConfirm={handleConfirmDelete}
+            type="danger"
+            title="Excluir Mesa"
+            message={
+              tableToDelete?.hasReservations
+                ? `Tem certeza que deseja excluir a mesa "${tableToDelete.name}"? Esta mesa possui reservas ativas que serão canceladas.`
+                : `Tem certeza que deseja excluir a mesa "${tableToDelete?.name}"?`
+            }
+            confirmText="Sim, Excluir"
+            cancelText="Cancelar"
+            isLoading={isDeleting}
+          />
+        )}
       </LayoutContainer>
     </PageWrapper>
   );

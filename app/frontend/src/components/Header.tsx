@@ -51,9 +51,7 @@ export function Header() {
   const navigationItems = [
     { path: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { path: "/reservations", label: "Reservas", icon: Calendar },
-    ...(user?.role === "admin"
-      ? [{ path: "/tables", label: "Mesas", icon: Utensils }]
-      : []),
+    { path: "/tables", label: "Mesas", icon: Utensils },
   ];
 
   return (

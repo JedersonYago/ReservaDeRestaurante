@@ -288,6 +288,11 @@ export const TableCard = styled.div`
   overflow: hidden;
   word-wrap: break-word;
 
+  /* Flexbox para garantir posicionamento consistente dos botões */
+  display: flex;
+  flex-direction: column;
+  min-height: 200px; /* Altura mínima para manter consistência */
+
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.md};
     border-color: ${({ theme }) => theme.colors.primary.light};
@@ -342,6 +347,8 @@ export const CardContent = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing[4]};
   margin-bottom: ${({ theme }) => theme.spacing[6]};
+  flex: 1; /* Expande para empurrar os botões para baixo */
+  min-height: 60px; /* Altura mínima para manter espaço consistente */
 `;
 
 export const CapacityInfo = styled.div`
@@ -395,13 +402,18 @@ export const WarningInfo = styled.div`
 export const CardActions = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing[3]};
-  padding-top: ${({ theme }) => theme.spacing[4]};
   border-top: 1px solid ${({ theme }) => theme.colors.neutral[100]};
+  margin-top: auto; /* Sempre empurra para o final do card */
 
   @media (max-width: 600px) {
     flex-direction: column;
     gap: ${({ theme }) => theme.spacing[2]};
   }
+`;
+
+// Container para os botões que sempre fica no final
+export const CardButtonsContainer = styled.div`
+  margin-top: auto; /* Empurra toda a seção de botões para baixo */
 `;
 
 // Container para o botão de excluir separado
