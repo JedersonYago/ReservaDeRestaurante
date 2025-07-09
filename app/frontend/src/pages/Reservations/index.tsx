@@ -270,13 +270,14 @@ export function Reservations() {
 
           <FiltersGrid>
             <SearchContainer>
-              <label>
+              <label htmlFor="reservations-search">
                 <Search size={16} />
                 Buscar reservas
               </label>
               <div className="input-wrapper">
                 <Search size={18} />
                 <Input
+                  id="reservations-search"
                   type="text"
                   placeholder="Nome, email ou mesa..."
                   value={searchTerm}
@@ -286,11 +287,12 @@ export function Reservations() {
             </SearchContainer>
 
             <FilterContainer>
-              <label>
+              <label htmlFor="reservation-status-filter">
                 <Filter size={16} />
                 Status
               </label>
               <Select
+                id="reservation-status-filter"
                 value={statusFilter}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                   setStatusFilter(e.target.value)

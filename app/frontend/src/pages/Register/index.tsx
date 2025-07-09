@@ -64,7 +64,7 @@ export function Register() {
         ...data,
         adminCode: data.adminCode || undefined,
       });
-      localStorage.setItem("token", response.token);
+      localStorage.setItem("token", response.accessToken);
 
       // Atualizar o estado de autenticação
       await queryClient.setQueryData(["user"], response.user);
@@ -123,6 +123,7 @@ export function Register() {
                       type="text"
                       error={errors.name?.message}
                       hasIcon
+                      autoComplete="name"
                       {...register("name")}
                       placeholder="Digite seu nome completo"
                     />
@@ -137,6 +138,7 @@ export function Register() {
                       type="text"
                       error={errors.username?.message}
                       hasIcon
+                      autoComplete="username"
                       {...register("username")}
                       placeholder="Escolha um nome de usuário"
                     />
@@ -151,6 +153,7 @@ export function Register() {
                       type="email"
                       error={errors.email?.message}
                       hasIcon
+                      autoComplete="email"
                       {...register("email")}
                       placeholder="Digite seu email"
                     />
@@ -166,6 +169,7 @@ export function Register() {
                         type="password"
                         error={errors.password?.message}
                         hasIcon
+                        autoComplete="new-password"
                         {...register("password")}
                         placeholder="Crie uma senha segura"
                       />
@@ -265,6 +269,7 @@ export function Register() {
                         type="password"
                         error={errors.confirmPassword?.message}
                         hasIcon
+                        autoComplete="new-password"
                         {...register("confirmPassword")}
                         placeholder="Confirme sua senha"
                       />
@@ -289,11 +294,16 @@ export function Register() {
                     <S.RoleOptions>
                       <S.RoleOption>
                         <S.RoleInput
+                          id="role-client"
                           type="radio"
                           value="client"
                           {...register("role")}
                         />
-                        <S.RoleCard selected={selectedRole === "client"}>
+                        <S.RoleCard
+                          as="label"
+                          htmlFor="role-client"
+                          selected={selectedRole === "client"}
+                        >
                           <Users size={20} />
                           <S.RoleInfo>
                             <S.RoleTitle>Cliente</S.RoleTitle>
@@ -305,11 +315,16 @@ export function Register() {
                       </S.RoleOption>
                       <S.RoleOption>
                         <S.RoleInput
+                          id="role-admin"
                           type="radio"
                           value="admin"
                           {...register("role")}
                         />
-                        <S.RoleCard selected={selectedRole === "admin"}>
+                        <S.RoleCard
+                          as="label"
+                          htmlFor="role-admin"
+                          selected={selectedRole === "admin"}
+                        >
                           <Shield size={20} />
                           <S.RoleInfo>
                             <S.RoleTitle>Administrador</S.RoleTitle>
@@ -335,6 +350,7 @@ export function Register() {
                         type="password"
                         error={errors.adminCode?.message}
                         hasIcon
+                        autoComplete="off"
                         {...register("adminCode")}
                         placeholder="Digite o código de administrador"
                       />

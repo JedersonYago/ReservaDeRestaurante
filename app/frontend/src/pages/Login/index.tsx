@@ -90,6 +90,7 @@ export function Login() {
                       type="text"
                       error={errors.username?.message}
                       hasIcon
+                      autoComplete="username"
                       {...register("username")}
                       placeholder="Digite seu nome de usuário"
                     />
@@ -104,6 +105,7 @@ export function Login() {
                       type="password"
                       error={errors.password?.message}
                       hasIcon
+                      autoComplete="current-password"
                       {...register("password")}
                       placeholder="Digite sua senha"
                     />

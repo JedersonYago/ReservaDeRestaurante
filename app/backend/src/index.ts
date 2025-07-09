@@ -7,6 +7,11 @@ import {
   rateLimiter,
   helmetConfig,
   sanitizeData,
+  cacheControl,
+  performanceHeaders,
+  compressionConfig,
+  staticCacheBusting,
+  cleanHeaders,
 } from "./middlewares/security";
 import routes from "./routes";
 import { config } from "./config";
@@ -18,10 +23,15 @@ import { apiLimiter } from "./config/rateLimit";
 
 const app = express();
 
-// Middlewares
+// Middlewares de segurança e performance
 app.use(cors(config.cors));
 app.use(express.json());
+app.use(compressionConfig); // Compressão deve vir antes de outros middlewares
 app.use(helmetConfig);
+app.use(cleanHeaders); // Limpar headers desnecessários
+app.use(staticCacheBusting); // Cache busting para recursos estáticos
+app.use(cacheControl);
+app.use(performanceHeaders);
 app.use(rateLimiter);
 app.use(sanitizeData);
 
@@ -69,7 +79,7 @@ const startServer = async () => {
       console.log(`Ambiente: ${config.server.nodeEnv}`);
     });
 
-    // Tratamento de encerramento gracioso
+    // Tratamento de encerramento
     process.on("SIGTERM", () => {
       console.log("SIGTERM recebido. Encerrando servidor...");
       server.close(() => {

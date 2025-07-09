@@ -382,6 +382,7 @@ export function Profile() {
                         value={passwordData.currentPassword}
                         onChange={handlePasswordInputChange}
                         required
+                        autoComplete="current-password"
                         placeholder="Digite sua senha atual"
                       />
                     </FormGroup>
@@ -394,6 +395,7 @@ export function Profile() {
                         value={passwordData.newPassword}
                         onChange={handlePasswordInputChange}
                         required
+                        autoComplete="new-password"
                         placeholder="Digite sua nova senha"
                       />
                       {passwordData.newPassword && (
@@ -489,6 +491,7 @@ export function Profile() {
                         value={passwordData.confirmNewPassword}
                         onChange={handlePasswordInputChange}
                         required
+                        autoComplete="new-password"
                         placeholder="Confirme sua nova senha"
                       />
                     </FormGroup>
@@ -537,6 +540,7 @@ export function Profile() {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
+                        autoComplete="name"
                         placeholder="Seu nome completo"
                       />
                     </FormGroup>
@@ -549,6 +553,7 @@ export function Profile() {
                         onChange={handleInputChange}
                         required
                         disabled={user.usernameChanges?.remaining === 0}
+                        autoComplete="username"
                         placeholder="Seu nome de usuário"
                       />
                       <FieldNote>
@@ -579,6 +584,7 @@ export function Profile() {
                         onChange={handleInputChange}
                         required
                         disabled={user.emailChanges?.remaining === 0}
+                        autoComplete="email"
                         placeholder="seu@email.com"
                       />
                       <FieldNote>
@@ -609,6 +615,7 @@ export function Profile() {
                           value={formData.currentPassword}
                           onChange={handleInputChange}
                           required
+                          autoComplete="current-password"
                           placeholder="Digite sua senha atual para confirmar as alterações"
                         />
                         <FieldNote>

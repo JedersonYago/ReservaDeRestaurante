@@ -485,6 +485,7 @@ export function NewReservation() {
                     onChange={handleNameChange}
                     required
                     maxLength={40}
+                    autoComplete="name"
                     placeholder="Seu nome completo"
                   />
                   {nameError && <ErrorMessage>{nameError}</ErrorMessage>}
@@ -497,6 +498,7 @@ export function NewReservation() {
                     value={formData.customerEmail}
                     onChange={handleEmailChange}
                     required
+                    autoComplete="email"
                     placeholder="seu@email.com"
                   />
                   {emailError && <ErrorMessage>{emailError}</ErrorMessage>}

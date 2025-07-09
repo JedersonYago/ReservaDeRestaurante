@@ -226,13 +226,14 @@ export function Tables() {
 
           <FiltersGrid>
             <SearchContainer>
-              <label>
+              <label htmlFor="tables-search">
                 <Search size={16} />
                 Buscar mesas
               </label>
               <div className="input-wrapper">
                 <Search size={18} />
                 <Input
+                  id="tables-search"
                   type="text"
                   placeholder="Nome da mesa..."
                   value={searchTerm}
@@ -243,11 +244,12 @@ export function Tables() {
 
             {isAdmin && (
               <FilterContainer>
-                <label>
+                <label htmlFor="table-status-filter">
                   <Filter size={16} />
                   Status
                 </label>
                 <Select
+                  id="table-status-filter"
                   value={statusFilter}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setStatusFilter(e.target.value)
