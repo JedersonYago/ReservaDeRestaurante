@@ -267,31 +267,6 @@ export function TableDetails() {
 
   const globalTableStatus = globalTableStats.status;
 
-  // Debug temporário - remover depois
-  useEffect(() => {
-    if (table && reservations) {
-      console.log("DEBUG - Status Global:", {
-        tableId: table._id,
-        tableName: table.name,
-        configuredStatus: table.status,
-        calculatedStatus: globalTableStatus,
-        stats: globalTableStats,
-        totalReservations: reservations.length,
-        activeReservations: reservations.filter(
-          (r) => r.status !== "cancelled"
-        ),
-        today: toYMD(new Date()),
-        availability: table.availability,
-        reservationsDetail: reservations.map((r) => ({
-          date: r.date,
-          time: r.time,
-          status: r.status,
-          customer: r.customerName,
-        })),
-      });
-    }
-  }, [table, reservations, globalTableStatus, globalTableStats]);
-
   // Invalida queries da mesa quando o status global muda para atualizar em tempo real
   useEffect(() => {
     if (table && globalTableStatus !== table.status) {

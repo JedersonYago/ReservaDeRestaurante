@@ -26,17 +26,9 @@ export const checkPendingReservations = async () => {
 
     for (const reservation of expiredPendingReservations) {
       await approveReservation(String(reservation._id));
-      console.log(
-        `Reserva ${String(
-          reservation._id
-        )} confirmada via verificação periódica`
-      );
     }
 
     if (expiredPendingReservations.length > 0) {
-      console.log(
-        `Verificação periódica: ${expiredPendingReservations.length} reservas confirmadas`
-      );
     }
   } catch (error) {
     console.error("Erro na verificação periódica de reservas:", error);
@@ -47,10 +39,6 @@ export const checkPendingReservations = async () => {
 export const cleanExpiredTablesAndReservations = async () => {
   try {
     const today = new Date().toISOString().split("T")[0];
-
-    console.log(
-      `Iniciando limpeza diária de mesas e reservas expiradas - ${today}`
-    );
 
     // Buscar todas as mesas que podem ter availability expirada
     const tables = await Table.find({
@@ -90,9 +78,6 @@ export const cleanExpiredTablesAndReservations = async () => {
         expiredTablesCount++;
         expiredReservationsCount += result.modifiedCount;
 
-        console.log(
-          `Mesa ${table.name} expirada - ${result.modifiedCount} reservas marcadas como expiradas`
-        );
       } else {
         // Mesa ainda válida - limpar apenas datas passadas
         const validAvailability = table.availability.filter(
@@ -118,9 +103,6 @@ export const cleanExpiredTablesAndReservations = async () => {
 
     expiredReservationsCount += pastReservationsResult.modifiedCount;
 
-    console.log(
-      `Limpeza diária concluída: ${expiredTablesCount} mesas expiradas, ${expiredReservationsCount} reservas marcadas como expiradas`
-    );
   } catch (error) {
     console.error("Erro na limpeza diária de mesas e reservas:", error);
   }
@@ -129,7 +111,6 @@ export const cleanExpiredTablesAndReservations = async () => {
 // Iniciar verificação periódica (a cada 30 segundos)
 export const startPeriodicCheck = () => {
   setInterval(checkPendingReservations, 30 * 1000);
-  console.log("Sistema de verificação periódica de reservas iniciado (30s)");
 };
 
 // Iniciar limpeza diária (todo dia às 00:01)
@@ -150,7 +131,6 @@ export const startDailyCleanup = () => {
     setInterval(cleanExpiredTablesAndReservations, 24 * 60 * 60 * 1000);
   }, timeUntilMidnight);
 
-  console.log(`Limpeza diária agendada para ${tomorrow.toLocaleString()}`);
 };
 
 export const scheduleAutoApproval = async (reservationId: string) => {
@@ -169,9 +149,6 @@ export const scheduleAutoApproval = async (reservationId: string) => {
     // Buscar a reserva para verificar se existe e está pendente
     const reservation = await Reservation.findById(reservationId);
     if (!reservation || reservation.status !== "pending") {
-      console.log(
-        `Reserva ${reservationId} não encontrada ou não está pendente`
-      );
       return;
     }
 
@@ -180,9 +157,6 @@ export const scheduleAutoApproval = async (reservationId: string) => {
       await approveReservation(reservationId);
     }, confirmationTimeMinutes * 60 * 1000); // Converte minutos para milissegundos
 
-    console.log(
-      `Reserva ${reservationId} agendada para confirmação automática em ${confirmationTimeMinutes} minutos`
-    );
   } catch (error) {
     console.error("Erro ao agendar aprovação automática:", error);
   }
@@ -191,8 +165,6 @@ export const scheduleAutoApproval = async (reservationId: string) => {
 // Função auxiliar para aprovar uma reserva
 const approveReservation = async (reservationId: string) => {
   try {
-    console.log(`Verificando reserva ${reservationId} para confirmação...`);
-
     const reservation = await Reservation.findById(reservationId);
 
     if (!reservation) {
@@ -201,10 +173,6 @@ const approveReservation = async (reservationId: string) => {
       );
       return;
     }
-
-    console.log(
-      `Reserva ${reservationId} encontrada. Status atual: ${reservation.status}`
-    );
 
     // Só aprova se ainda estiver pendente
     if (reservation.status === "pending") {
@@ -217,11 +185,7 @@ const approveReservation = async (reservationId: string) => {
       );
       await updateTableStatus(reservation.tableId.toString());
 
-      console.log(`Reserva ${reservationId} confirmada automaticamente`);
     } else {
-      console.log(
-        `Reserva ${reservationId} já não está pendente. Status: ${reservation.status}`
-      );
     }
   } catch (error) {
     console.error(

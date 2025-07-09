@@ -28,7 +28,6 @@ export function formatToYMD(date: string | Date): string {
     }
 
     if (isNaN(dateObj.getTime())) {
-      // console.error("[formatToYMD] Data inválida:", date);
       return "";
     }
 
@@ -38,7 +37,6 @@ export function formatToYMD(date: string | Date): string {
 
     return `${year}-${month}-${day}`;
   } catch (error) {
-    // console.error("[formatToYMD] Erro ao formatar data:", error);
     return "";
   }
 }
@@ -73,7 +71,6 @@ export function formatToDMY(date: string | Date): string {
     }
 
     if (isNaN(dateObj.getTime())) {
-      // console.error("[formatToDMY] Data inválida:", date);
       return "";
     }
 
@@ -83,7 +80,6 @@ export function formatToDMY(date: string | Date): string {
 
     return `${day}/${month}/${year}`;
   } catch (error) {
-    // console.error("[formatToDMY] Erro ao formatar data:", error);
     return "";
   }
 }
@@ -102,7 +98,6 @@ export function extractYMD(date: string | Date): string {
     }
     return formatToYMD(date);
   } catch (error) {
-    // console.error("[extractYMD] Erro ao extrair data:", error);
     return "";
   }
 }

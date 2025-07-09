@@ -17,8 +17,6 @@ export const clearOldAuthData = (): void => {
     // Remover chaves antigas
     localStorage.removeItem(OLD_TOKEN_KEY);
     localStorage.removeItem(OLD_USER_KEY);
-
-    console.log("[authUtils] Dados antigos de autenticação removidos");
   } catch (error) {
     console.error("[authUtils] Erro ao limpar dados antigos:", error);
   }
@@ -40,8 +38,6 @@ export const migrateAuthData = (): void => {
       // Remover dados antigos
       localStorage.removeItem(OLD_TOKEN_KEY);
       localStorage.removeItem(OLD_USER_KEY);
-
-      console.log("[authUtils] Dados de autenticação migrados");
     }
   } catch (error) {
     console.error("[authUtils] Erro na migração:", error);
@@ -69,8 +65,6 @@ export const clearAllAuthData = (): void => {
     localStorage.removeItem(NEW_TOKEN_KEY);
     localStorage.removeItem(NEW_REFRESH_TOKEN_KEY);
     localStorage.removeItem(NEW_USER_KEY);
-
-    console.log("[authUtils] Todos os dados de autenticação removidos");
   } catch (error) {
     console.error("[authUtils] Erro ao limpar todos os dados:", error);
   }
