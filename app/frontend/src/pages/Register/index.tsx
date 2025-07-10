@@ -188,14 +188,14 @@ export function Register() {
 
                           return (
                             <>
-                              <S.StrengthBar level={strengthLevel}>
+                              <S.StrengthBar $level={strengthLevel}>
                                 <S.StrengthFill
-                                  level={strengthLevel}
-                                  score={score}
+                                  $level={strengthLevel}
+                                  $score={score}
                                 />
                               </S.StrengthBar>
-                              <S.StrengthText level={strengthLevel}>
-                                <S.StrengthIcon level={strengthLevel}>
+                              <S.StrengthText $level={strengthLevel}>
+                                <S.StrengthIcon $level={strengthLevel}>
                                   {score === 5 ? (
                                     <CheckCircle size={14} />
                                   ) : score >= 3 ? (
@@ -211,7 +211,7 @@ export function Register() {
                                   : "Senha fraca"}
                               </S.StrengthText>
                               <S.CheckList>
-                                <S.CheckItem valid={checks.length}>
+                                <S.CheckItem $valid={checks.length}>
                                   {checks.length ? (
                                     <CheckCircle size={12} />
                                   ) : (
@@ -219,7 +219,7 @@ export function Register() {
                                   )}{" "}
                                   Mínimo 8 caracteres
                                 </S.CheckItem>
-                                <S.CheckItem valid={checks.uppercase}>
+                                <S.CheckItem $valid={checks.uppercase}>
                                   {checks.uppercase ? (
                                     <CheckCircle size={12} />
                                   ) : (
@@ -227,7 +227,7 @@ export function Register() {
                                   )}{" "}
                                   Letra maiúscula
                                 </S.CheckItem>
-                                <S.CheckItem valid={checks.lowercase}>
+                                <S.CheckItem $valid={checks.lowercase}>
                                   {checks.lowercase ? (
                                     <CheckCircle size={12} />
                                   ) : (
@@ -235,7 +235,7 @@ export function Register() {
                                   )}{" "}
                                   Letra minúscula
                                 </S.CheckItem>
-                                <S.CheckItem valid={checks.number}>
+                                <S.CheckItem $valid={checks.number}>
                                   {checks.number ? (
                                     <CheckCircle size={12} />
                                   ) : (
@@ -243,7 +243,7 @@ export function Register() {
                                   )}{" "}
                                   Número
                                 </S.CheckItem>
-                                <S.CheckItem valid={checks.special}>
+                                <S.CheckItem $valid={checks.special}>
                                   {checks.special ? (
                                     <CheckCircle size={12} />
                                   ) : (
@@ -277,11 +277,11 @@ export function Register() {
                     {confirmPasswordValue && passwordValue && (
                       <S.PasswordMatch>
                         {confirmPasswordValue === passwordValue ? (
-                          <S.MatchText valid={true}>
+                          <S.MatchText $valid={true}>
                             <CheckCircle size={14} /> As senhas conferem
                           </S.MatchText>
                         ) : (
-                          <S.MatchText valid={false}>
+                          <S.MatchText $valid={false}>
                             <X size={14} /> As senhas não conferem
                           </S.MatchText>
                         )}
@@ -302,7 +302,7 @@ export function Register() {
                         <S.RoleCard
                           as="label"
                           htmlFor="role-client"
-                          selected={selectedRole === "client"}
+                          $selected={selectedRole === "client"}
                         >
                           <Users size={20} />
                           <S.RoleInfo>
@@ -323,7 +323,7 @@ export function Register() {
                         <S.RoleCard
                           as="label"
                           htmlFor="role-admin"
-                          selected={selectedRole === "admin"}
+                          $selected={selectedRole === "admin"}
                         >
                           <Shield size={20} />
                           <S.RoleInfo>

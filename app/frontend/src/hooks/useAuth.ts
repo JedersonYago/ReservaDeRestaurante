@@ -8,7 +8,7 @@ export function useAuth() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Query para buscar usuário atual com validação
+  // Query para buscar usuário atual de forma simples
   const {
     data: user,
     isLoading,
@@ -17,37 +17,37 @@ export function useAuth() {
   } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
-      // Primeiro validar o token
-      const isValid = await authService.validateToken();
-      if (!isValid) {
-        // Tentar refresh se o token for inválido
-        const authData = await authService.refreshToken();
-        if (authData) {
-          return authData.user;
-        }
-        // Se não conseguir refresh, buscar do localStorage como fallback
-        const localUser = authService.getUser();
-        if (localUser) {
-          // Verificar se o usuário ainda existe no backend
-          try {
-            const currentUser = await authService.getCurrentUser();
-            return currentUser || localUser;
-          } catch {
-            return localUser;
-          }
-        }
+      // Buscar usuário do localStorage primeiro (rápido)
+      const localUser = authService.getUser();
+      if (!localUser || !authService.getToken()) {
         return null;
       }
 
-      // Se o token for válido, buscar usuário atualizado
-      const currentUser = await authService.getCurrentUser();
-      return currentUser || authService.getUser();
+      // Tentar buscar dados atualizados do servidor
+      try {
+        const currentUser = await authService.getCurrentUser();
+        return currentUser || localUser;
+      } catch (error: any) {
+        // Se der erro 401, tentar refresh
+        if (error?.response?.status === 401) {
+          try {
+            const authData = await authService.refreshToken();
+            return authData?.user || null;
+          } catch {
+            // Se refresh falhar, limpar dados e retornar null
+            authService.clearAuth();
+            return null;
+          }
+        }
+        // Para outros erros, usar dados locais
+        return localUser;
+      }
     },
-    retry: 1,
-    enabled: !!authService.getToken(),
-    staleTime: 30 * 60 * 1000, // 30 minutos
-    refetchOnWindowFocus: false, // Não revalidar ao focar a janela
-    refetchOnMount: false, // Não revalidar ao montar o componente
+    retry: false, // Não fazer retry automático
+    enabled: true, // Sempre habilitado
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
   });
 
   // Mutation para logout
@@ -82,50 +82,21 @@ export function useAuth() {
     },
     onError: (error) => {
       console.error("[useAuth.refresh] Erro:", error);
-      // Se falhar o refresh, fazer logout
+      // Se falhar o refresh, apenas limpar dados sem navegar
+      // O ProtectedRoute vai cuidar da navegação
       authService.clearAuth();
-      queryClient.clear();
-      navigate("/login", { replace: true });
+      queryClient.setQueryData(["user"], null);
     },
   });
 
-  // Verificar token periodicamente
+  // Verificação mais simples quando necessário
   useEffect(() => {
-    if (!authService.getToken()) return;
-
-    const checkTokenInterval = setInterval(async () => {
-      try {
-        const isValid = await authService.validateToken();
-        if (!isValid) {
-          // Token inválido, tentar refresh
-          await refreshMutation.mutateAsync();
-        }
-      } catch (error) {
-        console.error("[useAuth.tokenCheck] Erro:", error);
-      }
-    }, 5 * 60 * 1000); // Verificar a cada 5 minutos
-
-    return () => clearInterval(checkTokenInterval);
-  }, [refreshMutation]);
-
-  // Verificar token quando a janela ganha foco
-  useEffect(() => {
-    const handleFocus = async () => {
-      if (authService.getToken()) {
-        try {
-          const isValid = await authService.validateToken();
-          if (!isValid) {
-            await refreshMutation.mutateAsync();
-          }
-        } catch (error) {
-          console.error("[useAuth.windowFocus] Erro:", error);
-        }
-      }
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [refreshMutation]);
+    // Apenas verificar se não há token e limpar dados inconsistentes
+    if (!authService.getToken() && user) {
+      authService.clearAuth();
+      queryClient.clear();
+    }
+  }, [user, queryClient]);
 
   const signOut = (logoutAll: boolean = false) => {
     logoutMutation.mutate(logoutAll);

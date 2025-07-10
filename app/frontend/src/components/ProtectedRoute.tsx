@@ -12,7 +12,7 @@ export function ProtectedRoute({
   children,
   adminOnly = false,
 }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, user, error } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   // Loading state
   if (isLoading) {
@@ -26,33 +26,14 @@ export function ProtectedRoute({
     );
   }
 
-  // Erro de autenticação
-  if (error && !isAuthenticated) {
-    return (
-      <ErrorContainer>
-        <ErrorText>Erro ao verificar autenticação</ErrorText>
-        <RetryButton onClick={() => window.location.reload()}>
-          Tentar Novamente
-        </RetryButton>
-      </ErrorContainer>
-    );
-  }
-
-  // Não autenticado
+  // Não autenticado - redirecionar para login
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login?redirect=true" replace />;
   }
 
   // Verificar permissão de admin
   if (adminOnly && user?.role !== "admin") {
-    // Redireciona para o dashboard, sem forçar revalidação do token
-    return (
-      <Navigate
-        to="/dashboard"
-        replace
-        state={{ from: window.location.pathname }}
-      />
-    );
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
@@ -85,35 +66,4 @@ const LoadingSpinner = styled.div`
 const LoadingText = styled.p`
   color: ${({ theme }) => theme.colors.text.secondary};
   font-size: ${({ theme }) => theme.typography.fontSize.md};
-`;
-
-const ErrorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: ${({ theme }) => theme.colors.background.secondary};
-`;
-
-const ErrorText = styled.p`
-  color: ${({ theme }) => theme.colors.semantic.error};
-  font-size: ${({ theme }) => theme.typography.fontSize.md};
-  margin-bottom: ${({ theme }) => theme.spacing[4]};
-`;
-
-const RetryButton = styled.button`
-  background: ${({ theme }) => theme.colors.primary.main};
-  color: ${({ theme }) => theme.colors.primary.contrast};
-  border: none;
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[4]}`};
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.primary.dark};
-  }
 `;

@@ -56,7 +56,8 @@ export const authService = {
       return response.data;
     } catch (error) {
       console.error("[authService.refreshToken] Erro:", error);
-      this.logout();
+      // Não chamar logout automaticamente para evitar efeitos colaterais
+      // O interceptor ou quem chamou refreshToken deve decidir o que fazer
       return null;
     }
   },

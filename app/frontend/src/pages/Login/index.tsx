@@ -1,13 +1,13 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../components/Toast";
 
 import { Input } from "../../components/Input";
 import { authService } from "../../services/authService";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { loginSchema, type LoginFormData } from "../../schemas/auth";
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
   Shield,
   Zap,
   BarChart3,
+  XCircle,
 } from "lucide-react";
 import { Logo } from "../../components/Logo";
 import * as S from "./styles";
@@ -26,34 +27,82 @@ export function Login() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setError,
+    watch,
   } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema),
   });
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const toast = useToast();
+  const [searchParams] = useSearchParams();
+  const [loginError, setLoginError] = useState<string>("");
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+
+  // Observar mudanças nos campos para limpar erros
+  const formValues = watch();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
+    // Limpar erro de login quando usuário começar a digitar
+    if (loginError && (formValues.username || formValues.password)) {
+      setLoginError("");
     }
-  }, [isAuthenticated, navigate]);
+  }, [formValues, loginError]);
+
+  useEffect(() => {
+    // Só redireciona se estiver realmente autenticado e não estiver carregando
+    if (isAuthenticated && !isLoading) {
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    // Limpar parâmetros de erro da URL se existirem (executar apenas uma vez)
+    if (searchParams.has("error") || searchParams.has("redirect")) {
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []); // Array vazio para executar apenas uma vez
 
   async function handleLogin(data: LoginFormData) {
+    // Limpar erros anteriores
+    setLoginError("");
+    setIsLoginLoading(true);
+
     try {
       const response = await authService.login(data);
       await queryClient.setQueryData(["user"], response.user);
+
       // Invalida todas as queries para garantir dados atualizados para o novo usuário
       queryClient.invalidateQueries();
+
       toast.success("Login realizado com sucesso!");
       navigate("/dashboard", { replace: true });
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message ||
         "Erro ao fazer login. Verifique suas credenciais.";
+
+      // Mostrar erro no toast E no formulário
       toast.error(errorMessage);
+      setLoginError(errorMessage);
+
+      // Adicionar erro específico nos campos se for erro de credenciais
+      if (error.response?.status === 401) {
+        setError("username", {
+          type: "manual",
+          message: "Usuário ou senha incorretos",
+        });
+        setError("password", {
+          type: "manual",
+          message: "Usuário ou senha incorretos",
+        });
+      }
+    } finally {
+      setIsLoginLoading(false);
     }
   }
 
@@ -80,6 +129,16 @@ export function Login() {
               </S.FormHeader>
 
               <form onSubmit={handleSubmit(handleLogin)}>
+                {/* Exibir erro geral se houver */}
+                {loginError && (
+                  <S.ErrorAlert>
+                    <S.ErrorIcon>
+                      <XCircle size={20} />
+                    </S.ErrorIcon>
+                    <S.ErrorMessage>{loginError}</S.ErrorMessage>
+                  </S.ErrorAlert>
+                )}
+
                 <S.InputGroup>
                   <S.InputWrapper>
                     <S.InputIcon>
@@ -115,12 +174,16 @@ export function Login() {
                 <S.SubmitButton
                   type="submit"
                   fullWidth
-                  disabled={isSubmitting}
-                  loading={isSubmitting}
+                  disabled={isSubmitting || isLoginLoading || isLoading}
+                  loading={isSubmitting || isLoginLoading}
                 >
-                  {isSubmitting ? "Entrando..." : "Entrar"}
+                  {isSubmitting || isLoginLoading ? "Entrando..." : "Entrar"}
                 </S.SubmitButton>
               </form>
+
+              <S.ForgotPasswordLink to="/forgot-password">
+                Esqueceu sua senha?
+              </S.ForgotPasswordLink>
 
               <S.FooterLinks>
                 <S.RegisterLink to="/register">

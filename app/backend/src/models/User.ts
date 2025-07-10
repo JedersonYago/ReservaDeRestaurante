@@ -48,8 +48,19 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-// Middleware para hash da senha antes de salvar
+// Middleware para normalizar username/email e hash da senha antes de salvar
 UserSchema.pre("save", async function (next) {
+  // Normalizar username para lowercase se foi modificado
+  if (this.isModified("username")) {
+    this.username = this.username.toLowerCase().trim();
+  }
+
+  // Normalizar email para lowercase se foi modificado
+  if (this.isModified("email")) {
+    this.email = this.email.toLowerCase().trim();
+  }
+
+  // Hash da senha se foi modificada
   if (!this.isModified("password")) return next();
 
   try {
