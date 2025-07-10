@@ -188,7 +188,7 @@ export const PasswordStrength = styled.div`
   border: 1px solid ${theme.colors.neutral[200]};
 `;
 
-export const StrengthBar = styled.div<{ level: string }>`
+export const StrengthBar = styled.div<{ $level: string }>`
   width: 100%;
   height: 4px;
   background: ${theme.colors.neutral[200]};
@@ -197,19 +197,19 @@ export const StrengthBar = styled.div<{ level: string }>`
   margin-bottom: ${theme.spacing[2]};
 `;
 
-export const StrengthFill = styled.div<{ level: string; score: number }>`
+export const StrengthFill = styled.div<{ $level: string; $score: number }>`
   height: 100%;
-  width: ${(props) => (props.score / 5) * 100}%;
+  width: ${(props) => (props.$score / 5) * 100}%;
   background: ${(props) =>
-    props.level === "strong"
+    props.$level === "strong"
       ? theme.colors.semantic.success
-      : props.level === "medium"
+      : props.$level === "medium"
       ? theme.colors.semantic.warning
       : theme.colors.semantic.error};
   transition: all 0.3s ease;
 `;
 
-export const StrengthText = styled.div<{ level: string }>`
+export const StrengthText = styled.div<{ $level: string }>`
   font-size: ${theme.typography.fontSize.sm};
   font-weight: ${theme.typography.fontWeight.medium};
   margin-bottom: ${theme.spacing[2]};
@@ -217,18 +217,18 @@ export const StrengthText = styled.div<{ level: string }>`
   align-items: center;
   gap: ${theme.spacing[1]};
   color: ${(props) =>
-    props.level === "strong"
+    props.$level === "strong"
       ? theme.colors.semantic.success
-      : props.level === "medium"
+      : props.$level === "medium"
       ? theme.colors.semantic.warning
       : theme.colors.semantic.error};
 `;
 
-export const StrengthIcon = styled.div<{ level: string }>`
+export const StrengthIcon = styled.div<{ $level: string }>`
   color: ${(props) =>
-    props.level === "strong"
+    props.$level === "strong"
       ? theme.colors.semantic.success
-      : props.level === "medium"
+      : props.$level === "medium"
       ? theme.colors.semantic.warning
       : theme.colors.semantic.error};
 `;
@@ -239,10 +239,10 @@ export const CheckList = styled.div`
   gap: ${theme.spacing[1]};
 `;
 
-export const CheckItem = styled.div<{ valid: boolean }>`
+export const CheckItem = styled.div<{ $valid: boolean }>`
   font-size: ${theme.typography.fontSize.xs};
   color: ${(props) =>
-    props.valid ? theme.colors.semantic.success : theme.colors.text.secondary};
+    props.$valid ? theme.colors.semantic.success : theme.colors.text.secondary};
   display: flex;
   align-items: center;
   gap: ${theme.spacing[1]};
@@ -256,11 +256,11 @@ export const PasswordMatch = styled.div`
   margin-top: ${theme.spacing[2]};
 `;
 
-export const MatchText = styled.div<{ valid: boolean }>`
+export const MatchText = styled.div<{ $valid: boolean }>`
   font-size: ${theme.typography.fontSize.sm};
   font-weight: ${theme.typography.fontWeight.medium};
   color: ${(props) =>
-    props.valid ? theme.colors.semantic.success : theme.colors.semantic.error};
+    props.$valid ? theme.colors.semantic.success : theme.colors.semantic.error};
   display: flex;
   align-items: center;
   gap: ${theme.spacing[1]};
@@ -299,14 +299,14 @@ export const RoleInput = styled.input`
   pointer-events: none;
 `;
 
-export const RoleCard = styled.div<{ selected: boolean }>`
+export const RoleCard = styled.div<{ $selected: boolean }>`
   padding: ${theme.spacing[4]};
   border: 2px solid
     ${(props) =>
-      props.selected ? theme.colors.primary.main : theme.colors.neutral[200]};
+      props.$selected ? theme.colors.primary.main : theme.colors.neutral[200]};
   border-radius: ${theme.borderRadius.lg};
   background: ${(props) =>
-    props.selected
+    props.$selected
       ? `${theme.colors.primary.main}10`
       : theme.colors.background.primary};
   transition: all ${theme.transitions.timing.out} 0.2s;
@@ -323,7 +323,9 @@ export const RoleCard = styled.div<{ selected: boolean }>`
 
   svg {
     color: ${(props) =>
-      props.selected ? theme.colors.primary.main : theme.colors.text.secondary};
+      props.$selected
+        ? theme.colors.primary.main
+        : theme.colors.text.secondary};
   }
 `;
 

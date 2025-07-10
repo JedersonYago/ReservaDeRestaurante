@@ -189,6 +189,29 @@ export const SubmitButton = styled(Button)`
   }
 `;
 
+export const ForgotPasswordLink = styled(Link)`
+  display: block;
+  text-align: center;
+  color: ${theme.colors.text.secondary};
+  text-decoration: none;
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.medium};
+  padding: ${theme.spacing[4]} 0;
+  margin-top: ${theme.spacing[4]};
+  transition: color ${theme.transitions.timing.out} 0.2s;
+  border-radius: ${theme.borderRadius.md};
+
+  &:hover {
+    color: ${theme.colors.primary.main};
+    background: ${theme.colors.primary[50]};
+  }
+
+  &:focus {
+    outline: 2px solid ${theme.colors.primary.main};
+    outline-offset: 2px;
+  }
+`;
+
 export const FooterLinks = styled.div`
   text-align: center;
   margin-top: ${theme.spacing[8]};
@@ -312,4 +335,32 @@ export const FeatureItem = styled.div`
   &:nth-child(4) {
     --i: 3;
   }
+`;
+
+// Componentes para exibir erros
+export const ErrorAlert = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing[3]};
+  background: ${theme.colors.semantic.error}10;
+  border: 1px solid ${theme.colors.semantic.error}30;
+  border-radius: ${theme.borderRadius.md};
+  padding: ${theme.spacing[3]} ${theme.spacing[4]};
+  margin-bottom: ${theme.spacing[6]};
+  animation: ${fadeInUp} 0.3s ease-out;
+`;
+
+export const ErrorIcon = styled.div`
+  color: ${theme.colors.semantic.error};
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+`;
+
+export const ErrorMessage = styled.p`
+  color: ${theme.colors.semantic.error};
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.medium};
+  margin: 0;
+  line-height: ${theme.typography.lineHeight.tight};
 `;

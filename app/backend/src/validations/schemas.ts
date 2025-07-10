@@ -325,3 +325,37 @@ export const configSchema = Joi.object({
   isIntervalEnabled: Joi.boolean().required(),
   isOpeningHoursEnabled: Joi.boolean().required(),
 });
+
+// Esquema de validação para solicitar recuperação de senha
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Email inválido",
+    "string.empty": "O email é obrigatório",
+    "any.required": "O email é obrigatório",
+  }),
+});
+
+// Esquema de validação para redefinir senha
+export const resetPasswordSchema = Joi.object({
+  token: Joi.string().required().messages({
+    "string.empty": "Token é obrigatório",
+    "any.required": "Token é obrigatório",
+  }),
+  newPassword: Joi.string()
+    .min(8)
+    .pattern(VALIDATION_PATTERNS.STRONG_PASSWORD)
+    .required()
+    .messages({
+      "string.min": "A nova senha deve ter no mínimo 8 caracteres",
+      "string.pattern.base": VALIDATION_MESSAGES.STRONG_PASSWORD,
+      "string.empty": "A nova senha é obrigatória",
+      "any.required": "A nova senha é obrigatória",
+    }),
+  confirmPassword: Joi.string()
+    .valid(Joi.ref("newPassword"))
+    .required()
+    .messages({
+      "any.only": "As senhas não conferem",
+      "any.required": "Confirmação de senha é obrigatória",
+    }),
+});

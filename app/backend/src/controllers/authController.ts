@@ -1,19 +1,25 @@
 import { Request, Response } from "express";
 import User from "../models/User";
 import RefreshToken from "../models/RefreshToken";
+import { PasswordReset } from "../models/PasswordReset";
+import { emailService } from "../services/emailService";
 import {
   generateTokenPair,
   verifyRefreshToken,
   isTokenExpired,
 } from "../utils/jwt";
 import { config } from "../config";
+import crypto from "crypto";
 
 const authController = {
   async login(req: Request, res: Response) {
     try {
       const { username, password } = req.body;
 
-      const user = await User.findOne({ username });
+      // Busca case-insensitive pelo username
+      const user = await User.findOne({
+        username: username.toLowerCase().trim(),
+      });
       if (!user) {
         return res.status(401).json({ message: "Usuário ou senha inválidos" });
       }
@@ -65,8 +71,12 @@ const authController = {
           .json({ message: "Código de administrador inválido" });
       }
 
+      // Verificação case-insensitive para email e username
       const existingUser = await User.findOne({
-        $or: [{ email }, { username }],
+        $or: [
+          { email: email.toLowerCase().trim() },
+          { username: username.toLowerCase().trim() },
+        ],
       });
 
       if (existingUser) {
@@ -77,8 +87,8 @@ const authController = {
 
       const user = await User.create({
         name,
-        username,
-        email,
+        username: username.toLowerCase().trim(),
+        email: email.toLowerCase().trim(),
         password,
         role,
       });
@@ -265,6 +275,161 @@ const authController = {
     } catch (error) {
       console.error("[authController.validateToken] Erro:", error);
       res.status(401).json({ valid: false, message: "Token inválido" });
+    }
+  },
+
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email é obrigatório" });
+      }
+
+      // Buscar usuário pelo email (case-insensitive)
+      const user = await User.findOne({
+        email: email.toLowerCase().trim(),
+      });
+      if (!user) {
+        // Por segurança, sempre retorna sucesso mesmo se o email não existir
+        return res.json({
+          message:
+            "Se o email estiver cadastrado, você receberá as instruções de recuperação",
+        });
+      }
+
+      // Gerar token único de recuperação
+      const resetToken = crypto.randomBytes(32).toString("hex");
+
+      // Definir expiração para 1 hora
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      // Invalidar tokens anteriores para este usuário
+      await PasswordReset.updateMany(
+        { userId: user._id, used: false },
+        { used: true }
+      );
+
+      // Criar novo token de recuperação
+      await PasswordReset.create({
+        userId: user._id,
+        token: resetToken,
+        expiresAt,
+      });
+
+      // Gerar link de recuperação
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+      // Enviar email
+      const emailSent = await emailService.sendPasswordResetEmail(
+        user.email,
+        resetLink,
+        user.name
+      );
+
+      if (!emailSent) {
+        return res.status(500).json({
+          message: "Erro ao enviar email. Tente novamente mais tarde.",
+        });
+      }
+
+      res.json({
+        message:
+          "Se o email estiver cadastrado, você receberá as instruções de recuperação",
+      });
+    } catch (error) {
+      console.error("[authController.forgotPassword] Erro:", error);
+      res.status(500).json({ message: "Erro interno. Tente novamente." });
+    }
+  },
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { token, newPassword } = req.body;
+
+      if (!token || !newPassword) {
+        return res.status(400).json({
+          message: "Token e nova senha são obrigatórios",
+        });
+      }
+
+      // Buscar token de recuperação
+      const resetToken = await PasswordReset.findOne({
+        token,
+        used: false,
+      }).populate("userId");
+
+      if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
+        return res.status(400).json({
+          message: "Token inválido ou expirado",
+        });
+      }
+
+      // Buscar usuário
+      const user = await User.findById(resetToken.userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      // Atualizar senha do usuário
+      user.password = newPassword;
+      await user.save();
+
+      // Marcar token como usado
+      resetToken.used = true;
+      await resetToken.save();
+
+      // Revogar todos os refresh tokens do usuário (forçar novo login)
+      await RefreshToken.updateMany({ userId: user._id }, { isRevoked: true });
+
+      res.json({
+        message: "Senha redefinida com sucesso! Faça login com sua nova senha.",
+      });
+    } catch (error) {
+      console.error("[authController.resetPassword] Erro:", error);
+      res
+        .status(500)
+        .json({ message: "Erro ao redefinir senha. Tente novamente." });
+    }
+  },
+
+  async verifyResetToken(req: Request, res: Response) {
+    try {
+      const { token } = req.query;
+
+      if (!token) {
+        return res.status(400).json({
+          valid: false,
+          message: "Token não fornecido",
+        });
+      }
+
+      // Buscar token de recuperação
+      const resetToken = await PasswordReset.findOne({
+        token,
+        used: false,
+      });
+
+      if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
+        return res.status(400).json({
+          valid: false,
+          message: "Token inválido ou expirado",
+        });
+      }
+
+      res.json({
+        valid: true,
+        message: "Token válido",
+        expiresAt: resetToken.expiresAt,
+      });
+    } catch (error) {
+      console.error("[authController.verifyResetToken] Erro:", error);
+      res.status(500).json({
+        valid: false,
+        message: "Erro ao verificar token",
+      });
     }
   },
 };

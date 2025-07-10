@@ -68,7 +68,23 @@ api.interceptors.response.use(
       return Promise.reject(new Error("Erro de conexão com o servidor"));
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // URLs que não devem ser tratadas como erro de token expirado
+    const authUrls = [
+      "/auth/login",
+      "/auth/register",
+      "/auth/refresh",
+      "/auth/forgot-password",
+      "/auth/reset-password",
+    ];
+    const isAuthRequest = authUrls.some((url) =>
+      originalRequest.url?.includes(url)
+    );
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRequest
+    ) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
@@ -96,7 +112,11 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         authService.clearAuth();
-        window.location.href = "/login?error=session_expired";
+
+        // Só redirecionar se não estivermos já na página de login
+        if (!window.location.pathname.includes("/login")) {
+          window.location.href = "/login?error=session_expired";
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
