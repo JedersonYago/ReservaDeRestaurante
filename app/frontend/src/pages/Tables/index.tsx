@@ -122,11 +122,8 @@ export function Tables() {
         const matchesStatus =
           statusFilter === "all" || table.status === statusFilter;
 
-        // Para admins, mostrar todas as mesas conforme filtros
-        const isAccessibleToAdmin =
-          table.status !== "maintenance" && table.status !== "expired";
-
-        return matchesSearch && matchesStatus && isAccessibleToAdmin;
+        // Para admins, mostrar todas as mesas conforme filtros (incluindo expiradas)
+        return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
         // Ordenar por prioridade de status (menor número = maior prioridade)
