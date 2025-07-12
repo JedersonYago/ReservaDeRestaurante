@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 // Limite para rotas de autenticação (login, registro, etc)
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // 5 tentativas
+  max: 25, // 25 tentativas
   message: {
     error: "Muitas tentativas de acesso. Tente novamente em 15 minutos.",
   },
