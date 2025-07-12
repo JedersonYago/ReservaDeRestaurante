@@ -93,6 +93,14 @@ export const tableController = {
         return res.status(400).json({ message: error.details[0].message });
       }
 
+      // Impedir que o status "expired" seja definido manualmente
+      if (req.body.status === "expired") {
+        return res.status(400).json({
+          message:
+            "O status 'expired' é controlado automaticamente pelo sistema",
+        });
+      }
+
       const currentTable = await Table.findById(req.params.id);
       if (!currentTable) {
         return res.status(404).json({ message: "Mesa não encontrada" });
@@ -105,6 +113,32 @@ export const tableController = {
         req.body.availability.length > 0
       ) {
         req.body.status = "available";
+      }
+
+      // Se o status está mudando para "maintenance", identificar reservas afetadas
+      let affectedReservations: any[] = [];
+      if (
+        req.body.status === "maintenance" &&
+        currentTable.status !== "maintenance"
+      ) {
+        affectedReservations = await Reservation.find({
+          tableId: currentTable._id,
+          status: { $in: ["pending", "confirmed"] },
+        }).lean();
+
+        // Se há reservas afetadas, retornar para o frontend processar remanejamento
+        if (affectedReservations.length > 0) {
+          return res.status(409).json({
+            message: "Mesa tem reservas ativas que precisam ser remanejadas",
+            affectedReservations,
+            tableId: currentTable._id,
+            tableName: currentTable.name,
+          });
+        }
+
+        console.log(
+          `Mesa ${currentTable.name} colocada em manutenção sem reservas afetadas`
+        );
       }
 
       const table = await Table.findByIdAndUpdate(req.params.id, req.body, {
@@ -127,6 +161,117 @@ export const tableController = {
           .json({ message: "Já existe uma mesa com este nome" });
       }
       res.status(500).json({ message: "Erro ao atualizar mesa" });
+    }
+  },
+
+  // Força colocação em manutenção após processamento de remanejamento
+  async forceMaintenance(req: Request, res: Response) {
+    try {
+      const { tableId, cancelReservations } = req.body;
+
+      if (!tableId) {
+        return res.status(400).json({ message: "ID da mesa é obrigatório" });
+      }
+
+      const table = await Table.findById(tableId);
+      if (!table) {
+        return res.status(404).json({ message: "Mesa não encontrada" });
+      }
+
+      // Se cancelReservations for true, cancelar todas as reservas restantes
+      if (cancelReservations) {
+        await Reservation.updateMany(
+          {
+            tableId: table._id,
+            status: { $in: ["pending", "confirmed"] },
+          },
+          { status: "cancelled" }
+        );
+        console.log(`Reservas restantes canceladas para mesa ${table.name}`);
+      }
+
+      // Atualizar status da mesa para manutenção
+      const updatedTable = await Table.findByIdAndUpdate(
+        tableId,
+        { status: "maintenance" },
+        { new: true }
+      );
+
+      console.log(
+        `Mesa ${table.name} colocada em manutenção após processamento`
+      );
+      res.json(updatedTable);
+    } catch (error) {
+      console.error("Erro ao forçar manutenção:", error);
+      res.status(500).json({ message: "Erro ao colocar mesa em manutenção" });
+    }
+  },
+
+  // Buscar mesas disponíveis para remanejamento
+  async getAvailableForRescheduling(req: Request, res: Response) {
+    try {
+      const { date, time, capacity, excludeTableId } = req.query;
+
+      if (!date || !time || !capacity) {
+        return res.status(400).json({
+          message: "Data, horário e capacidade são obrigatórios",
+        });
+      }
+
+      // Buscar mesas que podem acomodar a capacidade e não estão em manutenção
+      const query: any = {
+        status: { $nin: ["maintenance", "expired"] },
+        capacity: { $gte: Number(capacity) },
+      };
+
+      // Só adicionar exclusão se excludeTableId estiver definido
+      if (excludeTableId) {
+        query._id = { $ne: excludeTableId };
+      }
+
+      const tables = await Table.find(query);
+
+      // Filtrar mesas disponíveis para o horário específico
+      const availableTables = [];
+      for (const table of tables) {
+        // Verificar se o horário está na disponibilidade da mesa
+        const availabilityBlock = table.availability.find(
+          (block: AvailabilityBlock) => block.date === date
+        );
+
+        if (!availabilityBlock) continue;
+
+        const isTimeAvailable = availabilityBlock.times.some(
+          (timeRange: string) => {
+            const [startTime] = timeRange.split("-");
+            return startTime === time;
+          }
+        );
+
+        if (!isTimeAvailable) continue;
+
+        // Verificar se o horário não está ocupado
+        const existingReservation = await Reservation.findOne({
+          tableId: table._id,
+          date,
+          time,
+          status: { $ne: "cancelled" },
+        });
+
+        if (!existingReservation) {
+          availableTables.push({
+            _id: table._id,
+            name: table.name,
+            capacity: table.capacity,
+            status: table.status,
+          });
+        }
+      }
+
+      res.json(availableTables);
+    } catch (error) {
+      console.error("Erro ao buscar mesas para remanejamento:", error);
+      res.status(500).json({ message: "Erro ao buscar mesas disponíveis" });
     }
   },
 

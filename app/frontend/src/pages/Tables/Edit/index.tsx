@@ -22,6 +22,7 @@ import {
 import { useConfig } from "../../../hooks/useConfig";
 import { Button, CancelButton } from "../../../components/Button";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
+import { ReschedulingModal } from "../../../components/Modal/ReschedulingModal";
 import { Input } from "../../../components/Input";
 import { Select } from "../../../components/Select";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
@@ -111,6 +112,14 @@ export function EditTable() {
     affectedReservations: any[];
   } | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // States para modal de remanejamento
+  const [showReschedulingModal, setShowReschedulingModal] = useState(false);
+  const [reschedulingData, setReschedulingData] = useState<{
+    affectedReservations: any[];
+    tableId: string;
+    tableName: string;
+  } | null>(null);
 
   const now = new Date();
   const todayStr = format(now, "yyyy-MM-dd");
@@ -416,16 +425,38 @@ export function EditTable() {
       toast.error("Preencha todas as datas e horários de disponibilidade");
       return;
     }
+
     setIsSaving(true);
-    await updateTable(id!, {
-      name,
-      capacity: parseInt(capacity),
-      status,
-      availability: availability.map(({ date, times }) => ({ date, times })),
-    });
-    setIsSaving(false);
-    // Toast já é exibido pelo hook useTables
-    navigate("/tables");
+
+    try {
+      await updateTable(id!, {
+        name,
+        capacity: parseInt(capacity),
+        status,
+        availability: availability.map(({ date, times }) => ({ date, times })),
+      });
+
+      // Toast já é exibido pelo hook useTables
+      navigate("/tables");
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        // Mesa tem reservas ativas que precisam ser remanejadas
+        const { affectedReservations, tableId, tableName } =
+          error.response.data;
+
+        setReschedulingData({
+          affectedReservations,
+          tableId,
+          tableName,
+        });
+        setShowReschedulingModal(true);
+      } else {
+        // Outros erros já são tratados pelo hook
+        console.error("Erro ao atualizar mesa:", error);
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -551,13 +582,20 @@ export function EditTable() {
                     <option value="available">Disponível</option>
                     <option value="reserved">Reservada</option>
                     <option value="maintenance">Em Manutenção</option>
-                    <option value="expired">Expirada</option>
+                    {/* Opção "expired" removida - controlada automaticamente pelo sistema */}
+                    {status === "expired" && (
+                      <option value="expired">
+                        Expirada (Somente Leitura)
+                      </option>
+                    )}
                   </Select>
                   {status === "maintenance" && (
                     <InfoMessage>
                       <Settings size={14} />
                       <span>
-                        Mesa em manutenção não aparecerá para novas reservas
+                        Mesa em manutenção não aparecerá para novas reservas.
+                        Todas as reservas ativas serão canceladas
+                        automaticamente.
                       </span>
                     </InfoMessage>
                   )}
@@ -565,7 +603,7 @@ export function EditTable() {
                     <InfoMessage>
                       <AlertTriangle size={14} />
                       <span>
-                        Mesa expirada não aparecerá para novas reservas.
+                        Mesa expirada (controlada automaticamente pelo sistema).
                         Adicione novos horários de disponibilidade para
                         reativar.
                       </span>
@@ -895,6 +933,20 @@ export function EditTable() {
             </ActionButtons>
           </form>
         </Content>
+
+        {/* Modal de remanejamento */}
+        {reschedulingData && (
+          <ReschedulingModal
+            isOpen={showReschedulingModal}
+            onClose={() => {
+              setShowReschedulingModal(false);
+              setReschedulingData(null);
+            }}
+            affectedReservations={reschedulingData.affectedReservations}
+            tableId={reschedulingData.tableId}
+            tableName={reschedulingData.tableName}
+          />
+        )}
 
         {/* Modal de confirmação de remoção */}
         <ConfirmationModal

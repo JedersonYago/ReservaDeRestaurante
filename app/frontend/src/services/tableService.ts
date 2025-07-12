@@ -67,4 +67,30 @@ export const tableService = {
     });
     return response.data;
   },
+
+  async getAvailableForRescheduling(
+    date: string,
+    time: string,
+    capacity: number,
+    excludeTableId: string
+  ): Promise<Table[]> {
+    const response = await api.get<Table[]>(
+      "/tables/available-for-rescheduling",
+      {
+        params: { date, time, capacity, excludeTableId },
+      }
+    );
+    return response.data;
+  },
+
+  async forceMaintenance(
+    tableId: string,
+    cancelReservations: boolean
+  ): Promise<Table> {
+    const response = await api.post<Table>("/tables/force-maintenance", {
+      tableId,
+      cancelReservations,
+    });
+    return response.data;
+  },
 };

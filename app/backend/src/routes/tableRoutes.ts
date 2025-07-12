@@ -10,6 +10,17 @@ const router = Router();
 router.use(auth);
 
 router.get("/", tableController.list);
+
+// Rotas específicas devem vir ANTES das rotas com parâmetros
+router.get("/available", tableController.availableTables);
+router.get(
+  "/available-for-rescheduling",
+  adminAuth,
+  tableController.getAvailableForRescheduling
+);
+router.post("/force-maintenance", adminAuth, tableController.forceMaintenance);
+
+// Rotas com parâmetros :id devem vir DEPOIS
 router.get("/:id", tableController.getById);
 router.post(
   "/",
@@ -25,7 +36,6 @@ router.put(
 );
 router.delete("/:id", adminAuth, tableController.delete);
 router.get("/:id/availability", tableController.getAvailability);
-router.get("/available", tableController.availableTables);
 router.get("/:id/status", tableController.getStatus);
 
 export default router;

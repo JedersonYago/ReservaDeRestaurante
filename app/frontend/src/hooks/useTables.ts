@@ -57,8 +57,14 @@ export function useTables() {
       toast.success("Mesa atualizada com sucesso!");
     },
     onError: (error: any) => {
-      if (error.response?.data?.error) {
-        toast.error(error.response.data.error);
+      // Não mostrar toast para erro 409 (conflito), será tratado no componente
+      if (error.response?.status === 409) {
+        // Não logar erro 409 pois é parte do fluxo normal
+        throw error; // Re-throw para ser capturado pelo componente
+      }
+
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
       } else {
         toast.error("Erro ao atualizar mesa. Tente novamente.");
       }
@@ -86,7 +92,7 @@ export function useTables() {
     isLoading,
     createTable: (data: CreateTableData) => createTable.mutate(data),
     updateTable: (id: string, data: UpdateTableData) =>
-      updateTable.mutate({ id, data }),
+      updateTable.mutateAsync({ id, data }),
     deleteTable,
   };
 }

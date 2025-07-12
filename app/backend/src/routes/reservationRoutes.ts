@@ -8,6 +8,7 @@ import {
   cancelReservation,
   getAvailableTimes,
   confirmReservation,
+  reservationController,
 } from "../controllers/reservationController";
 import { auth, adminAuth } from "../middlewares/auth";
 import { validateSchema } from "../middlewares/validateSchema";
@@ -19,6 +20,7 @@ const router = Router();
 router.get("/", auth, listReservations);
 router.get("/:id", auth, getReservationById);
 router.post("/", auth, validateSchema(reservationSchema), createReservation);
+router.put("/:id", auth, reservationController.update);
 router.put("/:id/cancel", auth, cancelReservation);
 
 router.patch("/:id/clear", auth, clearReservation);
