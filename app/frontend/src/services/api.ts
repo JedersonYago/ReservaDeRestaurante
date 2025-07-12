@@ -49,13 +49,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error: any) => {
-    // Log estruturado do erro
-    console.error("[API Response Error]", {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      message: error.message,
-    });
+    // Log estruturado do erro (exceto 409 que é parte do fluxo normal)
+    if (error.response?.status !== 409) {
+      console.error("[API Response Error]", {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        message: error.message,
+      });
+    }
 
     const originalRequest = error.config;
 
