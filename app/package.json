@@ -1,0 +1,29 @@
+{
+  "name": "reservafacil-monorepo",
+  "private": true,
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "install:clean": "npm run clean && npm install",
+    "clean": "rimraf node_modules package-lock.json frontend/node_modules frontend/package-lock.json backend/node_modules backend/package-lock.json shared/node_modules shared/package-lock.json",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:backend": "turbo run dev --filter=reserva-facil-backend",
+    "dev:frontend": "turbo run dev --filter=reserva-facil-frontend",
+    "dev:sequential": "npm run dev:backend & timeout /t 3 /nobreak >nul & npm run dev:frontend",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "turbo": "^2.5.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
