@@ -16,17 +16,24 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
+import { useThemeContext } from "../../components/ThemeProvider";
 import * as S from "./styles";
 
 export function Home() {
   const navigate = useNavigate();
+  const { isDark } = useThemeContext();
 
   return (
     <S.LandingContainer>
       {/* Header */}
       <S.Header>
         <S.HeaderContent>
-          <Logo size="lg" variant="full" onClick={() => navigate("/")} />
+          <Logo
+            key={isDark ? "dark" : "light"}
+            size="lg"
+            variant="full"
+            onClick={() => navigate("/")}
+          />
           <S.AuthButtons>
             <Button
               variant="outline"
@@ -253,7 +260,11 @@ export function Home() {
           <S.FooterContent>
             <S.FooterSection>
               <S.FooterLogo>
-                <Logo size="lg" variant="full" />
+                <Logo
+                  key={isDark ? "dark" : "light"}
+                  size="lg"
+                  variant="full"
+                />
               </S.FooterLogo>
               <S.FooterText>
                 A solução completa para gestão de reservas do seu restaurante.

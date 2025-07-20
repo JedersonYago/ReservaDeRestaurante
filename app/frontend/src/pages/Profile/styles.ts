@@ -4,11 +4,12 @@ import { spin } from "../../styles/animations";
 // PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const HeaderContent = styled.div`
@@ -33,11 +34,11 @@ export const Title = styled.h1`
   gap: 12px;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 8px 0;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
   }
 
   @media (max-width: 768px) {
@@ -46,7 +47,7 @@ export const Title = styled.h1`
 `;
 
 export const Subtitle = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 1rem;
   margin: 0;
 `;
@@ -69,10 +70,11 @@ export const Content = styled.div`
 `;
 
 export const ProfileCard = styled.div`
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const ProfileSection = styled.section`
@@ -87,16 +89,16 @@ export const SectionTitle = styled.h2`
   gap: 8px;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
   }
 `;
 
 export const SectionDescription = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
   margin: -16px 0 0 0;
 `;
@@ -118,7 +120,7 @@ export const FormGroup = styled.div`
 `;
 
 export const ErrorMessage = styled.span`
-  color: #dc2626;
+  color: ${({ theme }) => theme.colors.semantic.error};
   font-size: 0.875rem;
   font-weight: 500;
 `;
@@ -139,14 +141,14 @@ export const InfoItem = styled.div`
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   border-radius: 8px;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
+    background-color: ${({ theme }) => theme.colors.neutral[100]};
+    border-color: ${({ theme }) => theme.colors.neutral[300]};
   }
 `;
 
@@ -155,16 +157,16 @@ export const InfoLabel = styled.div`
   align-items: center;
   gap: 8px;
   font-weight: 500;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
   }
 `;
 
 export const InfoValue = styled.div`
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   font-weight: 500;
   font-size: 1rem;
 `;
@@ -176,10 +178,19 @@ export const RoleBadge = styled.span<{ $role: string }>`
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
-  background: ${(props) => (props.$role === "admin" ? "#fef3c7" : "#e0e7ff")};
-  color: ${(props) => (props.$role === "admin" ? "#92400e" : "#3730a3")};
+  background: ${({ $role, theme }) =>
+    $role === "admin"
+      ? `${theme.colors.semantic.warning}20`
+      : `${theme.colors.primary.main}20`};
+  color: ${({ $role, theme }) =>
+    $role === "admin"
+      ? theme.colors.semantic.warning
+      : theme.colors.primary.main};
   border: 1px solid
-    ${(props) => (props.$role === "admin" ? "#fbbf24" : "#a5b4fc")};
+    ${({ $role, theme }) =>
+      $role === "admin"
+        ? `${theme.colors.semantic.warning}40`
+        : `${theme.colors.primary.main}40`};
 `;
 
 export const FieldNote = styled.div`

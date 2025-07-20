@@ -15,13 +15,13 @@ import {
   Plus,
   Eye,
   Trash2,
-  X,
   Clock,
   User,
   Mail,
   Utensils,
   FileText,
   FilterX,
+  CircleX,
 } from "lucide-react";
 import { PageWrapper } from "../../components/Layout/PageWrapper";
 import {
@@ -414,7 +414,7 @@ export function Reservations() {
                               onClick={() => handleCancelClick(reservation._id)}
                               $variant="cancel"
                             >
-                              <X size={16} />
+                              <CircleX size={16} />
                               Cancelar
                             </ActionButton>
                           )}

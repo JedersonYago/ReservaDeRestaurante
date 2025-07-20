@@ -21,13 +21,12 @@ const FixedActionBarContainer = styled.div`
   z-index: 40;
   background: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.9),
-    rgba(255, 255, 255, 1)
+    ${({ theme }) => theme.colors.background.primary}90,
+    ${({ theme }) => theme.colors.background.primary}
   );
   backdrop-filter: blur(10px);
   border-top: 1px solid ${({ theme }) => theme.colors.neutral[200]};
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.lg};
 
   @supports not (backdrop-filter: blur(10px)) {
     background: ${({ theme }) => theme.colors.background.primary};

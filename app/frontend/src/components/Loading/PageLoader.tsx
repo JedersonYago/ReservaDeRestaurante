@@ -1,5 +1,6 @@
 import styled, { keyframes } from "styled-components";
 import { Logo } from "../Logo";
+import { useThemeContext } from "../ThemeProvider";
 
 const spin = keyframes`
   0% { transform: rotate(0deg); }
@@ -38,9 +39,11 @@ const LoadingText = styled.p`
 `;
 
 export function PageLoader() {
+  const { isDark } = useThemeContext();
+
   return (
     <LoaderContainer>
-      <Logo />
+      <Logo key={isDark ? "dark" : "light"} />
       <Spinner />
       <LoadingText>Carregando...</LoadingText>
     </LoaderContainer>

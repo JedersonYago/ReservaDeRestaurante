@@ -4,6 +4,7 @@ import { Container } from "../../components/Layout/Container";
 import { PageWrapper } from "../../components/Layout/PageWrapper";
 import { Button } from "../../components/Button";
 import { Logo } from "../../components/Logo";
+import { useThemeContext } from "../../components/ThemeProvider";
 import { useScrollToTop } from "../../hooks/useScrollToTop";
 import {
   ErrorContainer,
@@ -33,6 +34,7 @@ export function ErrorPage({
   const location = useLocation();
   const { scrollToTop } = useScrollToTop();
   const [countdown, setCountdown] = useState(10);
+  const { isDark } = useThemeContext();
 
   // Scroll para o topo ao carregar a página de erro
   useEffect(() => {
@@ -85,7 +87,7 @@ export function ErrorPage({
           <BackgroundPattern />
 
           <ErrorContent>
-            <Logo />
+            <Logo key={isDark ? "dark" : "light"} />
 
             <ErrorIllustration>{getErrorIcon()}</ErrorIllustration>
 

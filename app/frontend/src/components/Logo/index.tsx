@@ -1,9 +1,10 @@
 import styled from "styled-components";
+import { useThemeContext } from "../ThemeProvider";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   variant?: "icon" | "text" | "full";
-  textColor?: "black" | "white";
+  textColor?: "black" | "white" | "auto";
   onClick?: () => void;
   className?: string;
 }
@@ -11,10 +12,12 @@ interface LogoProps {
 export function Logo({
   size = "md",
   variant = "full",
-  textColor = "black",
+  textColor = "auto",
   onClick,
   className,
 }: LogoProps) {
+  const { isDark } = useThemeContext();
+
   const iconSize = {
     sm: 20,
     md: 24,
@@ -29,6 +32,18 @@ export function Logo({
     xl: 40,
   }[size];
 
+  // Determinar a cor do texto baseado no tema quando for "auto"
+  const getTextColor = () => {
+    if (textColor === "auto") {
+      return isDark ? "white" : "black";
+    }
+    return textColor;
+  };
+
+  // Forçar re-renderização quando o tema mudar
+  const logoSrc =
+    getTextColor() === "white" ? "/LogoTextWhite.svg" : "/LogoTextBlack.svg";
+
   const renderIcon = () => (
     <IconWrapper>
       <img
@@ -42,13 +57,7 @@ export function Logo({
 
   const renderText = () => (
     <TextWrapper>
-      <img
-        src={
-          textColor === "white" ? "/LogoTextWhite.svg" : "/LogoTextBlack.svg"
-        }
-        alt="ReservaFácil"
-        height={textHeight}
-      />
+      <img src={logoSrc} alt="ReservaFácil" height={textHeight} />
     </TextWrapper>
   );
 

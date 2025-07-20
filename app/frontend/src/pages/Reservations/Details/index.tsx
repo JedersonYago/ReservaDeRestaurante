@@ -98,7 +98,7 @@ export function ReservationDetails() {
     };
 
     fetchReservation();
-  }, [id, getReservationById, navigate, isDeleting]);
+  }, [id, isDeleting]); // Removido getReservationById e navigate das dependências
 
   const handleDeleteClick = () => {
     setModalConfig({
