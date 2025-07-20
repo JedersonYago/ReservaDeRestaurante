@@ -14,6 +14,7 @@ import {
 import { configApi } from "../../services/api";
 import type { Config } from "../../types/config";
 import { Button } from "../../components/Button";
+import { SubmitButton } from "../../components/Button/SubmitButton";
 import { Input } from "../../components/Input";
 
 import { Container as LayoutContainer } from "../../components/Layout/Container";
@@ -443,15 +444,14 @@ export function Settings() {
       </LayoutContainer>
 
       <FixedActionBar>
-        <Button
-          type="submit"
-          variant="primary"
+        <SubmitButton
           disabled={saving || !hasChanges}
-          leftIcon={saving ? <Loader2 size={18} /> : <Save size={18} />}
+          loading={saving}
+          leftIcon={<Save size={18} />}
           form="settings-form"
         >
-          {saving ? "Salvando..." : "Salvar Configurações"}
-        </Button>
+          Salvar Configurações
+        </SubmitButton>
         <Button
           type="button"
           variant="outline"

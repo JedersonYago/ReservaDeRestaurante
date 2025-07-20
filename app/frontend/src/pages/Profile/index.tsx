@@ -16,6 +16,7 @@ import {
   UserCircle,
   Trash2,
   Monitor,
+  ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import {
@@ -26,6 +27,9 @@ import {
 import { changePasswordSchema } from "../../schemas/auth";
 import { useToast } from "../../components/Toast";
 import { Button } from "../../components/Button";
+import { BackButton } from "../../components/Button/BackButton";
+import { SubmitButton } from "../../components/Button/SubmitButton";
+import { DeleteButton } from "../../components/Button/DeleteButton";
 import { Input } from "../../components/Input";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
 import { ConfirmationModal } from "../../components/Modal/ConfirmationModal";
@@ -498,25 +502,28 @@ export function Profile() {
                   </FormGrid>
 
                   <ActionButtons>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      disabled={passwordLoading}
-                      leftIcon={
-                        passwordLoading ? undefined : <Save size={18} />
+                    <SubmitButton
+                      disabled={
+                        passwordLoading ||
+                        !passwordData.currentPassword.trim() ||
+                        !passwordData.newPassword.trim() ||
+                        !passwordData.confirmNewPassword.trim() ||
+                        passwordData.newPassword !== passwordData.confirmNewPassword ||
+                        passwordData.newPassword.length < 8
                       }
+                      loading={passwordLoading}
+                      leftIcon={<Save size={18} />}
                     >
-                      {passwordLoading ? "Alterando..." : "Alterar Senha"}
-                    </Button>
-                    <Button
+                      Alterar Senha
+                    </SubmitButton>
+                    <BackButton
                       type="button"
-                      variant="outline"
                       onClick={handlePasswordCancel}
                       disabled={passwordLoading}
-                      leftIcon={<X size={18} />}
+                      leftIcon={<ArrowLeft size={18} />}
                     >
-                      Cancelar
-                    </Button>
+                      Voltar
+                    </BackButton>
                   </ActionButtons>
                 </form>
               </ProfileSection>
@@ -628,23 +635,31 @@ export function Profile() {
                   </FormGrid>
 
                   <ActionButtons>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      disabled={loading}
-                      leftIcon={loading ? undefined : <Save size={18} />}
+                    <SubmitButton
+                      disabled={
+                        loading ||
+                        !formData.name.trim() ||
+                        !formData.email.trim() ||
+                        !formData.username.trim() ||
+                        (formData.name === user?.name &&
+                          formData.email === user?.email &&
+                          formData.username === user?.username) ||
+                        ((formData.email !== user?.email || formData.username !== user?.username) &&
+                          !formData.currentPassword.trim())
+                      }
+                      loading={loading}
+                      leftIcon={<Save size={18} />}
                     >
-                      {loading ? "Salvando..." : "Salvar Alterações"}
-                    </Button>
-                    <Button
+                      Salvar Alterações
+                    </SubmitButton>
+                    <BackButton
                       type="button"
-                      variant="outline"
                       onClick={handleCancel}
                       disabled={loading}
-                      leftIcon={<X size={18} />}
+                      leftIcon={<ArrowLeft size={18} />}
                     >
-                      Cancelar
-                    </Button>
+                      Voltar
+                    </BackButton>
                   </ActionButtons>
                 </form>
               </ProfileSection>
@@ -755,18 +770,16 @@ export function Profile() {
                 </SectionDescription>
 
                 <ActionButtons>
-                  <Button
-                    variant="outline"
+                  <DeleteButton
                     onClick={() => setShowDeleteModal(true)}
-                    leftIcon={<Trash2 size={18} />}
                     style={{
-                      borderColor: "#dc3545",
-                      color: "#dc3545",
                       backgroundColor: "transparent",
+                      color: "#dc3545",
+                      border: "1px solid #dc3545",
                     }}
                   >
                     Excluir Conta
-                  </Button>
+                  </DeleteButton>
                 </ActionButtons>
               </ProfileSection>
             </ProfileCard>
