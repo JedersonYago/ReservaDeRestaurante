@@ -56,6 +56,11 @@ export const Content = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding-bottom: 120px; /* Espaço para FixedActionBar */
+
+  @media (max-width: 768px) {
+    padding-bottom: 140px; /* Mais espaço em mobile */
+  }
 `;
 
 export const ConfigCard = styled.div`

@@ -59,8 +59,6 @@ import {
   AdminActionsGrid,
   HeaderActions,
   RefreshButton,
-  AutoUpdateIndicator,
-  UpdateDot,
   ClientReservationsList,
 } from "./styles";
 import {
@@ -173,10 +171,6 @@ export function Dashboard() {
                   />
                   <span>Atualizar</span>
                 </RefreshButton>
-                <AutoUpdateIndicator>
-                  <UpdateDot $active />
-                  <span>Atualização automática ativa</span>
-                </AutoUpdateIndicator>
               </HeaderActions>
             )}
           </HeaderContent>

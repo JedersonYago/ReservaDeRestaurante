@@ -5,9 +5,9 @@ import { spin } from "../../../styles/animations";
 
 export const Header = styled.header`
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 `;
 
@@ -15,7 +15,7 @@ export const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 24px;
+  gap: 1.5rem;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -30,55 +30,65 @@ export const TitleSection = styled.div`
 export const Title = styled.h1`
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 1.5rem;
+  gap: 0.75rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 8px 0;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.25;
 
   svg {
     color: #fa761f;
+    flex-shrink: 0;
   }
 
   @media (max-width: 768px) {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
   }
 `;
 
 export const Subtitle = styled.p`
+  font-size: 0.875rem;
   color: #6b7280;
-  font-size: 1rem;
   margin: 0;
+  line-height: 1.625;
+
+  @media (min-width: 768px) {
+    font-size: 0.875rem;
+  }
 `;
 
 export const HeaderActions = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
   align-items: center;
   flex-shrink: 0;
 
   @media (max-width: 768px) {
-    justify-content: stretch;
+    width: 100%;
+    justify-content: flex-start;
   }
 `;
 
 export const Content = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 2rem;
+  padding-bottom: 120px; /* Espaço para FixedActionBar */
 
   @media (max-width: 768px) {
-    gap: 36px;
+    gap: 1.5rem;
+    padding-bottom: 140px; /* Mais espaço em mobile */
   }
 `;
 
 export const InfoCard = styled.div`
   display: flex;
-  gap: 16px;
-  padding: 20px;
+  gap: 1rem;
+  padding: 1.25rem;
   background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
   border: 1px solid #fbbf24;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
   @media (max-width: 768px) {
@@ -102,9 +112,9 @@ export const InfoContent = styled.div`
 
 export const InfoTitle = styled.h3`
   color: #92400e;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin: 0 0 8px 0;
+  margin: 0 0 0.5rem 0;
 `;
 
 export const InfoDescription = styled.p`
@@ -121,39 +131,43 @@ export const InfoDescription = styled.p`
 
 export const FormSection = styled.section`
   background: white;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
   @media (max-width: 768px) {
-    padding: 20px;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
   }
 `;
 
 export const SectionTitle = styled.h2`
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.25rem;
+  gap: 0.75rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #111827;
-  margin: 0 0 4px 0;
+  margin: 0 0 0.5rem 0;
 
   svg {
     color: #fa761f;
+    flex-shrink: 0;
   }
 `;
 
 export const SectionDescription = styled.p`
-  color: #6b7280;
   font-size: 0.875rem;
-  margin: 0 0 24px 0;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.625;
 `;
 
 export const FormGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 1.5rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -163,7 +177,7 @@ export const FormGrid = styled.div`
 export const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 
   /* Melhorar visibilidade do ícone de calendário no input date */
   input[type="date"] {
@@ -203,8 +217,8 @@ export const ErrorMessage = styled.span`
 export const TextAreaGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 20px;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
 `;
 
 export const TextAreaContainer = styled.div`
@@ -255,21 +269,21 @@ export const CharCounter = styled.div`
 export const TimeSlotSelector = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: 0.75rem;
+  padding: 1rem;
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 0.5rem;
 `;
 
 export const TimeSlotGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
+  gap: 0.75rem;
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
+    gap: 0.5rem;
   }
 `;
 
@@ -280,12 +294,12 @@ export const TimeSlotItem = styled.button<{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 14px 12px;
+  gap: 0.375rem;
+  padding: 0.875rem 0.75rem;
   border: 2px solid
     ${(props) =>
       props.$selected ? "#fa761f" : props.$disabled ? "#e5e7eb" : "#d1d5db"};
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background-color: ${(props) =>
     props.$selected ? "#fa761f" : props.$disabled ? "#f3f4f6" : "white"};
   color: ${(props) =>
@@ -339,11 +353,11 @@ export const LoadingContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 32px;
+  gap: 0.75rem;
+  padding: 2rem;
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   color: #6b7280;
   font-size: 0.875rem;
 
@@ -361,11 +375,11 @@ export const EmptyState = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 32px;
+  gap: 0.75rem;
+  padding: 2rem;
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   color: #6b7280;
   font-size: 0.875rem;
 
@@ -381,12 +395,13 @@ export const EmptyState = styled.div`
 
 export const ActionButtons = styled.div`
   display: flex;
-  gap: 12px;
-  padding-top: 24px;
+  gap: 1rem;
+  padding-top: 1.5rem;
   border-top: 1px solid #e5e7eb;
 
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: 0.75rem;
   }
 `;
 

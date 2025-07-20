@@ -6,7 +6,6 @@ import {
   Calendar,
   Clock,
   ArrowRight,
-  X,
 } from "lucide-react";
 import { Button } from "../Button";
 import { CancelButton } from "../Button/CancelButton";
@@ -196,11 +195,7 @@ export function ReschedulingModal({
   tableName,
 }: ReschedulingModalProps) {
   const queryClient = useQueryClient();
-  const {
-    getAvailableTablesForRescheduling,
-    processRescheduling,
-    cancelAllAndMaintenance,
-  } = useRescheduling();
+  const { processRescheduling, cancelAllAndMaintenance } = useRescheduling();
 
   const [actions, setActions] = useState<Record<string, ReschedulingAction>>(
     {}

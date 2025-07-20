@@ -140,10 +140,19 @@ const StyledButton = styled.button<{
           background: ${theme.colors.primary.main};
           color: ${theme.colors.primary.contrast};
           
+          /* Garantir que ícones SVG sejam brancos */
+          svg {
+            color: ${theme.colors.primary.contrast} !important;
+          }
+          
           &:hover:not(:disabled) {
             background: ${theme.colors.primary.dark};
             transform: translateY(-1px);
             box-shadow: ${theme.shadows.md};
+            
+            svg {
+              color: ${theme.colors.primary.contrast} !important;
+            }
           }
           
           &:active:not(:disabled) {
@@ -156,10 +165,19 @@ const StyledButton = styled.button<{
           background: ${theme.colors.secondary.main};
           color: ${theme.colors.secondary.contrast};
           
+          /* Garantir que ícones SVG sejam brancos */
+          svg {
+            color: ${theme.colors.secondary.contrast} !important;
+          }
+          
           &:hover:not(:disabled) {
             background: ${theme.colors.secondary.dark};
             transform: translateY(-1px);
             box-shadow: ${theme.shadows.md};
+            
+            svg {
+              color: ${theme.colors.secondary.contrast} !important;
+            }
           }
           
           &:active:not(:disabled) {
@@ -208,10 +226,19 @@ const StyledButton = styled.button<{
           background: ${theme.colors.semantic.error};
           color: ${theme.colors.primary.contrast};
           
+          /* Garantir que ícones SVG sejam brancos */
+          svg {
+            color: ${theme.colors.primary.contrast} !important;
+          }
+          
           &:hover:not(:disabled) {
             background: #B71C1C;
             transform: translateY(-1px);
             box-shadow: ${theme.shadows.md};
+            
+            svg {
+              color: ${theme.colors.primary.contrast} !important;
+            }
           }
           
           &:active:not(:disabled) {
@@ -224,10 +251,19 @@ const StyledButton = styled.button<{
           background: ${theme.colors.semantic.warning};
           color: ${theme.colors.primary.contrast};
           
+          /* Garantir que ícones SVG sejam brancos */
+          svg {
+            color: ${theme.colors.primary.contrast} !important;
+          }
+          
           &:hover:not(:disabled) {
             background: #E65100;
             transform: translateY(-1px);
             box-shadow: ${theme.shadows.md};
+            
+            svg {
+              color: ${theme.colors.primary.contrast} !important;
+            }
           }
           
           &:active:not(:disabled) {
@@ -240,10 +276,19 @@ const StyledButton = styled.button<{
           background: ${theme.colors.semantic.success};
           color: ${theme.colors.primary.contrast};
           
+          /* Garantir que ícones SVG sejam brancos */
+          svg {
+            color: ${theme.colors.primary.contrast} !important;
+          }
+          
           &:hover:not(:disabled) {
             background: #218838;
             transform: translateY(-1px);
             box-shadow: ${theme.shadows.md};
+            
+            svg {
+              color: ${theme.colors.primary.contrast} !important;
+            }
           }
           
           &:active:not(:disabled) {
