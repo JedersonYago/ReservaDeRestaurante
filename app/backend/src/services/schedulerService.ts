@@ -3,6 +3,7 @@ import Table from "../models/Table";
 import Config from "../models/Config";
 import { AUTO_APPROVAL_MINUTES } from "../config/constants";
 import { format } from "date-fns";
+import { logger } from "../utils/logger";
 
 // Sistema de backup para confirmar reservas pendentes
 export const checkPendingReservations = async () => {
@@ -30,8 +31,8 @@ export const checkPendingReservations = async () => {
     }
 
     if (expiredPendingReservations.length > 0) {
-      console.log(
-        `[checkPendingReservations] ${expiredPendingReservations.length} reservas confirmadas automaticamente`
+      logger.debug(
+        `${expiredPendingReservations.length} reservas confirmadas automaticamente`
       );
     }
   } catch (error) {
@@ -45,8 +46,8 @@ export const cleanExpiredTablesAndReservations = async () => {
     // Usar format do date-fns para garantir formato correto
     const today = format(new Date(), "yyyy-MM-dd");
 
-    console.log(
-      `[cleanExpiredTablesAndReservations] Iniciando limpeza para data: ${today}`
+    logger.debug(
+      `Iniciando limpeza para data: ${today}`
     );
 
     // Buscar todas as mesas que podem ter availability expirada
@@ -57,9 +58,10 @@ export const cleanExpiredTablesAndReservations = async () => {
     let expiredTablesCount = 0;
     let expiredReservationsCount = 0;
 
-    console.log(
-      `[cleanExpiredTablesAndReservations] Encontradas ${tables.length} mesas para verificar`
-    );
+    // Debug apenas se houver mesas para verificar
+    if (tables.length > 0) {
+      logger.debug(`Verificando ${tables.length} mesas`);
+    }
 
     for (const table of tables) {
       if (table.availability.length === 0) {
@@ -72,13 +74,13 @@ export const cleanExpiredTablesAndReservations = async () => {
         table.availability[0].date
       );
 
-      console.log(
+      logger.debug(
         `[cleanExpiredTablesAndReservations] Mesa ${table.name}: última data = ${lastAvailableDate}, hoje = ${today}`
       );
 
       // Usar comparação de strings mais robusta
       if (lastAvailableDate < today) {
-        console.log(
+        logger.debug(
           `[cleanExpiredTablesAndReservations] Mesa ${table.name} expirada, atualizando status`
         );
 
@@ -100,7 +102,7 @@ export const cleanExpiredTablesAndReservations = async () => {
         expiredTablesCount++;
         expiredReservationsCount += result.modifiedCount;
 
-        console.log(
+        logger.debug(
           `[cleanExpiredTablesAndReservations] Mesa ${table.name} expirada: ${result.modifiedCount} reservas atualizadas`
         );
       } else {
@@ -110,7 +112,7 @@ export const cleanExpiredTablesAndReservations = async () => {
         );
 
         if (validAvailability.length !== table.availability.length) {
-          console.log(
+          logger.debug(
             `[cleanExpiredTablesAndReservations] Mesa ${table.name}: removendo datas passadas`
           );
 
@@ -122,7 +124,7 @@ export const cleanExpiredTablesAndReservations = async () => {
     }
 
     // Marcar reservas passadas como expiradas (independente das mesas)
-    console.log(
+    logger.debug(
       `[cleanExpiredTablesAndReservations] Verificando reservas passadas antes de ${today}`
     );
 
@@ -136,12 +138,10 @@ export const cleanExpiredTablesAndReservations = async () => {
 
     expiredReservationsCount += pastReservationsResult.modifiedCount;
 
-    console.log(`[cleanExpiredTablesAndReservations] Limpeza concluída:`);
-    console.log(`  - Mesas expiradas: ${expiredTablesCount}`);
-    console.log(`  - Reservas expiradas: ${expiredReservationsCount}`);
-    console.log(
-      `  - Reservas passadas expiradas: ${pastReservationsResult.modifiedCount}`
-    );
+    // Só mostrar resumo se houver limpeza
+    if (expiredTablesCount > 0 || expiredReservationsCount > 0) {
+      logger.debug(`Limpeza concluída: ${expiredTablesCount} mesas, ${expiredReservationsCount} reservas expiradas`);
+    }
   } catch (error) {
     console.error("Erro na limpeza diária de mesas e reservas:", error);
   }
@@ -149,7 +149,7 @@ export const cleanExpiredTablesAndReservations = async () => {
 
 // Iniciar verificação periódica (a cada 30 segundos)
 export const startPeriodicCheck = () => {
-  console.log(
+  logger.debug(
     "[startPeriodicCheck] Iniciando verificação periódica de reservas"
   );
   setInterval(checkPendingReservations, 30 * 1000);
@@ -157,7 +157,7 @@ export const startPeriodicCheck = () => {
 
 // Iniciar limpeza diária (todo dia às 00:01)
 export const startDailyCleanup = () => {
-  console.log("[startDailyCleanup] Configurando limpeza diária");
+  logger.debug("Configurando limpeza diária");
 
   // Calcular tempo até próxima meia-noite + 1 minuto
   const now = new Date();
@@ -167,27 +167,27 @@ export const startDailyCleanup = () => {
 
   const timeUntilMidnight = tomorrow.getTime() - now.getTime();
 
-  console.log(
-    `[startDailyCleanup] Próxima limpeza em: ${Math.round(
+  logger.debug(
+    `Próxima limpeza em: ${Math.round(
       timeUntilMidnight / 1000 / 60
     )} minutos`
   );
 
   // Executar primeira limpeza após tempo calculado
   setTimeout(() => {
-    console.log("[startDailyCleanup] Executando primeira limpeza");
+    logger.debug("[startDailyCleanup] Executando primeira limpeza");
     cleanExpiredTablesAndReservations();
 
     // Depois executar diariamente (24 horas)
     setInterval(() => {
-      console.log("[startDailyCleanup] Executando limpeza diária programada");
+      logger.debug("[startDailyCleanup] Executando limpeza diária programada");
       cleanExpiredTablesAndReservations();
     }, 24 * 60 * 60 * 1000);
   }, timeUntilMidnight);
 
   // ADICIONAR: Executar limpeza imediatamente na inicialização se necessário
   // Isso garante que dados já expirados sejam limpos imediatamente
-  console.log("[startDailyCleanup] Executando limpeza inicial");
+  logger.debug("[startDailyCleanup] Executando limpeza inicial");
   cleanExpiredTablesAndReservations();
 };
 
@@ -210,7 +210,7 @@ export const scheduleAutoApproval = async (reservationId: string) => {
       return;
     }
 
-    console.log(
+    logger.debug(
       `[scheduleAutoApproval] Agendando aprovação da reserva ${reservationId} em ${confirmationTimeMinutes} minutos`
     );
 
@@ -240,7 +240,7 @@ const approveReservation = async (reservationId: string) => {
       reservation.status = "confirmed";
       await reservation.save();
 
-      console.log(
+      logger.debug(
         `[approveReservation] Reserva ${reservationId} aprovada automaticamente`
       );
 
@@ -250,7 +250,7 @@ const approveReservation = async (reservationId: string) => {
       );
       await updateTableStatus(reservation.tableId.toString());
     } else {
-      console.log(
+      logger.debug(
         `[approveReservation] Reserva ${reservationId} já não está pendente (status: ${reservation.status})`
       );
     }
