@@ -25,5 +25,5 @@ export interface CreateReservationData {
   customerName: string;
   customerEmail: string;
   observations?: string;
-  userId: string;
+  // userId será obtido automaticamente do token de autenticação
 }

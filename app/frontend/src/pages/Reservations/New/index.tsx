@@ -249,7 +249,7 @@ export function NewReservation() {
     const reservationData = {
       ...formData,
       tableId: selectedTable,
-      userId: user._id,
+      // userId será obtido automaticamente do token de autenticação no backend
     };
 
     try {

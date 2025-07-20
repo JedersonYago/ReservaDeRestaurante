@@ -215,8 +215,13 @@ export const createReservation = async (req: Request, res: Response) => {
       date,
       time,
       observations,
-      userId,
     } = req.body;
+
+    // Obter userId do usuário autenticado
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
 
     // Verificar se a mesa existe
     const tableExists = await Table.findById(tableId);
