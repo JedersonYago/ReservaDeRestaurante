@@ -51,11 +51,11 @@ import {
   MessageIcon,
   MessageText,
 } from "./styles";
-import { useConfigContext } from "../../components/ConfigProvider";
+import { useAdminConfigContext } from "../../components/AdminConfigProvider";
 
 export function Settings() {
   const toast = useToast();
-  const { config, isLoading: loading, error, refetch } = useConfigContext();
+  const { config, isLoading: loading, error, refetch } = useAdminConfigContext();
   const [formConfig, setFormConfig] = useState<Config | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);

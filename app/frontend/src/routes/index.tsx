@@ -1,11 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ProtectedLayout } from "../components/ProtectedLayout";
+import { AdminConfigProvider } from "../components/AdminConfigProvider";
 import { PageLoader } from "../components/Loading/PageLoader";
 
 // Páginas públicas (carregadas imediatamente)
 import { Home } from "../pages/Home";
-import { Login } from "../pages/Login";
+import Login from "../pages/Login";
 import { Register } from "../pages/Register/index";
 import { ForgotPassword } from "../pages/ForgotPassword";
 import { ResetPassword } from "../pages/ResetPassword";
@@ -137,9 +138,11 @@ export function AppRoutes() {
         <Route
           path="/settings"
           element={
-            <Suspense fallback={<PageLoader />}>
-              <Settings />
-            </Suspense>
+            <AdminConfigProvider>
+              <Suspense fallback={<PageLoader />}>
+                <Settings />
+              </Suspense>
+            </AdminConfigProvider>
           }
         />
       </Route>

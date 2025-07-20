@@ -49,17 +49,27 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error: any) => {
-    // Log estruturado do erro (exceto 409 que é parte do fluxo normal)
-    if (error.response?.status !== 409) {
+    const originalRequest = error.config;
+
+    // Verificar se é erro de conexão (backend iniciando)
+    const isConnectionError = !error.response && (
+      error.code === 'ECONNREFUSED' || 
+      error.code === 'ERR_NETWORK' || 
+      error.message?.includes('Network Error')
+    );
+
+    // Log estruturado do erro (exceto 409 que é parte do fluxo normal e erros de conexão durante inicialização)
+    if (error.response?.status !== 409 && !isConnectionError) {
       console.error("[API Response Error]", {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
         message: error.message,
       });
+    } else if (isConnectionError) {
+      // Log mais amigável para erros de conexão
+      console.log(`⏳ Tentando conectar ao backend (${error.config?.url})...`);
     }
-
-    const originalRequest = error.config;
 
     // Tratar erros específicos
     if (error.code === "ECONNABORTED") {
@@ -67,6 +77,10 @@ api.interceptors.response.use(
     }
 
     if (!error.response) {
+      // Para erros de conexão, retornar erro mais amigável
+      if (isConnectionError) {
+        return Promise.reject(new Error("Aguardando backend inicializar..."));
+      }
       return Promise.reject(new Error("Erro de conexão com o servidor"));
     }
 
@@ -146,6 +160,10 @@ api.interceptors.response.use(
 export default api;
 
 export const configApi = {
+  async getPublicConfig() {
+    const response = await api.get("/config/public");
+    return response.data;
+  },
   async getConfig() {
     const response = await api.get("/config");
     return response.data;

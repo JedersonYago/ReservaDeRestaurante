@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getConfig,
+  getPublicConfig,
   updateConfig,
   getConfigHistory,
 } from "../controllers/configController";
@@ -10,8 +11,11 @@ import { auth, roleAuth } from "../middlewares/auth";
 
 const router = Router();
 
-// Rota de leitura de configuração - acessível a todos os usuários autenticados
-router.get("/", auth, getConfig);
+// Rota de configurações básicas - apenas configurações não sensíveis necessárias para a UI
+router.get("/public", getPublicConfig);
+
+// Rota de configuração completa - requer autenticação
+router.get("/", auth, roleAuth(["admin"]), getConfig);
 
 // Rotas administrativas - restritas aos admins
 router.get("/history", auth, roleAuth(["admin"]), getConfigHistory);

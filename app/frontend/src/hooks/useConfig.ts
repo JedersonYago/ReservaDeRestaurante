@@ -21,8 +21,8 @@ export function useConfig() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["config"],
-    queryFn: configApi.getConfig,
+    queryKey: ["config", "public"],
+    queryFn: configApi.getPublicConfig,
     enabled: !initialDelay, // Só executa após o delay inicial
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,

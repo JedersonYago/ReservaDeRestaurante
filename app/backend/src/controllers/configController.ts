@@ -27,6 +27,27 @@ export const getConfig = async (req: Request, res: Response) => {
   }
 };
 
+// Obter configurações públicas (apenas dados necessários para a UI funcionar)
+export const getPublicConfig = async (_req: Request, res: Response) => {
+  try {
+    const config = await Config.findOne().sort({ updatedAt: -1 });
+    const publicConfig = config || DEFAULT_CONFIG;
+    
+    // Retorna apenas configurações não sensíveis necessárias para a UI
+    return res.json({
+      openingHour: publicConfig.openingHour,
+      closingHour: publicConfig.closingHour,
+      isOpeningHoursEnabled: publicConfig.isOpeningHoursEnabled,
+      // Não inclui limites administrativos sensíveis
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Erro ao buscar configurações públicas",
+      details: error instanceof Error ? error.message : "Erro desconhecido",
+    });
+  }
+};
+
 // Atualizar configurações
 export const updateConfig = async (req: Request, res: Response) => {
   try {

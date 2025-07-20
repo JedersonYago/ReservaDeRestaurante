@@ -68,9 +68,11 @@ export const tableController = {
   async create(req: Request, res: Response) {
     try {
       // Validar dados da mesa
-      const { error } = tableSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({ message: error.details[0].message });
+      const result = tableSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: result.error.errors[0].message 
+        });
       }
 
       // Validar sobreposições de horários na disponibilidade
@@ -99,9 +101,11 @@ export const tableController = {
   async update(req: Request, res: Response) {
     try {
       // Validar dados da mesa
-      const { error } = tableSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({ message: error.details[0].message });
+      const result = tableSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: result.error.errors[0].message 
+        });
       }
 
       // Validar sobreposições de horários na disponibilidade
@@ -156,10 +160,6 @@ export const tableController = {
             tableName: currentTable.name,
           });
         }
-
-        console.log(
-          `Mesa ${currentTable.name} colocada em manutenção sem reservas afetadas`
-        );
       }
 
       const table = await Table.findByIdAndUpdate(req.params.id, req.body, {
@@ -208,7 +208,6 @@ export const tableController = {
           },
           { status: "cancelled" }
         );
-        console.log(`Reservas restantes canceladas para mesa ${table.name}`);
       }
 
       // Atualizar status da mesa para manutenção
@@ -218,9 +217,6 @@ export const tableController = {
         { new: true }
       );
 
-      console.log(
-        `Mesa ${table.name} colocada em manutenção após processamento`
-      );
       res.json(updatedTable);
     } catch (error) {
       console.error("Erro ao forçar manutenção:", error);
