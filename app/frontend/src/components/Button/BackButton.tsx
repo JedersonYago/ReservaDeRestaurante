@@ -1,30 +1,30 @@
 import React from "react";
 import styled from "styled-components";
 
-interface CancelButtonProps
+interface BackButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   leftIcon?: React.ReactNode;
   disabled?: boolean;
-  type?: "button" | "submit" | "reset"; // Adicionar type explicitamente
+  type?: "button" | "submit" | "reset";
 }
 
-export function CancelButton({
+export function BackButton({
   children,
   leftIcon,
   disabled = false,
-  type = "button", // Adicionar type="button" por padrão
+  type = "button",
   ...props
-}: CancelButtonProps) {
+}: BackButtonProps) {
   return (
-    <StyledCancelButton disabled={disabled} type={type} {...props}>
+    <StyledBackButton disabled={disabled} type={type} {...props}>
       {leftIcon && <IconWrapper>{leftIcon}</IconWrapper>}
       {children}
-    </StyledCancelButton>
+    </StyledBackButton>
   );
 }
 
-const StyledCancelButton = styled.button`
+const StyledBackButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -37,30 +37,30 @@ const StyledCancelButton = styled.button`
   min-height: 44px;
   gap: 8px;
 
-  /* Estilo padronizado - Cinza médio com texto e ícones brancos */
-  background: ${({ theme }) => theme.colors.neutral[500]};
-  color: white;
-  border: 1px solid ${({ theme }) => theme.colors.neutral[500]};
+  /* Estilo outline - discreto para ações de voltar/cancelar operações */
+  background: transparent;
+  color: ${({ theme }) => theme.colors.primary.main};
+  border: 1px solid ${({ theme }) => theme.colors.primary.main};
 
-  /* Garantir que ícones SVG sejam brancos */
+  /* Garantir que ícones SVG sigam a cor do texto */
   svg {
-    color: white !important;
+    color: ${({ theme }) => theme.colors.primary.main} !important;
   }
 
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.neutral[400]};
-    color: white;
-    border-color: ${({ theme }) => theme.colors.neutral[400]};
+    background: ${({ theme }) => theme.colors.primary.main};
+    color: ${({ theme }) => theme.colors.primary.contrast};
+    border-color: ${({ theme }) => theme.colors.primary.main};
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.shadows.md};
     
     svg {
-      color: white !important;
+      color: ${({ theme }) => theme.colors.primary.contrast} !important;
     }
   }
 
   &:active:not(:disabled) {
-    background: ${({ theme }) => theme.colors.neutral[700]};
+    background: ${({ theme }) => theme.colors.primary.dark};
     transform: translateY(0);
     box-shadow: ${({ theme }) => theme.shadows.sm};
   }
@@ -76,8 +76,6 @@ const StyledCancelButton = styled.button`
     min-height: 48px;
     flex: 1;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 `;
 

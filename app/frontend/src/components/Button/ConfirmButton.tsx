@@ -1,30 +1,48 @@
 import React from "react";
 import styled from "styled-components";
 
-interface CancelButtonProps
+interface ConfirmButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   leftIcon?: React.ReactNode;
   disabled?: boolean;
-  type?: "button" | "submit" | "reset"; // Adicionar type explicitamente
+  loading?: boolean;
+  type?: "button" | "submit" | "reset";
 }
 
-export function CancelButton({
+export function ConfirmButton({
   children,
   leftIcon,
   disabled = false,
-  type = "button", // Adicionar type="button" por padrão
+  loading = false,
+  type = "button",
   ...props
-}: CancelButtonProps) {
+}: ConfirmButtonProps) {
   return (
-    <StyledCancelButton disabled={disabled} type={type} {...props}>
-      {leftIcon && <IconWrapper>{leftIcon}</IconWrapper>}
+    <StyledConfirmButton disabled={disabled || loading} type={type} {...props}>
+      {loading && <LoadingSpinner />}
+      {!loading && leftIcon && <IconWrapper>{leftIcon}</IconWrapper>}
       {children}
-    </StyledCancelButton>
+    </StyledConfirmButton>
   );
 }
 
-const StyledCancelButton = styled.button`
+const LoadingSpinner = styled.div`
+  width: 12px;
+  height: 12px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const StyledConfirmButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -37,30 +55,29 @@ const StyledCancelButton = styled.button`
   min-height: 44px;
   gap: 8px;
 
-  /* Estilo padronizado - Cinza médio com texto e ícones brancos */
-  background: ${({ theme }) => theme.colors.neutral[500]};
-  color: white;
-  border: 1px solid ${({ theme }) => theme.colors.neutral[500]};
+  /* Estilo success - verde para ações de confirmação/aprovação */
+  background: ${({ theme }) => theme.colors.semantic.success};
+  color: ${({ theme }) => theme.colors.primary.contrast};
+  border: 1px solid ${({ theme }) => theme.colors.semantic.success};
 
   /* Garantir que ícones SVG sejam brancos */
   svg {
-    color: white !important;
+    color: ${({ theme }) => theme.colors.primary.contrast} !important;
   }
 
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.neutral[400]};
-    color: white;
-    border-color: ${({ theme }) => theme.colors.neutral[400]};
+    background: #2E7D32;
+    border-color: #2E7D32;
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.shadows.md};
     
     svg {
-      color: white !important;
+      color: ${({ theme }) => theme.colors.primary.contrast} !important;
     }
   }
 
   &:active:not(:disabled) {
-    background: ${({ theme }) => theme.colors.neutral[700]};
+    background: #1B5E20;
     transform: translateY(0);
     box-shadow: ${({ theme }) => theme.shadows.sm};
   }
