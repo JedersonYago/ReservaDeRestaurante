@@ -19,6 +19,7 @@ import { Input } from "../../components/Input";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
 import { useToast } from "../../components/Toast";
 import { PageWrapper } from "../../components/Layout/PageWrapper";
+import { FixedActionBar } from "../../components/Layout/FixedActionBar";
 import {
   HeaderSection,
   HeaderContent,
@@ -38,7 +39,6 @@ import {
   FieldsContainer,
   FieldGroup,
   HelpText,
-  ActionButtons,
   LoadingContainer,
   LoadingSpinner,
   LoadingText,
@@ -206,7 +206,7 @@ export function Settings() {
         </HeaderSection>
 
         <Content>
-          <form onSubmit={handleSubmit}>
+          <form id="settings-form" onSubmit={handleSubmit}>
             {/* Horários de Funcionamento */}
             <ConfigCard>
               <ConfigSection>
@@ -449,29 +449,30 @@ export function Settings() {
                 <MessageText>{error}</MessageText>
               </MessageContainer>
             )}
-
-            <ActionButtons>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={saving || !hasChanges}
-                leftIcon={saving ? <Loader2 size={18} /> : <Save size={18} />}
-              >
-                {saving ? "Salvando..." : "Salvar Configurações"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleReset}
-                disabled={saving || !hasChanges}
-                leftIcon={<RefreshCcw size={18} />}
-              >
-                Restaurar
-              </Button>
-            </ActionButtons>
           </form>
         </Content>
       </LayoutContainer>
+
+      <FixedActionBar>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={saving || !hasChanges}
+          leftIcon={saving ? <Loader2 size={18} /> : <Save size={18} />}
+          form="settings-form"
+        >
+          {saving ? "Salvando..." : "Salvar Configurações"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleReset}
+          disabled={saving || !hasChanges}
+          leftIcon={<RefreshCcw size={18} />}
+        >
+          Restaurar
+        </Button>
+      </FixedActionBar>
     </PageWrapper>
   );
 }

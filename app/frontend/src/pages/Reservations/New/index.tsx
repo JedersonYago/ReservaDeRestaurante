@@ -20,6 +20,7 @@ import { Input } from "../../../components/Input";
 import { Select } from "../../../components/Select";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
 import { PageWrapper } from "../../../components/Layout/PageWrapper";
+import { FixedActionBar } from "../../../components/Layout/FixedActionBar";
 import { useToast } from "../../../components/Toast";
 import { isPastDate, isPastTime } from "../../../utils/dateValidation";
 import {
@@ -49,7 +50,6 @@ import {
   TimeSlotItem,
   LoadingContainer,
   EmptyState,
-  ActionButtons,
 } from "./styles";
 
 export function NewReservation() {
@@ -80,7 +80,7 @@ export function NewReservation() {
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [dateError, setDateError] = useState("");
-  const [timeError, setTimeError] = useState("");
+  const [timeError] = useState("");
 
   useEffect(() => {
     if (!user) {
@@ -226,9 +226,8 @@ export function NewReservation() {
   const handleTimeChange = (timeValue: string) => {
     setFormData((prev) => ({ ...prev, time: timeValue }));
     if (isPastTime(formData.date, timeValue)) {
-      setTimeError("Não é permitido selecionar horários anteriores ao atual.");
-    } else {
-      setTimeError("");
+      toast.error("Não é permitido selecionar horários anteriores ao atual.");
+      return;
     }
   };
 
@@ -294,8 +293,9 @@ export function NewReservation() {
             <HeaderActions>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => navigate("/reservations")}
-                leftIcon={<ArrowLeft size={18} />}
+                leftIcon={<ArrowLeft size={16} />}
               >
                 Voltar
               </Button>
@@ -325,7 +325,11 @@ export function NewReservation() {
             </InfoCard>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: "contents" }}>
+          <form
+            id="new-reservation-form"
+            onSubmit={handleSubmit}
+            style={{ display: "contents" }}
+          >
             {/* Seleção de Mesa */}
             <FormSection>
               <SectionTitle>
@@ -562,28 +566,28 @@ export function NewReservation() {
                 </InfoContent>
               </InfoCard>
             )}
-
-            {/* Ações */}
-            <ActionButtons>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={!isFormValid || isSubmitting}
-                leftIcon={isSubmitting ? undefined : <CheckCircle size={18} />}
-              >
-                {isSubmitting ? "Criando Reserva..." : "Fazer Reserva"}
-              </Button>
-              <CancelButton
-                type="button"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </CancelButton>
-            </ActionButtons>
           </form>
         </Content>
       </LayoutContainer>
+
+      <FixedActionBar>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!isFormValid || isSubmitting}
+          leftIcon={isSubmitting ? undefined : <CheckCircle size={18} />}
+          form="new-reservation-form"
+        >
+          {isSubmitting ? "Criando Reserva..." : "Fazer Reserva"}
+        </Button>
+        <CancelButton
+          type="button"
+          onClick={handleCancel}
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </CancelButton>
+      </FixedActionBar>
     </PageWrapper>
   );
 }

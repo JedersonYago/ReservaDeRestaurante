@@ -27,9 +27,13 @@ import { Input } from "../../../components/Input";
 import { Select } from "../../../components/Select";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
 import { PageWrapper } from "../../../components/Layout/PageWrapper";
+import { FixedActionBar } from "../../../components/Layout/FixedActionBar";
 import { useToast } from "../../../components/Toast";
 import { format } from "date-fns";
-import { validateTimeIntervalAgainstBusinessHours } from "../../../utils/timeValidation";
+import {
+  validateTimeIntervalAgainstBusinessHours,
+  checkTimeIntervalOverlapString,
+} from "../../../utils/timeValidation";
 import {
   Header,
   HeaderContent,
@@ -45,6 +49,7 @@ import {
   FormGroup,
   ErrorMessage,
   AvailabilitySection,
+  AvailabilityGrid,
   AvailabilityBlock,
   BlockHeader,
   BlockContent,
@@ -59,7 +64,6 @@ import {
   EmptyTimeSlots,
   BlockActions,
   AddBlockButton,
-  ActionButtons,
   LoadingContainer,
   LoadingSpinner,
   LoadingText,
@@ -101,7 +105,7 @@ export function EditTable() {
   const [nameError, setNameError] = useState("");
   const [capacityError, setCapacityError] = useState("");
   const [dateError, setDateError] = useState("");
-  const [timeError, setTimeError] = useState("");
+  const [timeError] = useState("");
 
   // States para modal de confirmação de remoção
   const [showRemovalModal, setShowRemovalModal] = useState(false);
@@ -340,10 +344,8 @@ export function EditTable() {
       setDateError("");
     }
     if (isPastTime(availability[blockIdx].date, start)) {
-      setTimeError("Não é permitido selecionar horários anteriores ao atual.");
+      toast.error("Não é permitido selecionar horários anteriores ao atual.");
       return;
-    } else {
-      setTimeError("");
     }
     if (start >= end) {
       toast.error("O horário de início deve ser menor que o de fim");
@@ -352,6 +354,19 @@ export function EditTable() {
     const interval = `${start}-${end}`;
     if (availability[blockIdx].times.includes(interval)) {
       toast.error("Esse intervalo já foi adicionado");
+      return;
+    }
+
+    // Verificar sobreposição com intervalos existentes neste bloco
+    const existingTimes = availability[blockIdx].times;
+    const overlapCheck = checkTimeIntervalOverlapString(
+      interval,
+      existingTimes
+    );
+    if (overlapCheck.hasOverlap) {
+      toast.error(
+        `Este horário se sobrepõe com o intervalo ${overlapCheck.overlappingInterval}. Ajuste os horários para evitar conflitos.`
+      );
       return;
     }
 
@@ -525,7 +540,7 @@ export function EditTable() {
         </Header>
 
         <Content>
-          <form onSubmit={handleSubmit}>
+          <form id="edit-table-form" onSubmit={handleSubmit}>
             {/* Informações Básicas */}
             <FormSection>
               <SectionTitle>
@@ -632,277 +647,301 @@ export function EditTable() {
                   </div>
                 </EmptyTimeSlots>
               ) : (
-                availability.map((block, idx) => (
-                  <AvailabilityBlock key={idx}>
-                    <BlockHeader>
-                      <div>
-                        <Calendar size={18} />
-                        <span>
-                          {block.date
-                            ? format(
-                                new Date(block.date + "T00:00:00"),
-                                "dd/MM/yyyy"
-                              )
-                            : `Disponibilidade ${idx + 1}`}
-                          {block.times.length > 0 && (
-                            <span
-                              style={{ color: "#6b7280", fontWeight: "400" }}
-                            >
-                              {" "}
-                              • {block.times.length} horário
-                              {block.times.length !== 1 ? "s" : ""}
-                              {collapsedBlocks[idx] &&
-                                block.times.length > 0 && (
+                <AvailabilityGrid>
+                  {availability.map((block, idx) => (
+                    <AvailabilityBlock key={idx}>
+                      <BlockHeader>
+                        <div>
+                          <Calendar size={18} />
+                          <span>
+                            {block.date
+                              ? format(
+                                  new Date(block.date + "T00:00:00"),
+                                  "dd/MM/yyyy"
+                                )
+                              : `Disponibilidade ${idx + 1}`}
+                            {block.times.length > 0 && (
+                              <span
+                                style={{ color: "#6b7280", fontWeight: "400" }}
+                              >
+                                {" "}
+                                • {block.times.length} horário
+                                {block.times.length !== 1 ? "s" : ""}
+                                {collapsedBlocks[idx] &&
+                                  block.times.length > 0 && (
+                                    <span
+                                      style={{
+                                        marginLeft: "8px",
+                                        fontSize: "0.75rem",
+                                      }}
+                                    >
+                                      (
+                                      {block.times
+                                        .slice(0, 2)
+                                        .map((time) => time.replace("-", " - "))
+                                        .join(", ")}
+                                      {block.times.length > 2 &&
+                                        ` +${block.times.length - 2} mais`}
+                                      )
+                                    </span>
+                                  )}
+                              </span>
+                            )}
+                            {(() => {
+                              const blockReservations =
+                                getAffectedReservations(idx);
+                              return (
+                                blockReservations.length > 0 && (
                                   <span
                                     style={{
                                       marginLeft: "8px",
+                                      padding: "2px 6px",
+                                      backgroundColor: "#ef4444",
+                                      color: "white",
+                                      borderRadius: "4px",
                                       fontSize: "0.75rem",
+                                      fontWeight: "500",
                                     }}
+                                    title={`${blockReservations.length} reserva(s) ativa(s) nesta data`}
                                   >
-                                    (
-                                    {block.times
-                                      .slice(0, 2)
-                                      .map((time) => time.replace("-", " - "))
-                                      .join(", ")}
-                                    {block.times.length > 2 &&
-                                      ` +${block.times.length - 2} mais`}
-                                    )
+                                    {blockReservations.length} reserva(s)
                                   </span>
-                                )}
-                            </span>
-                          )}
-                          {(() => {
-                            const blockReservations =
-                              getAffectedReservations(idx);
-                            return (
-                              blockReservations.length > 0 && (
-                                <span
-                                  style={{
-                                    marginLeft: "8px",
-                                    padding: "2px 6px",
-                                    backgroundColor: "#ef4444",
-                                    color: "white",
-                                    borderRadius: "4px",
-                                    fontSize: "0.75rem",
-                                    fontWeight: "500",
-                                  }}
-                                  title={`${blockReservations.length} reserva(s) ativa(s) nesta data`}
-                                >
-                                  {blockReservations.length} reserva(s)
-                                </span>
-                              )
-                            );
-                          })()}
-                        </span>
-                      </div>
-                      <BlockActions>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleBlockCollapse(idx)}
-                          leftIcon={
-                            collapsedBlocks[idx] ? (
-                              <ChevronDown size={14} />
-                            ) : (
-                              <ChevronUp size={14} />
-                            )
-                          }
-                        >
-                          {collapsedBlocks[idx] ? "Expandir" : "Recolher"}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleRemoveBlock(idx)}
-                          leftIcon={<Trash2 size={14} />}
-                          title={(() => {
-                            const blockReservations =
-                              getAffectedReservations(idx);
-                            return blockReservations.length > 0
-                              ? `Remover bloco (${blockReservations.length} reserva(s) será(ão) cancelada(s))`
-                              : "Remover bloco de disponibilidade";
-                          })()}
-                        >
-                          Remover
-                        </Button>
-                      </BlockActions>
-                    </BlockHeader>
-
-                    {!collapsedBlocks[idx] && (
-                      <BlockContent>
-                        <FormGroup>
-                          <Input
-                            label="Data"
-                            type="date"
-                            value={block.date}
-                            onChange={(e) =>
-                              handleBlockChange(idx, "date", e.target.value)
-                            }
-                            required
-                            min={todayStr}
-                          />
-                          {dateError && (
-                            <ErrorMessage>{dateError}</ErrorMessage>
-                          )}
-                        </FormGroup>
-
-                        <div>
-                          <label
-                            style={{
-                              display: "block",
-                              marginBottom: "12px",
-                              fontWeight: "500",
-                              fontSize: "0.875rem",
-                              color: "#374151",
-                            }}
-                          >
-                            Horários
-                          </label>
-
-                          {block.times.length === 0 ? (
-                            <EmptyTimeSlots style={{ margin: "12px 0" }}>
-                              <Clock size={24} />
-                              <span>Nenhum horário cadastrado</span>
-                            </EmptyTimeSlots>
-                          ) : (
-                            <>
-                              <TimeSlotsList>
-                                {block.times.map((time, tIdx) => {
-                                  const [startTime, endTime] = time.split("-");
-                                  const warning =
-                                    getBusinessHoursWarningForInterval(
-                                      startTime,
-                                      endTime
-                                    );
-
-                                  // Verifica se há reservas para este horário
-                                  const timeReservations =
-                                    getAffectedReservations(idx, tIdx);
-                                  const hasReservations =
-                                    timeReservations.length > 0;
-
-                                  return (
-                                    <TimeSlotItem key={tIdx}>
-                                      <TimeSlotInfo>
-                                        <Clock size={14} />
-                                        <span>{time.replace("-", " - ")}</span>
-                                        {warning && (
-                                          <WarningBadge title={warning}>
-                                            <AlertTriangle size={12} />
-                                            Fora do funcionamento
-                                          </WarningBadge>
-                                        )}
-                                        {hasReservations && (
-                                          <WarningBadge
-                                            style={{
-                                              backgroundColor: "#ef4444",
-                                              color: "white",
-                                            }}
-                                            title={`${timeReservations.length} reserva(s) ativa(s)`}
-                                          >
-                                            <Users size={12} />
-                                            {timeReservations.length} reserva(s)
-                                          </WarningBadge>
-                                        )}
-                                      </TimeSlotInfo>
-                                      <TimeSlotActions>
-                                        <Button
-                                          type="button"
-                                          variant="danger"
-                                          size="sm"
-                                          onClick={() =>
-                                            handleRemoveTime(idx, tIdx)
-                                          }
-                                          title={
-                                            hasReservations
-                                              ? `Remover horário (${timeReservations.length} reserva(s) será(ão) cancelada(s))`
-                                              : "Remover horário"
-                                          }
-                                        >
-                                          <Trash2 size={12} />
-                                        </Button>
-                                      </TimeSlotActions>
-                                    </TimeSlotItem>
-                                  );
-                                })}
-                              </TimeSlotsList>
-                              {block.times.length > 6 && (
-                                <ScrollIndicator>
-                                  <ChevronDown size={12} />
-                                  Role para ver mais horários
-                                </ScrollIndicator>
-                              )}
-                            </>
-                          )}
-
-                          {showTimeInput[idx] ? (
-                            <TimeInputContainer>
-                              <TimeInputGroup>
-                                <input
-                                  id={`start-time-${idx}`}
-                                  type="time"
-                                  value={timeInputs[idx]?.start || ""}
-                                  onChange={(e) =>
-                                    handleTimeInputChange(
-                                      idx,
-                                      "start",
-                                      e.target.value
-                                    )
-                                  }
-                                  required
-                                  min={
-                                    block.date === todayStr
-                                      ? currentTimeStr
-                                      : undefined
-                                  }
-                                />
-                                <span>até</span>
-                                <input
-                                  type="time"
-                                  value={timeInputs[idx]?.end || ""}
-                                  onChange={(e) =>
-                                    handleTimeInputChange(
-                                      idx,
-                                      "end",
-                                      e.target.value
-                                    )
-                                  }
-                                  required
-                                  min={
-                                    timeInputs[idx]?.start ||
-                                    (block.date === todayStr
-                                      ? currentTimeStr
-                                      : undefined)
-                                  }
-                                />
-                                <AddActionButton
-                                  type="button"
-                                  onClick={() => handleAddTime(idx)}
-                                >
-                                  <Plus size={14} />
-                                  Adicionar
-                                </AddActionButton>
-                              </TimeInputGroup>
-                              {timeError && (
-                                <ErrorMessage>{timeError}</ErrorMessage>
-                              )}
-                            </TimeInputContainer>
-                          ) : (
-                            <AddTimeButton
-                              type="button"
-                              onClick={() => handleShowTimeInput(idx)}
-                            >
-                              <Plus size={16} />
-                              Adicionar Horário
-                            </AddTimeButton>
-                          )}
+                                )
+                              );
+                            })()}
+                          </span>
                         </div>
-                      </BlockContent>
-                    )}
-                  </AvailabilityBlock>
-                ))
+                        <BlockActions>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleBlockCollapse(idx)}
+                            leftIcon={
+                              collapsedBlocks[idx] ? (
+                                <ChevronDown size={14} />
+                              ) : (
+                                <ChevronUp size={14} />
+                              )
+                            }
+                          >
+                            {collapsedBlocks[idx] ? "Expandir" : "Recolher"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleRemoveBlock(idx)}
+                            leftIcon={<Trash2 size={14} />}
+                            title={(() => {
+                              const blockReservations =
+                                getAffectedReservations(idx);
+                              return blockReservations.length > 0
+                                ? `Remover bloco (${blockReservations.length} reserva(s) será(ão) cancelada(s))`
+                                : "Remover bloco de disponibilidade";
+                            })()}
+                          >
+                            Remover
+                          </Button>
+                        </BlockActions>
+                      </BlockHeader>
+
+                      {!collapsedBlocks[idx] && (
+                        <BlockContent>
+                          <FormGroup>
+                            <Input
+                              label="Data"
+                              type="date"
+                              value={block.date}
+                              onChange={(e) =>
+                                handleBlockChange(idx, "date", e.target.value)
+                              }
+                              required
+                              min={todayStr}
+                            />
+                            {dateError && (
+                              <ErrorMessage>{dateError}</ErrorMessage>
+                            )}
+                          </FormGroup>
+
+                          <div>
+                            <label
+                              style={{
+                                display: "block",
+                                marginBottom: "12px",
+                                fontWeight: "500",
+                                fontSize: "0.875rem",
+                                color: "#374151",
+                              }}
+                            >
+                              Horários
+                            </label>
+
+                            {block.times.length === 0 ? (
+                              <EmptyTimeSlots style={{ margin: "12px 0" }}>
+                                <Clock size={24} />
+                                <span>Nenhum horário cadastrado</span>
+                              </EmptyTimeSlots>
+                            ) : (
+                              <>
+                                <TimeSlotsList>
+                                  {block.times.map((time, tIdx) => {
+                                    const [startTime, endTime] =
+                                      time.split("-");
+                                    const warning =
+                                      getBusinessHoursWarningForInterval(
+                                        startTime,
+                                        endTime
+                                      );
+
+                                    // Verifica se há reservas para este horário
+                                    const timeReservations =
+                                      getAffectedReservations(idx, tIdx);
+                                    const hasReservations =
+                                      timeReservations.length > 0;
+
+                                    return (
+                                      <TimeSlotItem key={tIdx}>
+                                        <TimeSlotInfo>
+                                          <div className="time-display">
+                                            <Clock size={14} />
+                                            <span>
+                                              {time.replace("-", " - ")}
+                                            </span>
+                                          </div>
+                                          <div className="badges">
+                                            {warning && (
+                                              <WarningBadge title={warning}>
+                                                <AlertTriangle size={10} />
+                                                Fora do funcionamento
+                                              </WarningBadge>
+                                            )}
+                                            {hasReservations && (
+                                              <WarningBadge
+                                                style={{
+                                                  backgroundColor: "#ef4444",
+                                                  color: "white",
+                                                }}
+                                                title={`${timeReservations.length} reserva(s) ativa(s)`}
+                                              >
+                                                <Users size={10} />
+                                                {timeReservations.length}{" "}
+                                                reserva(s)
+                                              </WarningBadge>
+                                            )}
+                                          </div>
+                                        </TimeSlotInfo>
+                                        <TimeSlotActions>
+                                          <Button
+                                            type="button"
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() =>
+                                              handleRemoveTime(idx, tIdx)
+                                            }
+                                            title={
+                                              hasReservations
+                                                ? `Remover horário (${timeReservations.length} reserva(s) será(ão) cancelada(s))`
+                                                : "Remover horário"
+                                            }
+                                          >
+                                            <Trash2 size={12} />
+                                          </Button>
+                                        </TimeSlotActions>
+                                      </TimeSlotItem>
+                                    );
+                                  })}
+                                </TimeSlotsList>
+                                {block.times.length > 6 && (
+                                  <ScrollIndicator>
+                                    <ChevronDown size={12} />
+                                    Role para ver mais horários
+                                  </ScrollIndicator>
+                                )}
+                              </>
+                            )}
+
+                            {showTimeInput[idx] ? (
+                              <TimeInputContainer>
+                                <TimeInputGroup>
+                                  <input
+                                    id={`start-time-${idx}`}
+                                    type="time"
+                                    value={timeInputs[idx]?.start || ""}
+                                    onChange={(e) =>
+                                      handleTimeInputChange(
+                                        idx,
+                                        "start",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                    min={
+                                      block.date === todayStr
+                                        ? currentTimeStr
+                                        : undefined
+                                    }
+                                    disabled={!block.date}
+                                    placeholder={
+                                      !block.date
+                                        ? "Selecione a data primeiro"
+                                        : undefined
+                                    }
+                                  />
+                                  <span>até</span>
+                                  <input
+                                    type="time"
+                                    value={timeInputs[idx]?.end || ""}
+                                    onChange={(e) =>
+                                      handleTimeInputChange(
+                                        idx,
+                                        "end",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                    min={
+                                      timeInputs[idx]?.start ||
+                                      (block.date === todayStr
+                                        ? currentTimeStr
+                                        : undefined)
+                                    }
+                                    disabled={!block.date}
+                                    placeholder={
+                                      !block.date
+                                        ? "Selecione a data primeiro"
+                                        : undefined
+                                    }
+                                  />
+                                  <AddActionButton
+                                    type="button"
+                                    onClick={() => handleAddTime(idx)}
+                                    disabled={!block.date}
+                                  >
+                                    <Plus size={14} />
+                                    Adicionar
+                                  </AddActionButton>
+                                </TimeInputGroup>
+                                {timeError && (
+                                  <ErrorMessage>{timeError}</ErrorMessage>
+                                )}
+                              </TimeInputContainer>
+                            ) : (
+                              <AddTimeButton
+                                type="button"
+                                onClick={() => handleShowTimeInput(idx)}
+                                disabled={!block.date}
+                              >
+                                <Plus size={16} />
+                                Adicionar Horário
+                              </AddTimeButton>
+                            )}
+                          </div>
+                        </BlockContent>
+                      )}
+                    </AvailabilityBlock>
+                  ))}
+                </AvailabilityGrid>
               )}
 
               <AddBlockButton type="button" onClick={handleAddBlock}>
@@ -910,29 +949,29 @@ export function EditTable() {
                 Adicionar Disponibilidade
               </AddBlockButton>
             </AvailabilitySection>
-
-            {/* Ações */}
-            <ActionButtons>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={
-                  isSaving ||
-                  !!nameError ||
-                  !!capacityError ||
-                  !!dateError ||
-                  !!timeError
-                }
-                leftIcon={isSaving ? undefined : <Save size={18} />}
-              >
-                {isSaving ? "Salvando..." : "Salvar Alterações"}
-              </Button>
-              <CancelButton type="button" onClick={() => navigate("/tables")}>
-                Cancelar
-              </CancelButton>
-            </ActionButtons>
           </form>
         </Content>
+
+        <FixedActionBar>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={
+              isSaving ||
+              !!nameError ||
+              !!capacityError ||
+              !!dateError ||
+              !!timeError
+            }
+            leftIcon={isSaving ? undefined : <Save size={18} />}
+            form="edit-table-form"
+          >
+            {isSaving ? "Salvando..." : "Salvar Alterações"}
+          </Button>
+          <CancelButton type="button" onClick={() => navigate("/tables")}>
+            Cancelar
+          </CancelButton>
+        </FixedActionBar>
 
         {/* Modal de remanejamento */}
         {reschedulingData && (

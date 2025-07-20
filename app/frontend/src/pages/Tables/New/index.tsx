@@ -22,6 +22,7 @@ import { CancelButton } from "../../../components/Button/CancelButton";
 import { Input } from "../../../components/Input";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
 import { PageWrapper } from "../../../components/Layout/PageWrapper";
+import { FixedActionBar } from "../../../components/Layout/FixedActionBar";
 import { useTables } from "../../../hooks/useTables";
 import { useConfig } from "../../../hooks/useConfig";
 import {
@@ -30,7 +31,10 @@ import {
   getTodayString,
   getCurrentTimeString,
 } from "../../../utils/dateValidation";
-import { validateTimeIntervalAgainstBusinessHours } from "../../../utils/timeValidation";
+import {
+  validateTimeIntervalAgainstBusinessHours,
+  checkTimeIntervalOverlap,
+} from "../../../utils/timeValidation";
 
 import {
   Header,
@@ -56,8 +60,8 @@ import {
   TimeSlotActions,
   WarningBadge,
   EmptyTimeSlots,
+  TimeIntervalsGrid,
   AddActionButton,
-  ActionButtons,
 } from "./styles";
 
 type TimeInterval = {
@@ -107,7 +111,7 @@ export function NewTable() {
   const [nameError, setNameError] = useState("");
   const [capacityError, setCapacityError] = useState("");
   const [dateError, setDateError] = useState("");
-  const [timeError, setTimeError] = useState("");
+  const [timeError] = useState("");
 
   const handleAddTimeInterval = () => {
     if (!currentStartTime || !currentEndTime) {
@@ -124,10 +128,8 @@ export function NewTable() {
       isPastTime(startDate, currentStartTime) ||
       isPastTime(endDate, currentEndTime)
     ) {
-      setTimeError("Não é permitido selecionar horários anteriores ao atual.");
+      toast.error("Não é permitido selecionar horários anteriores ao atual.");
       return;
-    } else {
-      setTimeError("");
     }
     if (currentStartTime >= currentEndTime) {
       toast.error("O horário de início deve ser menor que o horário de fim");
@@ -139,6 +141,19 @@ export function NewTable() {
       )
     ) {
       toast.error("Esse intervalo já foi adicionado");
+      return;
+    }
+
+    // Verificar sobreposição com intervalos existentes
+    const overlapCheck = checkTimeIntervalOverlap(
+      currentStartTime,
+      currentEndTime,
+      timeIntervals
+    );
+    if (overlapCheck.hasOverlap) {
+      toast.error(
+        `Este horário se sobrepõe com o intervalo ${overlapCheck.overlappingInterval}. Ajuste os horários para evitar conflitos.`
+      );
       return;
     }
 
@@ -167,10 +182,8 @@ export function NewTable() {
       setDateError("");
     }
     if (isPastTime(customDate, currentStartTime)) {
-      setTimeError("Não é permitido selecionar horários anteriores ao atual.");
+      toast.error("Não é permitido selecionar horários anteriores ao atual.");
       return;
-    } else {
-      setTimeError("");
     }
     if (currentStartTime >= currentEndTime) {
       toast.error("O horário de início deve ser menor que o horário de fim");
@@ -379,7 +392,7 @@ export function NewTable() {
           </HeaderContent>
         </Header>
 
-        <Content onSubmit={handleSubmit}>
+        <Content id="create-table-form" onSubmit={handleSubmit}>
           <FormSection>
             <SectionTitle>
               <Users size={20} />
@@ -485,6 +498,12 @@ export function NewTable() {
                       value={currentStartTime}
                       onChange={(e) => setCurrentStartTime(e.target.value)}
                       min={startDate === todayStr ? currentTimeStr : undefined}
+                      disabled={!startDate || !endDate}
+                      placeholder={
+                        !startDate || !endDate
+                          ? "Selecione as datas primeiro"
+                          : undefined
+                      }
                     />
 
                     <Input
@@ -496,6 +515,12 @@ export function NewTable() {
                         currentStartTime ||
                         (startDate === todayStr ? currentTimeStr : undefined)
                       }
+                      disabled={!startDate || !endDate}
+                      placeholder={
+                        !startDate || !endDate
+                          ? "Selecione as datas primeiro"
+                          : undefined
+                      }
                     />
                   </TimeSlot>
 
@@ -503,6 +528,7 @@ export function NewTable() {
                     <AddActionButton
                       type="button"
                       onClick={handleAddTimeInterval}
+                      disabled={!startDate || !endDate}
                     >
                       <Plus size={14} />
                       Adicionar Horário
@@ -517,7 +543,7 @@ export function NewTable() {
                       Nenhum horário adicionado
                     </EmptyTimeSlots>
                   ) : (
-                    <div>
+                    <TimeIntervalsGrid>
                       {timeIntervals.map((interval, index) => {
                         const hasWarning = getBusinessHoursWarningForInterval(
                           interval.startTime,
@@ -555,7 +581,7 @@ export function NewTable() {
                           </AvailabilityBlock>
                         );
                       })}
-                    </div>
+                    </TimeIntervalsGrid>
                   )}
                 </TimeInputContainer>
               </>
@@ -588,6 +614,10 @@ export function NewTable() {
                       value={currentStartTime}
                       onChange={(e) => setCurrentStartTime(e.target.value)}
                       min={customDate === todayStr ? currentTimeStr : undefined}
+                      disabled={!customDate}
+                      placeholder={
+                        !customDate ? "Selecione a data primeiro" : undefined
+                      }
                     />
 
                     <Input
@@ -599,6 +629,10 @@ export function NewTable() {
                         currentStartTime ||
                         (customDate === todayStr ? currentTimeStr : undefined)
                       }
+                      disabled={!customDate}
+                      placeholder={
+                        !customDate ? "Selecione a data primeiro" : undefined
+                      }
                     />
                   </TimeSlot>
 
@@ -606,6 +640,7 @@ export function NewTable() {
                     <AddActionButton
                       type="button"
                       onClick={handleAddCustomAvailability}
+                      disabled={!customDate}
                     >
                       <Plus size={14} />
                       Adicionar Horário
@@ -628,47 +663,50 @@ export function NewTable() {
                             {format(parseISO(item.date), "dd/MM/yyyy")}
                           </SectionTitle>
 
-                          {item.intervals.map((interval, intervalIndex) => {
-                            const hasWarning =
-                              getBusinessHoursWarningForInterval(
-                                interval.startTime,
-                                interval.endTime
-                              );
+                          <TimeIntervalsGrid>
+                            {item.intervals.map((interval, intervalIndex) => {
+                              const hasWarning =
+                                getBusinessHoursWarningForInterval(
+                                  interval.startTime,
+                                  interval.endTime
+                                );
 
-                            return (
-                              <AvailabilityBlock key={intervalIndex}>
-                                <BlockHeader>
-                                  <div>
-                                    <Clock size={16} />
-                                    <span>
-                                      {interval.startTime} - {interval.endTime}
-                                      {hasWarning && (
-                                        <WarningBadge>
-                                          <AlertTriangle size={12} />
-                                          Fora do funcionamento
-                                        </WarningBadge>
-                                      )}
-                                    </span>
-                                  </div>
-                                  <BlockActions>
-                                    <Button
-                                      type="button"
-                                      variant="danger"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleRemoveCustomAvailability(
-                                          item.date,
-                                          intervalIndex
-                                        )
-                                      }
-                                    >
-                                      <Trash2 size={12} />
-                                    </Button>
-                                  </BlockActions>
-                                </BlockHeader>
-                              </AvailabilityBlock>
-                            );
-                          })}
+                              return (
+                                <AvailabilityBlock key={intervalIndex}>
+                                  <BlockHeader>
+                                    <div>
+                                      <Clock size={16} />
+                                      <span>
+                                        {interval.startTime} -{" "}
+                                        {interval.endTime}
+                                        {hasWarning && (
+                                          <WarningBadge>
+                                            <AlertTriangle size={12} />
+                                            Fora do funcionamento
+                                          </WarningBadge>
+                                        )}
+                                      </span>
+                                    </div>
+                                    <BlockActions>
+                                      <Button
+                                        type="button"
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleRemoveCustomAvailability(
+                                            item.date,
+                                            intervalIndex
+                                          )
+                                        }
+                                      >
+                                        <Trash2 size={12} />
+                                      </Button>
+                                    </BlockActions>
+                                  </BlockHeader>
+                                </AvailabilityBlock>
+                              );
+                            })}
+                          </TimeIntervalsGrid>
                         </div>
                       ))}
                     </div>
@@ -677,22 +715,23 @@ export function NewTable() {
               </>
             )}
           </FormSection>
-
-          <ActionButtons>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSaving}
-              leftIcon={isSaving ? undefined : <Save size={18} />}
-            >
-              {isSaving ? "Criando Mesa..." : "Criar Mesa"}
-            </Button>
-            <CancelButton onClick={() => navigate("/tables")}>
-              Cancelar
-            </CancelButton>
-          </ActionButtons>
         </Content>
       </LayoutContainer>
+
+      <FixedActionBar>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={isSaving}
+          leftIcon={isSaving ? undefined : <Save size={18} />}
+          form="create-table-form"
+        >
+          {isSaving ? "Criando Mesa..." : "Criar Mesa"}
+        </Button>
+        <CancelButton onClick={() => navigate("/tables")}>
+          Cancelar
+        </CancelButton>
+      </FixedActionBar>
     </PageWrapper>
   );
 }
