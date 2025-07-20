@@ -333,18 +333,18 @@ export const CancelActionButton = styled.button`
   justify-content: center;
   min-width: fit-content;
 
-  background: #6b7280;
-  color: #ffffff;
-  border: 1px solid #6b7280;
+  background: ${({ theme }: any) => theme.colors.neutral[600]};
+  color: #000000;
+  border: 1px solid ${({ theme }: any) => theme.colors.neutral[600]};
 
   &:hover {
-    background: #4b5563;
-    border-color: #4b5563;
+    background: ${({ theme }: any) => theme.colors.neutral[700]};
+    border-color: ${({ theme }: any) => theme.colors.neutral[700]};
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.25);
+    box-shadow: 0 0 0 3px ${({ theme }: any) => theme.colors.neutral[300]}40;
   }
 
   svg {

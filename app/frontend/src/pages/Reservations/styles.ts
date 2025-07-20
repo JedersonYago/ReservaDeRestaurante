@@ -488,7 +488,7 @@ export const ActionButton = styled.button<{
       case "danger":
         return `
           background: ${theme.colors.semantic.error};
-          color: ${theme.colors.background.primary};
+          color: #ffffff;
           border: 1px solid ${theme.colors.semantic.error};
 
           &:hover {
@@ -498,7 +498,7 @@ export const ActionButton = styled.button<{
       case "warning":
         return `
           background: ${theme.colors.semantic.warning};
-          color: ${theme.colors.background.primary};
+          color: #ffffff;
           border: 1px solid ${theme.colors.semantic.warning};
 
           &:hover {
@@ -507,13 +507,13 @@ export const ActionButton = styled.button<{
         `;
       case "cancel":
         return `
-          background: #6B7280;
-          color: #FFFFFF;
-          border: 1px solid #6B7280;
+          background: ${theme.colors.neutral[600]};
+          color: #000000;
+          border: 1px solid ${theme.colors.neutral[600]};
 
           &:hover {
-            background: #4B5563;
-            border-color: #4B5563;
+            background: ${theme.colors.neutral[700]};
+            border-color: ${theme.colors.neutral[700]};
           }
         `;
       default:
