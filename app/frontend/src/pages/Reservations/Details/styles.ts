@@ -24,15 +24,14 @@ export const HeaderContent = styled.div`
   align-items: flex-start;
   gap: ${({ theme }) => theme.spacing[6]};
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: ${({ theme }) => theme.spacing[4]};
+  @media (max-width: 480px) {
+    gap: ${({ theme }) => theme.spacing[3]};
   }
 `;
 
 export const TitleSection = styled.div`
   flex: 1;
+  min-width: 0; /* Permite o título quebrar se necessário */
 `;
 
 export const Title = styled.h1`
@@ -43,13 +42,20 @@ export const Title = styled.h1`
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 ${({ theme }) => theme.spacing[2]} 0;
+  min-width: 0; /* Permite quebra de texto se necessário */
 
   svg {
     color: ${({ theme }) => theme.colors.primary.main};
+    flex-shrink: 0; /* Impede que o ícone encolha */
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     font-size: ${({ theme }) => theme.typography.fontSize["xl"]};
+    gap: ${({ theme }) => theme.spacing[2]};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: ${({ theme }) => theme.typography.fontSize.lg};
   }
 `;
 
@@ -64,9 +70,10 @@ export const HeaderActions = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  flex-shrink: 0;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    align-items: stretch;
+    align-items: flex-end;
   }
 `;
 
@@ -333,7 +340,7 @@ export const CancelActionButton = styled.button`
   justify-content: center;
   min-width: fit-content;
 
-  background: ${({ theme }: any) => theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[300] : theme.colors.neutral[600]};
+  background: ${({ theme }: any) => theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[300] : theme.colors.neutral[300]};
   color: ${({ theme }: any) => theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[900] : '#000000'};
   border: 1px solid ${({ theme }: any) => theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[300] : theme.colors.neutral[600]};
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   Users,
@@ -15,7 +14,8 @@ import { useTables } from "../../../hooks/useTables";
 import { useReservations } from "../../../hooks/useReservations";
 import { useAuth } from "../../../hooks/useAuth";
 import { useConfig } from "../../../hooks/useConfig";
-import { Button } from "../../../components/Button";
+import { BackButton } from "../../../components/Button/BackButton";
+import { SubmitButton } from "../../../components/Button/SubmitButton";
 import { Input } from "../../../components/Input";
 import { Select } from "../../../components/Select";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
@@ -29,7 +29,6 @@ import {
   TitleSection,
   Title,
   Subtitle,
-  HeaderActions,
   Content,
   InfoCard,
   InfoIcon,
@@ -294,16 +293,6 @@ export function NewReservation() {
                 Faça sua reserva e garante seu lugar no restaurante
               </Subtitle>
             </TitleSection>
-            <HeaderActions>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/reservations")}
-                leftIcon={<ArrowLeft size={16} />}
-              >
-                Voltar
-              </Button>
-            </HeaderActions>
           </HeaderContent>
         </Header>
 
@@ -542,23 +531,21 @@ export function NewReservation() {
       </LayoutContainer>
 
       <FixedActionBar>
-        <Button
-          type="submit"
-          variant="primary"
+        <SubmitButton
           disabled={!isFormValid || isSubmitting}
-          leftIcon={isSubmitting ? undefined : <CheckCircle size={18} />}
+          loading={isSubmitting}
+          leftIcon={<CheckCircle size={18} />}
           form="new-reservation-form"
         >
-          {isSubmitting ? "Criando Reserva..." : "Fazer Reserva"}
-        </Button>
-        <Button
+          Fazer Reserva
+        </SubmitButton>
+        <BackButton
           type="button"
-          variant="outline"
           onClick={handleCancel}
           disabled={isSubmitting}
         >
-          Cancelar
-        </Button>
+          Voltar
+        </BackButton>
       </FixedActionBar>
     </PageWrapper>
   );

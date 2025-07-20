@@ -2,14 +2,17 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useReservations } from "../../../hooks/useReservations";
 import { useAuth } from "../../../hooks/useAuth";
-import { Button } from "../../../components/Button";
+import { BackButton } from "../../../components/Button/BackButton";
+import { CancelButton } from "../../../components/Button/CancelButton";
+import { ConfirmButton } from "../../../components/Button/ConfirmButton";
+import { DeleteButton } from "../../../components/Button/DeleteButton";
 import { useToast } from "../../../components/Toast";
 import { formatDate, formatTime } from "../../../utils/dateUtils";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
-import { PageWrapper } from "../../../components/Layout/PageWrapper";
+import { PageWrapper, PageWrapperWithFixedActionBar } from "../../../components/Layout/PageWrapper";
+import { FixedActionBar } from "../../../components/Layout/FixedActionBar";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import { StatusBadge } from "../../../components/StatusBadge";
-import { ButtonGroup } from "../../../components/ButtonGroup";
 import {
   Calendar,
   Clock,
@@ -44,9 +47,6 @@ import {
   DetailContent,
   DetailLabel,
   DetailValue,
-  ActionsContainer,
-  StatusBadgeContainer,
-  CancelActionButton,
   ObservationsCard,
   LoadingContainer,
   LoadingSpinner,
@@ -55,7 +55,7 @@ import {
   ErrorIcon,
   ErrorTitle,
   ErrorDescription,
-  BackButton,
+  BackButton as StyledBackButton,
 } from "./styles";
 
 export function ReservationDetails() {
@@ -208,10 +208,10 @@ export function ReservationDetails() {
             <ErrorDescription>
               A reserva que você está procurando não existe ou foi removida.
             </ErrorDescription>
-            <BackButton onClick={() => navigate("/reservations")}>
+            <StyledBackButton onClick={() => navigate("/reservations")}>
               <ArrowLeft size={18} />
               Voltar para Reservas
-            </BackButton>
+            </StyledBackButton>
           </ErrorContainer>
         </LayoutContainer>
       </PageWrapper>
@@ -219,7 +219,7 @@ export function ReservationDetails() {
   }
 
   return (
-    <PageWrapper>
+    <PageWrapperWithFixedActionBar>
       <LayoutContainer>
         <Header>
           <HeaderContent>
@@ -234,63 +234,7 @@ export function ReservationDetails() {
               </Subtitle>
             </TitleSection>
             <HeaderActions>
-              <ActionsContainer>
-                <ButtonGroup>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/reservations")}
-                    leftIcon={<ArrowLeft size={16} />}
-                  >
-                    Voltar
-                  </Button>
-
-                  {/* Botão Confirmar - só aparece para admin e status pending */}
-                  {reservation.status === "pending" &&
-                    user?.role === "admin" && (
-                      <Button
-                        variant="success"
-                        size="sm"
-                        onClick={handleConfirmClick}
-                        leftIcon={<CheckCircle size={16} />}
-                      >
-                        Confirmar
-                      </Button>
-                    )}
-
-                  {/* Botão Cancelar - aparece para status pending ou confirmed, mas não cancelled ou expired */}
-                  {reservation.status !== "cancelled" &&
-                    reservation.status !== "expired" && (
-                      <CancelActionButton onClick={handleCancelClick}>
-                        <XCircle size={16} />
-                        Cancelar
-                      </CancelActionButton>
-                    )}
-
-                  {/* Botão Excluir - só para admin */}
-                  {user?.role === "admin" && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={handleDeleteClick}
-                      disabled={isDeleting}
-                      leftIcon={
-                        isDeleting ? (
-                          <Loader2 size={16} />
-                        ) : (
-                          <Trash2 size={16} />
-                        )
-                      }
-                    >
-                      {isDeleting ? "Excluindo..." : "Excluir"}
-                    </Button>
-                  )}
-                </ButtonGroup>
-
-                <StatusBadgeContainer>
-                  <StatusBadge status={reservation.status as any} size="md" />
-                </StatusBadgeContainer>
-              </ActionsContainer>
+              <StatusBadge status={reservation.status as any} size="lg" />
             </HeaderActions>
           </HeaderContent>
         </Header>
@@ -436,6 +380,46 @@ export function ReservationDetails() {
           isLoading={isProcessing}
         />
       </LayoutContainer>
-    </PageWrapper>
+
+      <FixedActionBar>
+        {/* Botão Voltar */}
+        <BackButton onClick={() => navigate("/reservations")}>
+          Voltar
+        </BackButton>
+
+        {/* Botão Confirmar - só aparece para admin e status pending */}
+        {reservation.status === "pending" && user?.role === "admin" && (
+          <ConfirmButton
+            onClick={handleConfirmClick}
+            leftIcon={<CheckCircle size={16} />}
+          >
+            Confirmar
+          </ConfirmButton>
+        )}
+
+        {/* Botão Cancelar - aparece para status pending ou confirmed, mas não cancelled ou expired */}
+        {reservation.status !== "cancelled" &&
+          reservation.status !== "expired" && (
+            <CancelButton
+              onClick={handleCancelClick}
+              leftIcon={<XCircle size={16} />}
+            >
+              Cancelar
+            </CancelButton>
+          )}
+
+        {/* Botão Excluir - só para admin */}
+        {user?.role === "admin" && (
+          <DeleteButton
+            onClick={handleDeleteClick}
+            disabled={isDeleting}
+            loading={isDeleting}
+            leftIcon={<Trash2 size={16} />}
+          >
+            {isDeleting ? "Excluindo..." : "Excluir"}
+          </DeleteButton>
+        )}
+      </FixedActionBar>
+    </PageWrapperWithFixedActionBar>
   );
 }

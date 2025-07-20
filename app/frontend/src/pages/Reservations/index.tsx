@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useReservations } from "../../hooks/useReservations";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/Button";
+import { ActionButton } from "../../components/Button/ActionButton";
+import { CancelButton } from "../../components/Button/CancelButton";
+import { DeleteButton } from "../../components/Button/DeleteButton";
 import { Input } from "../../components/Input";
 import { useToast } from "../../components/Toast";
 import { formatDate, formatTime } from "../../utils/dateUtils";
@@ -51,7 +54,6 @@ import {
   DateTimeInfo,
   ObservationsText,
   CardActions,
-  ActionButton,
   EmptyState,
   EmptyStateIcon,
   EmptyStateContent,
@@ -393,37 +395,34 @@ export function Reservations() {
                         onClick={() =>
                           navigate(`/reservations/${reservation._id}`)
                         }
-                        $variant="secondary"
+                        variant="secondary"
+                        leftIcon={<Eye size={16} />}
                       >
-                        <Eye size={16} />
                         Detalhes
                       </ActionButton>
 
                       {user?.role === "admin" ? (
-                        <ActionButton
+                        <DeleteButton
                           onClick={() => handleDeleteClick(reservation._id)}
-                          $variant="danger"
                         >
-                          <Trash2 size={16} />
                           Excluir
-                        </ActionButton>
+                        </DeleteButton>
                       ) : (
                         <>
                           {reservation.status !== "cancelled" && (
-                            <ActionButton
+                            <CancelButton
                               onClick={() => handleCancelClick(reservation._id)}
-                              $variant="cancel"
+                              leftIcon={<CircleX size={16} />}
                             >
-                              <CircleX size={16} />
                               Cancelar
-                            </ActionButton>
+                            </CancelButton>
                           )}
                           {reservation.status === "cancelled" && (
                             <ActionButton
                               onClick={() => handleClearClick(reservation._id)}
-                              $variant="secondary"
+                              variant="secondary"
+                              leftIcon={<Trash2 size={16} />}
                             >
-                              <Trash2 size={16} />
                               Limpar
                             </ActionButton>
                           )}
