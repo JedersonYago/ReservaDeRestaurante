@@ -25,7 +25,7 @@ import {
 } from "../../services/profileService";
 import { changePasswordSchema } from "../../schemas/auth";
 import { useToast } from "../../components/Toast";
-import { Button, CancelButton } from "../../components/Button";
+import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
 import { ConfirmationModal } from "../../components/Modal/ConfirmationModal";
@@ -508,14 +508,15 @@ export function Profile() {
                     >
                       {passwordLoading ? "Alterando..." : "Alterar Senha"}
                     </Button>
-                    <CancelButton
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={handlePasswordCancel}
                       disabled={passwordLoading}
                       leftIcon={<X size={18} />}
                     >
                       Cancelar
-                    </CancelButton>
+                    </Button>
                   </ActionButtons>
                 </form>
               </ProfileSection>
@@ -635,14 +636,15 @@ export function Profile() {
                     >
                       {loading ? "Salvando..." : "Salvar Alterações"}
                     </Button>
-                    <CancelButton
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={handleCancel}
                       disabled={loading}
                       leftIcon={<X size={18} />}
                     >
                       Cancelar
-                    </CancelButton>
+                    </Button>
                   </ActionButtons>
                 </form>
               </ProfileSection>

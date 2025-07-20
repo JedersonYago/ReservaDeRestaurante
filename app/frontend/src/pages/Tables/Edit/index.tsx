@@ -20,7 +20,7 @@ import {
   useReservations,
 } from "../../../hooks/useReservations";
 import { useConfig } from "../../../hooks/useConfig";
-import { Button, CancelButton } from "../../../components/Button";
+import { Button } from "../../../components/Button";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import { ReschedulingModal } from "../../../components/Modal/ReschedulingModal";
 import { Input } from "../../../components/Input";
@@ -75,6 +75,14 @@ import {
   WarningBadge,
   InfoMessage,
   ScrollIndicator,
+  BlockInfoText,
+  BlockTimePreview,
+  ReservationBadge,
+  DangerWarningBadge,
+  TimeLabel,
+  AffectedReservationsList,
+  ModalWarningContainer,
+  ModalWarningText,
 } from "./styles";
 
 export function EditTable() {
@@ -661,20 +669,13 @@ export function EditTable() {
                                 )
                               : `Disponibilidade ${idx + 1}`}
                             {block.times.length > 0 && (
-                              <span
-                                style={{ color: "#6b7280", fontWeight: "400" }}
-                              >
+                              <BlockInfoText>
                                 {" "}
                                 • {block.times.length} horário
                                 {block.times.length !== 1 ? "s" : ""}
                                 {collapsedBlocks[idx] &&
                                   block.times.length > 0 && (
-                                    <span
-                                      style={{
-                                        marginLeft: "8px",
-                                        fontSize: "0.75rem",
-                                      }}
-                                    >
+                                    <BlockTimePreview>
                                       (
                                       {block.times
                                         .slice(0, 2)
@@ -683,29 +684,20 @@ export function EditTable() {
                                       {block.times.length > 2 &&
                                         ` +${block.times.length - 2} mais`}
                                       )
-                                    </span>
+                                    </BlockTimePreview>
                                   )}
-                              </span>
+                              </BlockInfoText>
                             )}
                             {(() => {
                               const blockReservations =
                                 getAffectedReservations(idx);
                               return (
                                 blockReservations.length > 0 && (
-                                  <span
-                                    style={{
-                                      marginLeft: "8px",
-                                      padding: "2px 6px",
-                                      backgroundColor: "#ef4444",
-                                      color: "white",
-                                      borderRadius: "4px",
-                                      fontSize: "0.75rem",
-                                      fontWeight: "500",
-                                    }}
+                                  <ReservationBadge
                                     title={`${blockReservations.length} reserva(s) ativa(s) nesta data`}
                                   >
                                     {blockReservations.length} reserva(s)
-                                  </span>
+                                  </ReservationBadge>
                                 )
                               );
                             })()}
@@ -765,17 +757,7 @@ export function EditTable() {
                           </FormGroup>
 
                           <div>
-                            <label
-                              style={{
-                                display: "block",
-                                marginBottom: "12px",
-                                fontWeight: "500",
-                                fontSize: "0.875rem",
-                                color: "#374151",
-                              }}
-                            >
-                              Horários
-                            </label>
+                            <TimeLabel>Horários</TimeLabel>
 
                             {block.times.length === 0 ? (
                               <EmptyTimeSlots style={{ margin: "12px 0" }}>
@@ -817,17 +799,13 @@ export function EditTable() {
                                               </WarningBadge>
                                             )}
                                             {hasReservations && (
-                                              <WarningBadge
-                                                style={{
-                                                  backgroundColor: "#ef4444",
-                                                  color: "white",
-                                                }}
+                                              <DangerWarningBadge
                                                 title={`${timeReservations.length} reserva(s) ativa(s)`}
                                               >
                                                 <Users size={10} />
                                                 {timeReservations.length}{" "}
                                                 reserva(s)
-                                              </WarningBadge>
+                                              </DangerWarningBadge>
                                             )}
                                           </div>
                                         </TimeSlotInfo>
@@ -968,9 +946,13 @@ export function EditTable() {
           >
             {isSaving ? "Salvando..." : "Salvar Alterações"}
           </Button>
-          <CancelButton type="button" onClick={() => navigate("/tables")}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate("/tables")}
+          >
             Cancelar
-          </CancelButton>
+          </Button>
         </FixedActionBar>
 
         {/* Modal de remanejamento */}
@@ -1005,40 +987,20 @@ export function EditTable() {
                     : `Tem certeza que deseja remover este horário?`}
                 </p>
                 {removalConfig.affectedReservations.length > 0 && (
-                  <div
-                    style={{
-                      marginTop: "12px",
-                      padding: "12px",
-                      backgroundColor: "#fef2f2",
-                      borderRadius: "6px",
-                      border: "1px solid #fecaca",
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontWeight: "600",
-                        color: "#dc2626",
-                        marginBottom: "8px",
-                      }}
-                    >
+                  <ModalWarningContainer>
+                    <ModalWarningText>
                       Atenção: {removalConfig.affectedReservations.length}{" "}
                       reserva(s) será(ão) cancelada(s):
-                    </p>
-                    <ul
-                      style={{
-                        margin: 0,
-                        paddingLeft: "20px",
-                        color: "#7f1d1d",
-                      }}
-                    >
+                    </ModalWarningText>
+                    <AffectedReservationsList>
                       {removalConfig.affectedReservations.map((reservation) => (
                         <li key={reservation._id}>
                           {reservation.customerName} - {reservation.date} às{" "}
                           {reservation.time}
                         </li>
                       ))}
-                    </ul>
-                  </div>
+                    </AffectedReservationsList>
+                  </ModalWarningContainer>
                 )}
               </div>
             ) : (

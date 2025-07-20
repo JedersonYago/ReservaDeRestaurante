@@ -15,7 +15,7 @@ import { useTables } from "../../../hooks/useTables";
 import { useReservations } from "../../../hooks/useReservations";
 import { useAuth } from "../../../hooks/useAuth";
 import { useConfig } from "../../../hooks/useConfig";
-import { Button, CancelButton } from "../../../components/Button";
+import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Select } from "../../../components/Select";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
@@ -36,7 +36,7 @@ import {
   InfoContent,
   InfoTitle,
   InfoDescription,
-  FormSection,
+  Section as FormSection,
   SectionTitle,
   SectionDescription,
   FormGrid,
@@ -48,8 +48,12 @@ import {
   TimeSlotSelector,
   TimeSlotGrid,
   TimeSlotItem,
+  TimeSlotHeader,
+  TimeSlotHeaderText,
+  TimeSlotBadge,
   LoadingContainer,
   EmptyState,
+  ObservationLabel,
 } from "./styles";
 
 export function NewReservation() {
@@ -410,40 +414,16 @@ export function NewReservation() {
                     </EmptyState>
                   ) : (
                     <TimeSlotSelector>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          marginBottom: "16px",
-                          paddingBottom: "8px",
-                          borderBottom: "1px solid #e5e7eb",
-                        }}
-                      >
+                      <TimeSlotHeader>
                         <Clock size={16} />
-                        <span
-                          style={{
-                            fontWeight: "500",
-                            color: "#374151",
-                            fontSize: "0.875rem",
-                          }}
-                        >
+                        <TimeSlotHeaderText>
                           Horários Disponíveis
-                        </span>
-                        <span
-                          style={{
-                            backgroundColor: "#f3f4f6",
-                            color: "#6b7280",
-                            fontSize: "0.75rem",
-                            padding: "2px 8px",
-                            borderRadius: "12px",
-                            fontWeight: "500",
-                          }}
-                        >
+                        </TimeSlotHeaderText>
+                        <TimeSlotBadge>
                           {availableHours.length} disponível
                           {availableHours.length !== 1 ? "is" : ""}
-                        </span>
-                      </div>
+                        </TimeSlotBadge>
+                      </TimeSlotHeader>
                       <TimeSlotGrid>
                         {availableHours.map((hour, index) => (
                           <TimeSlotItem
@@ -510,19 +490,10 @@ export function NewReservation() {
               </FormGrid>
 
               <TextAreaGroup>
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginBottom: "8px",
-                    fontWeight: "500",
-                    color: "#374151",
-                  }}
-                >
+                <ObservationLabel>
                   <MessageSquare size={16} />
                   Observações (opcional)
-                </label>
+                </ObservationLabel>
                 <TextAreaContainer>
                   <textarea
                     value={formData.observations}
@@ -580,13 +551,14 @@ export function NewReservation() {
         >
           {isSubmitting ? "Criando Reserva..." : "Fazer Reserva"}
         </Button>
-        <CancelButton
+        <Button
           type="button"
+          variant="outline"
           onClick={handleCancel}
           disabled={isSubmitting}
         >
           Cancelar
-        </CancelButton>
+        </Button>
       </FixedActionBar>
     </PageWrapper>
   );
