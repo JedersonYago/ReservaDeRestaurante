@@ -274,9 +274,9 @@ export const darkTheme = {
       info: "#3B82F6",
     },
     background: {
-      primary: "#0F0F0F",
-      secondary: "#18181B",
-      tertiary: "#27272A",
+      primary: "#0A0A0A",
+      secondary: "#0f0f0fff",
+      tertiary: "#191919ff",
     },
     text: {
       primary: "#FAFAFA",
