@@ -236,8 +236,8 @@ export function Profile() {
 
     setPasswordLoading(true);
     try {
-      // Validação completa usando Yup
-      await changePasswordSchema.validate(passwordData, { abortEarly: false });
+      // Validação completa usando Zod
+      changePasswordSchema.parse(passwordData);
 
       // Verificação adicional de senha atual não pode ser igual à nova
       if (passwordData.currentPassword === passwordData.newPassword) {
@@ -256,8 +256,8 @@ export function Profile() {
       setIsChangingPassword(false);
       toast.success("Senha alterada com sucesso!");
     } catch (error: any) {
-      if (error.name === "ValidationError") {
-        // Erros de validação do Yup
+      if (error.name === "ZodError") {
+        // Erros de validação do Zod
         const firstError = error.errors[0];
         toast.error(firstError);
       } else {

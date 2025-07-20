@@ -99,7 +99,6 @@ export const updateConfig = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Erro ao atualizar configurações:", error);
 
-    // Se for erro de validação do Mongoose/Joi, retornar 400
     if (
       error instanceof Error &&
       (error.name === "ValidationError" || error.message.includes("validation"))

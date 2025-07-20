@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../components/Toast";
-import * as yup from "yup";
+import { resetPasswordSchema } from "@restaurant-reservation/shared";
+import { z } from "zod";
 
 import { Input } from "../../components/Input";
 import {
@@ -20,19 +21,7 @@ import {
 import { Logo } from "../../components/Logo";
 import * as S from "./styles";
 
-// Schema de validação
-const resetPasswordSchema = yup.object({
-  newPassword: yup
-    .string()
-    .min(8, "A senha deve ter no mínimo 8 caracteres")
-    .required("Nova senha é obrigatória"),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref("newPassword")], "As senhas não conferem")
-    .required("Confirmação de senha é obrigatória"),
-});
-
-type ResetPasswordFormData = yup.InferType<typeof resetPasswordSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 interface TokenVerificationResult {
   valid: boolean;
@@ -60,7 +49,8 @@ export function ResetPassword() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordFormData>({
-    resolver: yupResolver(resetPasswordSchema),
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { newPassword: "", confirmPassword: "", token: "" },
   });
 
   // Verificar token ao carregar a página
@@ -323,7 +313,11 @@ export function ResetPassword() {
                   <Input
                     label="Nova Senha"
                     type={showPassword ? "text" : "password"}
-                    error={errors.newPassword?.message}
+                    error={
+                      typeof errors.newPassword?.message === "string"
+                        ? errors.newPassword.message
+                        : undefined
+                    }
                     hasIcon
                     autoComplete="new-password"
                     {...register("newPassword")}
@@ -344,7 +338,11 @@ export function ResetPassword() {
                   <Input
                     label="Confirmar Nova Senha"
                     type={showConfirmPassword ? "text" : "password"}
-                    error={errors.confirmPassword?.message}
+                    error={
+                      typeof errors.confirmPassword?.message === "string"
+                        ? errors.confirmPassword.message
+                        : undefined
+                    }
                     hasIcon
                     autoComplete="new-password"
                     {...register("confirmPassword")}

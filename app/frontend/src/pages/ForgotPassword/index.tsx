@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../components/Toast";
-import * as yup from "yup";
+import { forgotPasswordSchema } from "../../schemas/auth";
+import { z } from "zod";
 
 import { Input } from "../../components/Input";
 import {
@@ -17,12 +18,7 @@ import {
 import { Logo } from "../../components/Logo";
 import * as S from "./styles";
 
-// Schema de validação
-const forgotPasswordSchema = yup.object({
-  email: yup.string().email("Email inválido").required("Email é obrigatório"),
-});
-
-type ForgotPasswordFormData = yup.InferType<typeof forgotPasswordSchema>;
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export function ForgotPassword() {
   const [isEmailSent, setIsEmailSent] = useState(false);
@@ -33,7 +29,8 @@ export function ForgotPassword() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ForgotPasswordFormData>({
-    resolver: yupResolver(forgotPasswordSchema),
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
   });
 
   const navigate = useNavigate();

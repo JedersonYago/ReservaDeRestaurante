@@ -1,27 +1,34 @@
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../components/Toast";
 
 import { Input } from "../../components/Input";
 import { authService } from "../../services/authService";
 import { useQueryClient } from "@tanstack/react-query";
-import { registerSchema, type RegisterFormData } from "../../schemas/auth";
+import { registerSchema } from "../../schemas/auth";
+import { z } from "zod";
+
+// Icons
 import {
-  ArrowLeft,
   User,
   Mail,
   Lock,
-  Shield,
+  ArrowLeft,
   CheckCircle,
+  X,
+  AlertTriangle,
   Users,
+  Shield,
   Rocket,
   Briefcase,
   TrendingUp,
-  AlertTriangle,
-  X,
 } from "lucide-react";
+
+// Components
 import { Logo } from "../../components/Logo";
+
+// Styles
 import * as S from "./styles";
 
 export function Register() {
@@ -30,10 +37,16 @@ export function Register() {
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: yupResolver(registerSchema),
+  } = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
+      name: "",
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
       role: "client",
+      adminCode: undefined,
     },
   });
 
@@ -58,7 +71,7 @@ export function Register() {
     return { checks, score };
   };
 
-  async function handleRegister(data: RegisterFormData) {
+  async function handleRegister(data: z.infer<typeof registerSchema>) {
     try {
       const response = await authService.register({
         ...data,

@@ -1,5 +1,6 @@
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../components/Toast";
 
@@ -7,22 +8,25 @@ import { Input } from "../../components/Input";
 import { authService } from "../../services/authService";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../hooks/useAuth";
-import { useEffect, useState } from "react";
-import { loginSchema, type LoginFormData } from "../../schemas/auth";
+import { useEffect } from "react";
+import { loginSchema } from "../../schemas/auth";
+import { z } from "zod";
 import {
   ArrowLeft,
   User,
   Lock,
+  XCircle,
   Sparkles,
   Shield,
   Zap,
   BarChart3,
-  XCircle,
 } from "lucide-react";
-import { Logo } from "../../components/Logo";
 import * as S from "./styles";
+import { Logo } from "../../components/Logo";
 
-export function Login() {
+export type LoginFormData = z.infer<typeof loginSchema>;
+
+const Login: React.FC = () => {
   const {
     register,
     handleSubmit,
@@ -30,7 +34,11 @@ export function Login() {
     setError,
     watch,
   } = useForm<LoginFormData>({
-    resolver: yupResolver(loginSchema),
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
   });
 
   const navigate = useNavigate();
@@ -38,7 +46,7 @@ export function Login() {
   const { isAuthenticated, isLoading } = useAuth();
   const toast = useToast();
   const [searchParams] = useSearchParams();
-  const [loginError, setLoginError] = useState<string>("");
+  const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
 
   // Observar mudanças nos campos para limpar erros
@@ -228,4 +236,6 @@ export function Login() {
       </S.ContentWrapper>
     </S.Container>
   );
-}
+};
+
+export default Login;
