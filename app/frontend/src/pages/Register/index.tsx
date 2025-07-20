@@ -159,180 +159,165 @@ export function Register() {
                     />
                   </S.InputWrapper>
 
-                  <S.PasswordSection>
-                    <S.InputWrapper>
-                      <S.InputIcon>
-                        <Lock size={18} />
-                      </S.InputIcon>
-                      <Input
-                        label="Senha"
-                        type="password"
-                        error={errors.password?.message}
-                        hasIcon
-                        autoComplete="new-password"
-                        {...register("password")}
-                        placeholder="Crie uma senha segura"
-                      />
-                    </S.InputWrapper>
-                    {passwordValue && (
-                      <S.PasswordStrength>
-                        {(() => {
-                          const { checks, score } =
-                            checkPasswordStrength(passwordValue);
-                          const strengthLevel =
-                            score === 5
-                              ? "strong"
-                              : score >= 3
-                              ? "medium"
-                              : "weak";
+                  <S.InputWrapper>
+                    <S.InputIcon>
+                      <Lock size={18} />
+                    </S.InputIcon>
+                    <Input
+                      label="Senha"
+                      type="password"
+                      error={errors.password?.message}
+                      hasIcon
+                      autoComplete="new-password"
+                      {...register("password")}
+                      placeholder="Crie uma senha segura"
+                    />
+                  </S.InputWrapper>
+                  {passwordValue && (
+                    <S.PasswordStrength>
+                      {(() => {
+                        const { checks, score } =
+                          checkPasswordStrength(passwordValue);
+                        const strengthLevel =
+                          score === 5
+                            ? "strong"
+                            : score >= 3
+                            ? "medium"
+                            : "weak";
 
-                          return (
-                            <>
-                              <S.StrengthBar $level={strengthLevel}>
-                                <S.StrengthFill
-                                  $level={strengthLevel}
-                                  $score={score}
-                                />
-                              </S.StrengthBar>
-                              <S.StrengthText $level={strengthLevel}>
-                                <S.StrengthIcon $level={strengthLevel}>
-                                  {score === 5 ? (
-                                    <CheckCircle size={14} />
-                                  ) : score >= 3 ? (
-                                    <AlertTriangle size={14} />
-                                  ) : (
-                                    <X size={14} />
-                                  )}
-                                </S.StrengthIcon>
-                                {score === 5
-                                  ? "Senha forte"
-                                  : score >= 3
-                                  ? "Senha média"
-                                  : "Senha fraca"}
-                              </S.StrengthText>
-                              <S.CheckList>
-                                <S.CheckItem $valid={checks.length}>
-                                  {checks.length ? (
-                                    <CheckCircle size={12} />
-                                  ) : (
-                                    <X size={12} />
-                                  )}{" "}
-                                  Mínimo 8 caracteres
-                                </S.CheckItem>
-                                <S.CheckItem $valid={checks.uppercase}>
-                                  {checks.uppercase ? (
-                                    <CheckCircle size={12} />
-                                  ) : (
-                                    <X size={12} />
-                                  )}{" "}
-                                  Letra maiúscula
-                                </S.CheckItem>
-                                <S.CheckItem $valid={checks.lowercase}>
-                                  {checks.lowercase ? (
-                                    <CheckCircle size={12} />
-                                  ) : (
-                                    <X size={12} />
-                                  )}{" "}
-                                  Letra minúscula
-                                </S.CheckItem>
-                                <S.CheckItem $valid={checks.number}>
-                                  {checks.number ? (
-                                    <CheckCircle size={12} />
-                                  ) : (
-                                    <X size={12} />
-                                  )}{" "}
-                                  Número
-                                </S.CheckItem>
-                                <S.CheckItem $valid={checks.special}>
-                                  {checks.special ? (
-                                    <CheckCircle size={12} />
-                                  ) : (
-                                    <X size={12} />
-                                  )}{" "}
-                                  Caractere especial
-                                </S.CheckItem>
-                              </S.CheckList>
-                            </>
-                          );
-                        })()}
-                      </S.PasswordStrength>
-                    )}
-                  </S.PasswordSection>
+                        return (
+                          <>
+                            <S.StrengthBar>
+                              <S.StrengthFill $strength={score} />
+                            </S.StrengthBar>
+                            <S.StrengthText $strength={score}>
+                              <S.StrengthIcon $level={strengthLevel}>
+                                {score === 5 ? (
+                                  <CheckCircle size={14} />
+                                ) : score >= 3 ? (
+                                  <AlertTriangle size={14} />
+                                ) : (
+                                  <X size={14} />
+                                )}
+                              </S.StrengthIcon>
+                              {score === 5
+                                ? "Senha forte"
+                                : score >= 3
+                                ? "Senha média"
+                                : "Senha fraca"}
+                            </S.StrengthText>
+                            <S.CheckList>
+                              <S.CheckItem $valid={checks.length}>
+                                {checks.length ? (
+                                  <CheckCircle size={12} />
+                                ) : (
+                                  <X size={12} />
+                                )}{" "}
+                                Mínimo 8 caracteres
+                              </S.CheckItem>
+                              <S.CheckItem $valid={checks.uppercase}>
+                                {checks.uppercase ? (
+                                  <CheckCircle size={12} />
+                                ) : (
+                                  <X size={12} />
+                                )}{" "}
+                                Letra maiúscula
+                              </S.CheckItem>
+                              <S.CheckItem $valid={checks.lowercase}>
+                                {checks.lowercase ? (
+                                  <CheckCircle size={12} />
+                                ) : (
+                                  <X size={12} />
+                                )}{" "}
+                                Letra minúscula
+                              </S.CheckItem>
+                              <S.CheckItem $valid={checks.number}>
+                                {checks.number ? (
+                                  <CheckCircle size={12} />
+                                ) : (
+                                  <X size={12} />
+                                )}{" "}
+                                Número
+                              </S.CheckItem>
+                              <S.CheckItem $valid={checks.special}>
+                                {checks.special ? (
+                                  <CheckCircle size={12} />
+                                ) : (
+                                  <X size={12} />
+                                )}{" "}
+                                Caractere especial
+                              </S.CheckItem>
+                            </S.CheckList>
+                          </>
+                        );
+                      })()}
+                    </S.PasswordStrength>
+                  )}
 
-                  <S.PasswordSection>
-                    <S.InputWrapper>
-                      <S.InputIcon>
-                        <Lock size={18} />
-                      </S.InputIcon>
-                      <Input
-                        label="Confirmar Senha"
-                        type="password"
-                        error={errors.confirmPassword?.message}
-                        hasIcon
-                        autoComplete="new-password"
-                        {...register("confirmPassword")}
-                        placeholder="Confirme sua senha"
-                      />
-                    </S.InputWrapper>
-                    {confirmPasswordValue && passwordValue && (
-                      <S.PasswordMatch>
-                        {confirmPasswordValue === passwordValue ? (
-                          <S.MatchText $valid={true}>
-                            <CheckCircle size={14} /> As senhas conferem
-                          </S.MatchText>
-                        ) : (
-                          <S.MatchText $valid={false}>
-                            <X size={14} /> As senhas não conferem
-                          </S.MatchText>
-                        )}
-                      </S.PasswordMatch>
-                    )}
-                  </S.PasswordSection>
+                  <S.InputWrapper>
+                    <S.InputIcon>
+                      <Lock size={18} />
+                    </S.InputIcon>
+                    <Input
+                      label="Confirmar Senha"
+                      type="password"
+                      error={errors.confirmPassword?.message}
+                      hasIcon
+                      autoComplete="new-password"
+                      {...register("confirmPassword")}
+                      placeholder="Confirme sua senha"
+                    />
+                  </S.InputWrapper>
+                  {confirmPasswordValue && passwordValue && (
+                    <S.PasswordMatch>
+                      {confirmPasswordValue === passwordValue ? (
+                        <S.MatchText $valid={true}>
+                          <CheckCircle size={14} /> As senhas conferem
+                        </S.MatchText>
+                      ) : (
+                        <S.MatchText $valid={false}>
+                          <X size={14} /> As senhas não conferem
+                        </S.MatchText>
+                      )}
+                    </S.PasswordMatch>
+                  )}
 
                   <S.RoleSelector>
-                    <S.RoleLabel>Tipo de Conta</S.RoleLabel>
+                    <S.RoleTitle>Tipo de Conta</S.RoleTitle>
                     <S.RoleOptions>
-                      <S.RoleOption>
+                      <S.RoleOption $selected={selectedRole === "client"}>
                         <S.RoleInput
                           id="role-client"
                           type="radio"
                           value="client"
                           {...register("role")}
                         />
-                        <S.RoleCard
-                          as="label"
-                          htmlFor="role-client"
-                          $selected={selectedRole === "client"}
-                        >
-                          <Users size={20} />
-                          <S.RoleInfo>
-                            <S.RoleTitle>Cliente</S.RoleTitle>
-                            <S.RoleDescription>
-                              Para fazer reservas
-                            </S.RoleDescription>
-                          </S.RoleInfo>
-                        </S.RoleCard>
+                        <S.RoleIcon $selected={selectedRole === "client"}>
+                          <Users size={24} />
+                        </S.RoleIcon>
+                        <S.RoleLabel $selected={selectedRole === "client"}>
+                          Cliente
+                        </S.RoleLabel>
+                        <S.RoleDescription>
+                          Para fazer reservas
+                        </S.RoleDescription>
                       </S.RoleOption>
-                      <S.RoleOption>
+                      <S.RoleOption $selected={selectedRole === "admin"}>
                         <S.RoleInput
                           id="role-admin"
                           type="radio"
                           value="admin"
                           {...register("role")}
                         />
-                        <S.RoleCard
-                          as="label"
-                          htmlFor="role-admin"
-                          $selected={selectedRole === "admin"}
-                        >
-                          <Shield size={20} />
-                          <S.RoleInfo>
-                            <S.RoleTitle>Administrador</S.RoleTitle>
-                            <S.RoleDescription>
-                              Para gerenciar reservas
-                            </S.RoleDescription>
-                          </S.RoleInfo>
-                        </S.RoleCard>
+                        <S.RoleIcon $selected={selectedRole === "admin"}>
+                          <Shield size={24} />
+                        </S.RoleIcon>
+                        <S.RoleLabel $selected={selectedRole === "admin"}>
+                          Administrador
+                        </S.RoleLabel>
+                        <S.RoleDescription>
+                          Para gerenciar reservas
+                        </S.RoleDescription>
                       </S.RoleOption>
                     </S.RoleOptions>
                     {errors.role && (
