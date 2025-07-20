@@ -51,101 +51,87 @@ import {
   MessageIcon,
   MessageText,
 } from "./styles";
-
-// Configuração padrão centralizada - valores sincronizados com shared/constants/time.ts
-const defaultConfig: Config = {
-  maxReservationsPerUser: 5,
-  reservationLimitHours: 24,
-  minIntervalBetweenReservations: 10, // Sincronizado com backend (corrigido de 30 para 10)
-  openingHour: "11:00",
-  closingHour: "23:00",
-  isReservationLimitEnabled: true,
-  isIntervalEnabled: true,
-  isOpeningHoursEnabled: true,
-};
+import { useConfigContext } from "../../components/ConfigProvider";
 
 export function Settings() {
   const toast = useToast();
-  const [config, setConfig] = useState<Config>(defaultConfig);
-  const [loading, setLoading] = useState(true);
+  const { config, isLoading: loading, error, refetch } = useConfigContext();
+  const [formConfig, setFormConfig] = useState<Config | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const [originalConfig, setOriginalConfig] = useState<Config>(defaultConfig);
+  const [originalConfig, setOriginalConfig] = useState<Config | null>(null);
 
+  // Sincronizar config do contexto com o estado local do formulário
   useEffect(() => {
-    configApi
-      .getConfig()
-      .then((data) => {
-        setConfig(data as Config);
-        setOriginalConfig(data as Config);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Erro ao carregar configurações");
-        setLoading(false);
-      });
-  }, []);
+    if (config) {
+      setFormConfig(config);
+      setOriginalConfig(config);
+      setHasChanges(false);
+    }
+  }, [config]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
 
-    setConfig((prev) => {
+    setFormConfig((prev) => {
+      if (!prev) return prev;
       const newConfig = {
         ...prev,
         [name]: newValue,
       };
-
-      // Verificar se há mudanças comparando com a configuração original
-      setHasChanges(
-        JSON.stringify(newConfig) !== JSON.stringify(originalConfig)
-      );
-
+      if (originalConfig) {
+        setHasChanges(
+          JSON.stringify(newConfig) !== JSON.stringify(originalConfig)
+        );
+      }
       return newConfig;
     });
   }
 
   function handleReset() {
-    setConfig(originalConfig);
-    setHasChanges(false);
-    toast.info("Configurações restauradas");
+    if (originalConfig) {
+      setFormConfig(originalConfig);
+      setHasChanges(false);
+      toast.info("Configurações restauradas");
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    setError(null);
+    // Não limpar erro global do contexto
 
     try {
+      if (!formConfig) return;
       const payload = {
-        maxReservationsPerUser: Number(config.maxReservationsPerUser),
-        reservationLimitHours: Number(config.reservationLimitHours),
+        maxReservationsPerUser: Number(formConfig.maxReservationsPerUser),
+        reservationLimitHours: Number(formConfig.reservationLimitHours),
         minIntervalBetweenReservations: Number(
-          config.minIntervalBetweenReservations
+          formConfig.minIntervalBetweenReservations
         ),
-        openingHour: config.openingHour,
-        closingHour: config.closingHour,
-        isReservationLimitEnabled: config.isReservationLimitEnabled,
-        isIntervalEnabled: config.isIntervalEnabled,
-        isOpeningHoursEnabled: config.isOpeningHoursEnabled,
+        openingHour: formConfig.openingHour,
+        closingHour: formConfig.closingHour,
+        isReservationLimitEnabled: formConfig.isReservationLimitEnabled,
+        isIntervalEnabled: formConfig.isIntervalEnabled,
+        isOpeningHoursEnabled: formConfig.isOpeningHoursEnabled,
       };
 
       await configApi.updateConfig(payload);
-      setOriginalConfig(config);
+      setOriginalConfig(formConfig);
       setHasChanges(false);
       toast.success("Configurações salvas com sucesso!");
+      refetch();
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.error || "Erro ao salvar configurações";
-      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) {
+  if (loading || !formConfig) {
     return (
       <PageWrapper>
         <LayoutContainer>
@@ -160,7 +146,7 @@ export function Settings() {
     );
   }
 
-  if (error && !config) {
+  if (error && !formConfig) {
     return (
       <PageWrapper>
         <LayoutContainer>
@@ -176,7 +162,7 @@ export function Settings() {
               </ErrorDescription>
               <Button
                 variant="primary"
-                onClick={() => window.location.reload()}
+                onClick={refetch}
                 leftIcon={<RefreshCcw size={18} />}
               >
                 Tentar Novamente
@@ -227,8 +213,8 @@ export function Settings() {
                       target: {
                         name: "isOpeningHoursEnabled",
                         type: "checkbox",
-                        checked: !config.isOpeningHoursEnabled,
-                        value: !config.isOpeningHoursEnabled,
+                        checked: !formConfig?.isOpeningHoursEnabled,
+                        value: !formConfig?.isOpeningHoursEnabled,
                       },
                     } as any;
                     handleChange(event);
@@ -239,7 +225,7 @@ export function Settings() {
                       type="checkbox"
                       id="isOpeningHoursEnabled"
                       name="isOpeningHoursEnabled"
-                      checked={config.isOpeningHoursEnabled}
+                      checked={formConfig?.isOpeningHoursEnabled}
                       onChange={handleChange}
                       style={{
                         position: "absolute",
@@ -247,7 +233,7 @@ export function Settings() {
                         pointerEvents: "none",
                       }}
                     />
-                    <ToggleSlider checked={config.isOpeningHoursEnabled} />
+                    <ToggleSlider checked={formConfig?.isOpeningHoursEnabled} />
                   </ToggleSwitch>
                   <ToggleLabel>
                     <Shield size={16} />
@@ -255,14 +241,14 @@ export function Settings() {
                   </ToggleLabel>
                 </ToggleContainer>
 
-                {config.isOpeningHoursEnabled && (
+                {formConfig?.isOpeningHoursEnabled && (
                   <FieldsContainer>
                     <FieldGroup>
                       <Input
                         label="Horário de abertura"
                         type="time"
                         name="openingHour"
-                        value={config.openingHour}
+                        value={formConfig?.openingHour}
                         onChange={handleChange}
                         required
                       />
@@ -272,7 +258,7 @@ export function Settings() {
                         label="Horário de fechamento"
                         type="time"
                         name="closingHour"
-                        value={config.closingHour}
+                        value={formConfig?.closingHour}
                         onChange={handleChange}
                         required
                       />
@@ -301,8 +287,8 @@ export function Settings() {
                       target: {
                         name: "isIntervalEnabled",
                         type: "checkbox",
-                        checked: !config.isIntervalEnabled,
-                        value: !config.isIntervalEnabled,
+                        checked: !formConfig?.isIntervalEnabled,
+                        value: !formConfig?.isIntervalEnabled,
                       },
                     } as any;
                     handleChange(event);
@@ -313,7 +299,7 @@ export function Settings() {
                       type="checkbox"
                       id="isIntervalEnabled"
                       name="isIntervalEnabled"
-                      checked={config.isIntervalEnabled}
+                      checked={formConfig?.isIntervalEnabled}
                       onChange={handleChange}
                       style={{
                         position: "absolute",
@@ -321,7 +307,7 @@ export function Settings() {
                         pointerEvents: "none",
                       }}
                     />
-                    <ToggleSlider checked={config.isIntervalEnabled} />
+                    <ToggleSlider checked={formConfig?.isIntervalEnabled} />
                   </ToggleSwitch>
                   <ToggleLabel>
                     <Timer size={16} />
@@ -329,7 +315,7 @@ export function Settings() {
                   </ToggleLabel>
                 </ToggleContainer>
 
-                {config.isIntervalEnabled && (
+                {formConfig?.isIntervalEnabled && (
                   <FieldsContainer>
                     <FieldGroup style={{ gridColumn: "1 / -1" }}>
                       <Input
@@ -338,7 +324,7 @@ export function Settings() {
                         name="minIntervalBetweenReservations"
                         min={1}
                         max={120}
-                        value={config.minIntervalBetweenReservations}
+                        value={formConfig?.minIntervalBetweenReservations}
                         onChange={handleChange}
                         required
                       />
@@ -374,8 +360,8 @@ export function Settings() {
                       target: {
                         name: "isReservationLimitEnabled",
                         type: "checkbox",
-                        checked: !config.isReservationLimitEnabled,
-                        value: !config.isReservationLimitEnabled,
+                        checked: !formConfig?.isReservationLimitEnabled,
+                        value: !formConfig?.isReservationLimitEnabled,
                       },
                     } as any;
                     handleChange(event);
@@ -386,7 +372,7 @@ export function Settings() {
                       type="checkbox"
                       id="isReservationLimitEnabled"
                       name="isReservationLimitEnabled"
-                      checked={config.isReservationLimitEnabled}
+                      checked={formConfig?.isReservationLimitEnabled}
                       onChange={handleChange}
                       style={{
                         position: "absolute",
@@ -394,7 +380,9 @@ export function Settings() {
                         pointerEvents: "none",
                       }}
                     />
-                    <ToggleSlider checked={config.isReservationLimitEnabled} />
+                    <ToggleSlider
+                      checked={formConfig?.isReservationLimitEnabled}
+                    />
                   </ToggleSwitch>
                   <ToggleLabel>
                     <Users size={16} />
@@ -402,7 +390,7 @@ export function Settings() {
                   </ToggleLabel>
                 </ToggleContainer>
 
-                {config.isReservationLimitEnabled && (
+                {formConfig?.isReservationLimitEnabled && (
                   <FieldsContainer>
                     <FieldGroup>
                       <Input
@@ -411,7 +399,7 @@ export function Settings() {
                         name="maxReservationsPerUser"
                         min={1}
                         max={20}
-                        value={config.maxReservationsPerUser}
+                        value={formConfig?.maxReservationsPerUser}
                         onChange={handleChange}
                         required
                       />
@@ -423,7 +411,7 @@ export function Settings() {
                         name="reservationLimitHours"
                         min={1}
                         max={168}
-                        value={config.reservationLimitHours}
+                        value={formConfig?.reservationLimitHours}
                         onChange={handleChange}
                         required
                       />
@@ -431,9 +419,10 @@ export function Settings() {
                     <FieldGroup style={{ gridColumn: "1 / -1" }}>
                       <HelpText>
                         <Info size={14} />
-                        Por exemplo: {config.maxReservationsPerUser} reservas a
-                        cada {config.reservationLimitHours} horas. O usuário só
-                        poderá fazer mais reservas após o período definido.
+                        Por exemplo: {formConfig?.maxReservationsPerUser}{" "}
+                        reservas a cada {formConfig?.reservationLimitHours}{" "}
+                        horas. O usuário só poderá fazer mais reservas após o
+                        período definido.
                       </HelpText>
                     </FieldGroup>
                   </FieldsContainer>
@@ -441,7 +430,7 @@ export function Settings() {
               </ConfigSection>
             </ConfigCard>
 
-            {error && (
+            {typeof error === "string" && error && (
               <MessageContainer $variant="error">
                 <MessageIcon $variant="error">
                   <AlertCircle size={20} />

@@ -7,6 +7,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GlobalStyle } from "./styles/global";
 import { initializeAuthCleanup } from "./utils/authUtils";
 import { useEffect } from "react";
+import { ConfigProvider } from "./components/ConfigProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,11 +21,22 @@ const queryClient = new QueryClient({
         if (error?.response?.status === 429) {
           return false;
         }
-        return failureCount < 2; // Reduzido de 3 para 2
+        // Para erros de conexão (backend iniciando), fazer mais tentativas
+        if (error?.code === 'ECONNREFUSED' || error?.code === 'ERR_NETWORK' || error?.message?.includes('Network Error')) {
+          return failureCount < 5;
+        }
+        return failureCount < 2; // Para outros erros, manter 2 tentativas
+      },
+      retryDelay: (attemptIndex, error: any) => {
+        // Para erros de conexão, delay menor para reconectar mais rápido
+        if (error?.code === 'ECONNREFUSED' || error?.code === 'ERR_NETWORK' || error?.message?.includes('Network Error')) {
+          return Math.min(1000 * attemptIndex, 3000); // 1s, 2s, 3s...
+        }
+        return Math.min(1000 * 2 ** attemptIndex, 30000); // Delay exponencial para outros erros
       },
       staleTime: 5 * 60 * 1000, // 5 minutos padrão
       refetchOnWindowFocus: false, // Desabilita refetch automático no foco
-      refetchOnReconnect: false, // Desabilita refetch automático na reconexão
+      refetchOnReconnect: true, // Habilita refetch quando reconectar (útil quando backend volta)
     },
     mutations: {
       retry: (failureCount, error: any) => {
@@ -49,17 +61,19 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <GlobalStyle />
-      <QueryClientProvider client={queryClient}>
-        <ErrorBoundary>
-          <ToastProvider>
-            <ScrollToTop />
-            <AppRoutes />
-          </ToastProvider>
-        </ErrorBoundary>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ConfigProvider>
+        <ThemeProvider>
+          <GlobalStyle />
+          <ErrorBoundary>
+            <ToastProvider>
+              <ScrollToTop />
+              <AppRoutes />
+            </ToastProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
+      </ConfigProvider>
+    </QueryClientProvider>
   );
 }
 
