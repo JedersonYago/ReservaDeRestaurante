@@ -3,6 +3,7 @@ import { AppRoutes } from "./routes";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ToastProvider } from "./components/Toast";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GlobalStyle } from "./styles/global";
 import { initializeAuthCleanup } from "./utils/authUtils";
 import { useEffect } from "react";
@@ -40,10 +41,12 @@ function App() {
     <ThemeProvider>
       <GlobalStyle />
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <ScrollToTop />
-          <AppRoutes />
-        </ToastProvider>
+        <ErrorBoundary>
+          <ToastProvider>
+            <ScrollToTop />
+            <AppRoutes />
+          </ToastProvider>
+        </ErrorBoundary>
       </QueryClientProvider>
     </ThemeProvider>
   );
