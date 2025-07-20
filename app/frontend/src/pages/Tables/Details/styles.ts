@@ -615,113 +615,49 @@ export const DateTimeInfo = styled.div`
 `;
 
 export const ReservationActions = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: ${({ theme }) => theme.spacing[2]};
-  flex-wrap: wrap;
+  padding-top: ${({ theme }) => theme.spacing[3]};
+  border-top: 1px solid ${({ theme }) => theme.colors.neutral[100]};
+  margin-top: auto;
 
-  @media (max-width: 576px) {
-    flex-direction: column;
+  /* Todos os botões com mesmo tamanho e altura */
+  > * {
+    min-width: 0;
+    min-height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-`;
 
-export const ActionButton = styled.button<{
-  $variant:
-    | "primary"
-    | "secondary"
-    | "danger"
-    | "warning"
-    | "cancel"
-    | "success";
-}>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1;
-  justify-content: center;
-  min-width: fit-content;
-
-  ${({ $variant, theme }) => {
-    switch ($variant) {
-      case "primary":
-        return `
-          background: ${theme.colors.primary.main};
-          color: ${theme.colors.primary.contrast};
-          border: 1px solid ${theme.colors.primary.main};
-
-          &:hover {
-            background: ${theme.colors.primary.dark};
-            border-color: ${theme.colors.primary.dark};
-          }
-        `;
-      case "danger":
-        return `
-          background: ${theme.colors.semantic.error};
-          color: ${theme.colors.background.primary};
-          border: 1px solid ${theme.colors.semantic.error};
-
-          &:hover {
-            background: ${theme.colors.semantic.error}dd;
-          }
-        `;
-      case "warning":
-        return `
-          background: ${theme.colors.semantic.warning};
-          color: ${theme.colors.background.primary};
-          border: 1px solid ${theme.colors.semantic.warning};
-
-          &:hover {
-            background: ${theme.colors.semantic.warning}dd;
-          }
-        `;
-      case "cancel":
-        return `
-          background: ${theme.colors.neutral[600]};
-          color: ${theme.colors.background.primary};
-          border: 1px solid ${theme.colors.neutral[600]};
-
-          &:hover {
-            background: ${theme.colors.neutral[700]};
-            border-color: ${theme.colors.neutral[700]};
-          }
-        `;
-      case "success":
-        return `
-          background: ${theme.colors.semantic.success};
-          color: ${theme.colors.background.primary};
-          border: 1px solid ${theme.colors.semantic.success};
-
-          &:hover {
-            background: ${theme.colors.semantic.success}dd;
-          }
-        `;
-      default:
-        return `
-          background: ${theme.colors.background.primary};
-          color: ${theme.colors.text.primary};
-          border: 1px solid ${theme.colors.neutral[300]};
-
-          &:hover {
-            background: ${theme.colors.neutral[50]};
-            border-color: ${theme.colors.primary.main};
-          }
-        `;
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    /* Em telas menores, ajusta gap e fonte */
+    gap: ${({ theme }) => theme.spacing[1]};
+    
+    > * {
+      font-size: ${({ theme }) => theme.typography.fontSize.xs};
+      padding: ${({ theme }) => theme.spacing[2]};
+      min-height: 40px;
     }
-  }}
-
-  &:focus {
-    outline: none;
-    box-shadow: ${({ theme }) => theme.shadows.focus};
   }
 
-  svg {
-    flex-shrink: 0;
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    /* Em mobile, mantém grid 2x2 mas com melhor espaçamento */
+    gap: ${({ theme }) => theme.spacing[2]};
+    padding-top: ${({ theme }) => theme.spacing[4]};
+    
+    > * {
+      font-size: ${({ theme }) => theme.typography.fontSize.sm};
+      padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[2]};
+      min-height: 44px;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: initial;
+    }
   }
 `;
 

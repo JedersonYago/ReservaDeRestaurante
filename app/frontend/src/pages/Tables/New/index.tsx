@@ -5,9 +5,7 @@ import { format } from "date-fns";
 import { eachDayOfInterval } from "date-fns/eachDayOfInterval";
 import { parseISO } from "date-fns/parseISO";
 import {
-  ArrowLeft,
   Plus,
-  Trash2,
   AlertTriangle,
   Calendar,
   Clock,
@@ -17,8 +15,9 @@ import {
   Utensils,
 } from "lucide-react";
 
-import { Button } from "../../../components/Button";
-import { CancelButton } from "../../../components/Button/CancelButton";
+import { BackButton } from "../../../components/Button/BackButton";
+import { SubmitButton } from "../../../components/Button/SubmitButton";
+import { DeleteButton } from "../../../components/Button/DeleteButton";
 import { Input } from "../../../components/Input";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
 import { PageWrapper } from "../../../components/Layout/PageWrapper";
@@ -42,7 +41,6 @@ import {
   TitleSection,
   Title,
   Subtitle,
-  HeaderActions,
   Content,
   FormSection,
   SectionTitle,
@@ -379,16 +377,6 @@ export function NewTable() {
                 Crie uma nova mesa e configure sua disponibilidade
               </Subtitle>
             </TitleSection>
-            <HeaderActions>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/tables")}
-                leftIcon={<ArrowLeft size={16} />}
-              >
-                Voltar
-              </Button>
-            </HeaderActions>
           </HeaderContent>
         </Header>
 
@@ -566,16 +554,14 @@ export function NewTable() {
                                 </span>
                               </div>
                               <BlockActions>
-                                <Button
+                                <DeleteButton
                                   type="button"
-                                  variant="danger"
-                                  size="sm"
                                   onClick={() =>
                                     handleRemoveTimeInterval(index)
                                   }
                                 >
-                                  <Trash2 size={12} />
-                                </Button>
+                                  Remover
+                                </DeleteButton>
                               </BlockActions>
                             </BlockHeader>
                           </AvailabilityBlock>
@@ -688,10 +674,8 @@ export function NewTable() {
                                       </span>
                                     </div>
                                     <BlockActions>
-                                      <Button
+                                      <DeleteButton
                                         type="button"
-                                        variant="danger"
-                                        size="sm"
                                         onClick={() =>
                                           handleRemoveCustomAvailability(
                                             item.date,
@@ -699,8 +683,8 @@ export function NewTable() {
                                           )
                                         }
                                       >
-                                        <Trash2 size={12} />
-                                      </Button>
+                                        Remover
+                                      </DeleteButton>
                                     </BlockActions>
                                   </BlockHeader>
                                 </AvailabilityBlock>
@@ -719,18 +703,25 @@ export function NewTable() {
       </LayoutContainer>
 
       <FixedActionBar>
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={isSaving}
-          leftIcon={isSaving ? undefined : <Save size={18} />}
+        <SubmitButton
+          disabled={
+            isSaving ||
+            !name ||
+            !capacity ||
+            !!nameError ||
+            !!capacityError ||
+            !!dateError ||
+            !!timeError
+          }
+          loading={isSaving}
+          leftIcon={<Save size={18} />}
           form="create-table-form"
         >
-          {isSaving ? "Criando Mesa..." : "Criar Mesa"}
-        </Button>
-        <CancelButton onClick={() => navigate("/tables")}>
-          Cancelar
-        </CancelButton>
+          Criar Mesa
+        </SubmitButton>
+        <BackButton onClick={() => navigate("/tables")}>
+          Voltar
+        </BackButton>
       </FixedActionBar>
     </PageWrapper>
   );

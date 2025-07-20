@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-
 import { useTableById, useTables } from "../../../hooks/useTables";
 import { useReservationsByTable } from "../../../hooks/useReservations";
 import { Button } from "../../../components/Button";
+import { ActionButton } from "../../../components/Button/ActionButton";
+import { CancelButton } from "../../../components/Button/CancelButton";
+import { BackButton } from "../../../components/Button/BackButton";
+import { DeleteButton } from "../../../components/Button/DeleteButton";
 import { tableService } from "../../../services/tableService";
 import { toYMD } from "../../../utils/dateUtils";
 import { formatDate, formatTime } from "../../../utils/dateUtils";
 import { StatusBadge, type BadgeStatus } from "../../../components/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
 import { useReservations } from "../../../hooks/useReservations";
-// Removido: agora usando sistema padronizado do StatusBadge
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
-import { PageWrapper } from "../../../components/Layout/PageWrapper";
+import { PageWrapper, PageWrapperWithFixedActionBar } from "../../../components/Layout/PageWrapper";
+import { FixedActionBar } from "../../../components/Layout/FixedActionBar";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import {
   ArrowLeft,
@@ -25,12 +28,11 @@ import {
   XCircle,
   Eye,
   Edit,
-  Trash2,
-  User,
-  Mail,
-  Hash,
   ChevronDown,
   ChevronUp,
+  Hash,
+  User,
+  Mail,
 } from "lucide-react";
 import {
   Header,
@@ -68,7 +70,6 @@ import {
   CustomerInfo,
   DateTimeInfo,
   ReservationActions,
-  ActionButton,
   EmptyReservations,
   LoadingContainer,
   LoadingSpinner,
@@ -451,7 +452,7 @@ export function TableDetails() {
   // Removido: agora usando sistema padronizado do StatusBadge
 
   return (
-    <PageWrapper>
+    <PageWrapperWithFixedActionBar>
       <LayoutContainer>
         <Header>
           <HeaderContent>
@@ -467,46 +468,7 @@ export function TableDetails() {
               </Subtitle>
             </TitleSection>
             <HeaderActions>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/tables")}
-                leftIcon={<ArrowLeft size={16} />}
-              >
-                Voltar
-              </Button>
-              {user?.role === "admin" ? (
-                <>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => navigate(`/tables/${table._id}/edit`)}
-                    leftIcon={<Edit size={16} />}
-                  >
-                    Editar Mesa
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={handleDeleteTableClick}
-                    leftIcon={<Trash2 size={16} />}
-                  >
-                    Excluir Mesa
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() =>
-                    navigate(`/reservations/new?tableId=${table._id}`)
-                  }
-                  leftIcon={<Calendar size={16} />}
-                  disabled={table.status !== "available"}
-                >
-                  Reservar Mesa
-                </Button>
-              )}
+              <StatusBadge status={table.status} size="lg" />
             </HeaderActions>
           </HeaderContent>
         </Header>
@@ -776,9 +738,9 @@ export function TableDetails() {
                           onClick={() =>
                             navigate(`/reservations/${reservation._id}`)
                           }
-                          $variant="secondary"
+                          variant="secondary"
+                          leftIcon={<Eye size={16} />}
                         >
-                          <Eye size={16} />
                           Detalhes
                         </ActionButton>
 
@@ -788,31 +750,28 @@ export function TableDetails() {
                               onClick={() =>
                                 handleConfirmClick(reservation._id)
                               }
-                              $variant="success"
+                              variant="success"
+                              leftIcon={<CheckCircle size={16} />}
                             >
-                              <CheckCircle size={16} />
                               Confirmar
                             </ActionButton>
                           )}
 
                         {reservation.status !== "cancelled" && (
-                          <ActionButton
+                          <CancelButton
                             onClick={() => handleCancelClick(reservation._id)}
-                            $variant="cancel"
+                            leftIcon={<XCircle size={16} />}
                           >
-                            <XCircle size={16} />
                             Cancelar
-                          </ActionButton>
+                          </CancelButton>
                         )}
 
                         {user?.role === "admin" && (
-                          <ActionButton
+                          <DeleteButton
                             onClick={() => handleDeleteClick(reservation._id)}
-                            $variant="danger"
                           >
-                            <Trash2 size={16} />
                             Excluir
-                          </ActionButton>
+                          </DeleteButton>
                         )}
                       </ReservationActions>
                     </ReservationCard>
@@ -891,6 +850,42 @@ export function TableDetails() {
           </>
         )}
       </LayoutContainer>
-    </PageWrapper>
+
+      <FixedActionBar>
+        <BackButton
+          onClick={() => navigate("/tables")}
+          leftIcon={<ArrowLeft size={18} />}
+        >
+          Voltar
+        </BackButton>
+        {user?.role === "admin" ? (
+          <>
+            <Button
+              variant="primary"
+              onClick={() => navigate(`/tables/${table._id}/edit`)}
+              leftIcon={<Edit size={16} />}
+            >
+              Editar Mesa
+            </Button>
+            <DeleteButton
+              onClick={handleDeleteTableClick}
+            >
+              Excluir Mesa
+            </DeleteButton>
+          </>
+        ) : (
+          <Button
+            variant="primary"
+            onClick={() =>
+              navigate(`/reservations/new?tableId=${table._id}`)
+            }
+            leftIcon={<Calendar size={16} />}
+            disabled={table.status !== "available"}
+          >
+            Reservar Mesa
+          </Button>
+        )}
+      </FixedActionBar>
+    </PageWrapperWithFixedActionBar>
   );
 }

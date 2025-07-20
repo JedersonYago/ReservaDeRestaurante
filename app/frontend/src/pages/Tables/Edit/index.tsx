@@ -7,7 +7,6 @@ import {
   Calendar,
   Clock,
   Plus,
-  Trash2,
   AlertTriangle,
   Save,
   Settings,
@@ -21,6 +20,9 @@ import {
 } from "../../../hooks/useReservations";
 import { useConfig } from "../../../hooks/useConfig";
 import { Button } from "../../../components/Button";
+import { BackButton } from "../../../components/Button/BackButton";
+import { SubmitButton } from "../../../components/Button/SubmitButton";
+import { DeleteButton } from "../../../components/Button/DeleteButton";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import { ReschedulingModal } from "../../../components/Modal/ReschedulingModal";
 import { Input } from "../../../components/Input";
@@ -40,7 +42,6 @@ import {
   TitleSection,
   Title,
   Subtitle,
-  HeaderActions,
   Content,
   FormSection,
   SectionTitle,
@@ -133,6 +134,16 @@ export function EditTable() {
     tableName: string;
   } | null>(null);
 
+  // Estados para valores originais (para verificar se houve alterações)
+  const [originalName, setOriginalName] = useState("");
+  const [originalCapacity, setOriginalCapacity] = useState("");
+  const [originalStatus, setOriginalStatus] = useState<
+    "available" | "reserved" | "maintenance" | "expired"
+  >("available");
+  const [originalAvailability, setOriginalAvailability] = useState<
+    { date: string; times: string[] }[]
+  >([{ date: "", times: [] }]);
+
   const now = new Date();
   const todayStr = format(now, "yyyy-MM-dd");
   const currentTimeStr = format(now, "HH:mm");
@@ -158,10 +169,18 @@ export function EditTable() {
 
   useEffect(() => {
     if (table) {
+      // Definir valores atuais
       setName(table.name);
       setCapacity(table.capacity.toString());
       setStatus(table.status);
       setAvailability(table.availability || [{ date: "", times: [] }]);
+      
+      // Armazenar valores originais
+      setOriginalName(table.name);
+      setOriginalCapacity(table.capacity.toString());
+      setOriginalStatus(table.status);
+      setOriginalAvailability(table.availability || [{ date: "", times: [] }]);
+      
       setTimeInputs(
         table.availability
           ? table.availability.map(() => ({ start: "", end: "" }))
@@ -534,16 +553,6 @@ export function EditTable() {
               </Title>
               <Subtitle>Atualize as informações da mesa {table.name}</Subtitle>
             </TitleSection>
-            <HeaderActions>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/tables")}
-                leftIcon={<ArrowLeft size={16} />}
-              >
-                Voltar
-              </Button>
-            </HeaderActions>
           </HeaderContent>
         </Header>
 
@@ -719,12 +728,9 @@ export function EditTable() {
                           >
                             {collapsedBlocks[idx] ? "Expandir" : "Recolher"}
                           </Button>
-                          <Button
+                          <DeleteButton
                             type="button"
-                            variant="danger"
-                            size="sm"
                             onClick={() => handleRemoveBlock(idx)}
-                            leftIcon={<Trash2 size={14} />}
                             title={(() => {
                               const blockReservations =
                                 getAffectedReservations(idx);
@@ -734,7 +740,7 @@ export function EditTable() {
                             })()}
                           >
                             Remover
-                          </Button>
+                          </DeleteButton>
                         </BlockActions>
                       </BlockHeader>
 
@@ -810,10 +816,8 @@ export function EditTable() {
                                           </div>
                                         </TimeSlotInfo>
                                         <TimeSlotActions>
-                                          <Button
+                                          <DeleteButton
                                             type="button"
-                                            variant="danger"
-                                            size="sm"
                                             onClick={() =>
                                               handleRemoveTime(idx, tIdx)
                                             }
@@ -823,8 +827,8 @@ export function EditTable() {
                                                 : "Remover horário"
                                             }
                                           >
-                                            <Trash2 size={12} />
-                                          </Button>
+                                            Remover
+                                          </DeleteButton>
                                         </TimeSlotActions>
                                       </TimeSlotItem>
                                     );
@@ -931,28 +935,32 @@ export function EditTable() {
         </Content>
 
         <FixedActionBar>
-          <Button
-            type="submit"
-            variant="primary"
+          <SubmitButton
             disabled={
               isSaving ||
+              !name ||
+              !capacity ||
               !!nameError ||
               !!capacityError ||
               !!dateError ||
-              !!timeError
+              !!timeError ||
+              (name === originalName &&
+                capacity === originalCapacity &&
+                status === originalStatus &&
+                JSON.stringify(availability) === JSON.stringify(originalAvailability))
             }
-            leftIcon={isSaving ? undefined : <Save size={18} />}
+            loading={isSaving}
+            leftIcon={<Save size={18} />}
             form="edit-table-form"
           >
-            {isSaving ? "Salvando..." : "Salvar Alterações"}
-          </Button>
-          <Button
+            Salvar Alterações
+          </SubmitButton>
+          <BackButton
             type="button"
-            variant="outline"
             onClick={() => navigate("/tables")}
           >
-            Cancelar
-          </Button>
+            Voltar
+          </BackButton>
         </FixedActionBar>
 
         {/* Modal de remanejamento */}

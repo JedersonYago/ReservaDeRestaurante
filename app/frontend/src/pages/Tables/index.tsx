@@ -9,12 +9,13 @@ import {
   Users,
   Eye,
   Edit2,
-  Trash2,
   AlertTriangle,
 } from "lucide-react";
 import { useTables } from "../../hooks/useTables";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/Button";
+import { ActionButton } from "../../components/Button/ActionButton";
+import { DeleteButton } from "../../components/Button/DeleteButton";
 import { Input } from "../../components/Input";
 import { StatusBadge } from "../../components/StatusBadge";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
@@ -45,15 +46,12 @@ import {
   CapacityInfo,
   WarningInfo,
   CardActions,
-  ActionButton,
   EmptyState,
   EmptyStateIcon,
   EmptyStateContent,
   EmptyTitle,
   EmptyDescription,
   ResultsCounter,
-  DeleteButtonContainer,
-  DeleteButton,
 } from "./styles";
 
 // Removido: agora usando sistema padronizado do StatusBadge
@@ -322,23 +320,33 @@ export function Tables() {
                         <CardActions>
                           <ActionButton
                             onClick={() => navigate(`/tables/${table._id}`)}
-                            $variant="secondary"
+                            variant="secondary"
                             title="Ver detalhes da mesa"
+                            leftIcon={<Eye size={16} />}
                           >
-                            <Eye size={16} />
-                            <span>Detalhes</span>
+                            Detalhes
                           </ActionButton>
+                          
                           {isAdmin ? (
-                            <ActionButton
-                              onClick={() =>
-                                navigate(`/tables/${table._id}/edit`)
-                              }
-                              $variant="secondary"
-                              title="Editar mesa"
-                            >
-                              <Edit2 size={16} />
-                              <span>Editar</span>
-                            </ActionButton>
+                            <>
+                              <ActionButton
+                                onClick={() =>
+                                  navigate(`/tables/${table._id}/edit`)
+                                }
+                                variant="secondary"
+                                title="Editar mesa"
+                                leftIcon={<Edit2 size={16} />}
+                              >
+                                Editar
+                              </ActionButton>
+                              <DeleteButton
+                                onClick={() => handleDeleteClick(table._id)}
+                                title="Excluir mesa"
+                                leftIcon={<AlertTriangle size={16} />}
+                              >
+                                Excluir
+                              </DeleteButton>
+                            </>
                           ) : (
                             <ActionButton
                               onClick={() =>
@@ -346,27 +354,15 @@ export function Tables() {
                                   `/reservations/new?tableId=${table._id}`
                                 )
                               }
-                              $variant="primary"
+                              variant="primary"
                               title="Fazer reserva nesta mesa"
                               disabled={table.status !== "available"}
+                              leftIcon={<Plus size={16} />}
                             >
-                              <Plus size={16} />
-                              <span>Reservar</span>
+                              Reservar
                             </ActionButton>
                           )}
                         </CardActions>
-
-                        {isAdmin && (
-                          <DeleteButtonContainer>
-                            <DeleteButton
-                              onClick={() => handleDeleteClick(table._id)}
-                              title="Excluir mesa"
-                            >
-                              <Trash2 size={16} />
-                              <span>Excluir</span>
-                            </DeleteButton>
-                          </DeleteButtonContainer>
-                        )}
                       </div>
                     </TableCard>
                   );

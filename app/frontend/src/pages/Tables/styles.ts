@@ -277,7 +277,7 @@ export const TableCard = styled.div`
   background: ${({ theme }) => theme.colors.background.primary};
   border-radius: ${({ theme }) => theme.borderRadius.xl};
   border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
-  padding: ${({ theme }) => theme.spacing[6]};
+  padding: ${({ theme }) => theme.spacing[5]};
   box-shadow: ${({ theme }) => theme.shadows.sm};
   transition: all ${({ theme }) => theme.transitions.duration[200]}
     ${({ theme }) => theme.transitions.timing.out};
@@ -291,7 +291,7 @@ export const TableCard = styled.div`
   /* Flexbox para garantir posicionamento consistente dos botões */
   display: flex;
   flex-direction: column;
-  min-height: 200px; /* Altura mínima para manter consistência */
+  min-height: 180px; /* Altura mínima reduzida para melhor proporção */
 
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.md};
@@ -398,58 +398,47 @@ export const WarningInfo = styled.div`
   }
 `;
 
-// Card Actions - Melhorado para 2 botões (sem excluir)
+// Card Actions - Otimizado para até 3 botões (incluindo excluir)
 export const CardActions = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing[3]};
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding-top: ${({ theme }) => theme.spacing[3]};
   border-top: 1px solid ${({ theme }) => theme.colors.neutral[100]};
   margin-top: auto; /* Sempre empurra para o final do card */
 
-  @media (max-width: 600px) {
+  /* Para layout responsivo dos botões */
+  > * {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    /* Em telas menores, reduz gap e padding dos botões */
+    gap: ${({ theme }) => theme.spacing[1]};
+    
+    > * {
+      font-size: ${({ theme }) => theme.typography.fontSize.xs};
+      padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[2]};
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
     gap: ${({ theme }) => theme.spacing[2]};
-  }
-`;
-
-// Container para os botões que sempre fica no final
-export const CardButtonsContainer = styled.div`
-  margin-top: auto; /* Empurra toda a seção de botões para baixo */
-`;
-
-// Container para o botão de excluir separado
-export const DeleteButtonContainer = styled.div`
-  margin-top: ${({ theme }) => theme.spacing[2]};
-`;
-
-// Botão de excluir que ocupa toda a largura
-export const DeleteButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  width: 100%;
-  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
-  background: ${({ theme }) => theme.colors.semantic.error};
-  color: #ffffff;
-  border: 1px solid ${({ theme }) => theme.colors.semantic.error};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.semantic.error}dd;
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: ${({ theme }) => theme.shadows.focus};
-  }
-
-  svg {
-    flex-shrink: 0;
+    
+    /* Em mobile, empilha os botões verticalmente */
+    > * {
+      flex: none;
+      width: 100%;
+      font-size: ${({ theme }) => theme.typography.fontSize.sm};
+      padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+      white-space: normal;
+      overflow: visible;
+      text-overflow: initial;
+    }
   }
 `;
 
@@ -579,56 +568,4 @@ export const ButtonGroup = styled.div`
   margin-top: 1rem;
 `;
 
-export const ActionButton = styled.button<{
-  $variant: "primary" | "secondary" | "danger" | "warning";
-}>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  font-family: ${({ theme }) => theme.typography.fontFamily};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1;
-  justify-content: center;
-  min-width: fit-content;
-
-  ${({ $variant, theme }) => {
-    switch ($variant) {
-      case "primary":
-        return `
-          background: ${theme.colors.primary.main};
-          color: ${theme.colors.primary.contrast};
-          border: 1px solid ${theme.colors.primary.main};
-
-          &:hover {
-            background: ${theme.colors.primary.dark};
-            border-color: ${theme.colors.primary.dark};
-          }
-        `;
-      default:
-        return `
-          background: ${theme.colors.background.primary};
-          color: ${theme.colors.text.primary};
-          border: 1px solid ${theme.colors.neutral[300]};
-
-          &:hover {
-            background: ${theme.colors.neutral[50]};
-            border-color: ${theme.colors.primary.main};
-          }
-        `;
-    }
-  }}
-
-  &:focus {
-    outline: none;
-    box-shadow: ${({ theme }) => theme.shadows.focus};
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-`;
+// ResultsCounter para mostrar quantas mesas foram encontradas
