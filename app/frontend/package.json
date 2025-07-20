@@ -1,7 +1,8 @@
 {
-  "name": "frontend",
+  "name": "reserva-facil-frontend",
   "private": true,
-  "version": "0.0.0",
+  "description": "Frontend do ReservaFacil",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,28 +11,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.0.1",
+    "@hookform/resolvers": "^3.0.0",
+    "@restaurant-reservation/shared": "*",
     "@tanstack/react-query": "^5.79.0",
-    "@types/node": "^22.15.29",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/styled-components": "^5.1.34",
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.2.0",
     "lucide-react": "^0.517.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.56.4",
     "react-router-dom": "^7.6.1",
     "styled-components": "^6.1.18",
-    "yup": "^1.6.1"
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
-    "@types/axios": "^0.9.36",
-    "@types/date-fns": "^2.5.3",
+    "@types/node": "^22.15.29",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/styled-components": "^5.1.34",
     "@vitejs/plugin-react": "^4.4.1",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",

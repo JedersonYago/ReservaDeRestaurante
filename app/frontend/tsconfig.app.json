@@ -23,7 +23,23 @@
     "noUncheckedSideEffectImports": true,
 
     /* Type Definitions */
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types",
+      "../../shared/types",
+      "../../shared/validation"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "shared": ["../shared/dist"],
+      "shared/*": ["../shared/dist/*"]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts",
+    "../../shared/validation/**/*.ts",
+    "../../shared/types/**/*.ts"
+  ]
 }

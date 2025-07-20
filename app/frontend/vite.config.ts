@@ -1,12 +1,26 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      "@shared": path.resolve(__dirname, "../../shared/dist"),
+    },
+  },
   server: {
     proxy: {
-      "/api": "http://localhost:3001",
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', () => {
+            console.log('⏳ Aguardando backend inicializar...');
+          });
+        }
+      }
     },
   },
   build: {
@@ -20,7 +34,7 @@ export default defineConfig({
           // Separar bibliotecas de UI e estilo
           ui: ["styled-components", "@tanstack/react-query"],
           // Separar bibliotecas de validação e utilitários
-          utils: ["yup", "date-fns"],
+          utils: ["zod", "date-fns"],
         },
       },
     },
