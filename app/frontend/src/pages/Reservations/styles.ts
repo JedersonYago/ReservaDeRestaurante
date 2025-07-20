@@ -507,13 +507,13 @@ export const ActionButton = styled.button<{
         `;
       case "cancel":
         return `
-          background: ${theme.colors.neutral[600]};
-          color: #000000;
-          border: 1px solid ${theme.colors.neutral[600]};
+          background: ${theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[300] : theme.colors.neutral[600]};
+          color: ${theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[900] : '#000000'};
+          border: 1px solid ${theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[300] : theme.colors.neutral[600]};
 
           &:hover {
-            background: ${theme.colors.neutral[700]};
-            border-color: ${theme.colors.neutral[700]};
+            background: ${theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[200] : theme.colors.neutral[700]};
+            border-color: ${theme.colors.background.primary === '#0F0F0F' ? theme.colors.neutral[200] : theme.colors.neutral[700]};
           }
         `;
       default:

@@ -697,6 +697,12 @@ export const InfoMessage = styled.div`
   font-weight: 500;
   margin-top: 8px;
 
+  /* Ajuste para modo escuro baseado na cor de background */
+  ${({ theme }) => theme.colors.background.primary === '#0F0F0F' && `
+    background: ${theme.colors.semantic.success}20;
+    border-color: ${theme.colors.semantic.success}40;
+  `}
+
   svg {
     flex-shrink: 0;
     color: currentColor;

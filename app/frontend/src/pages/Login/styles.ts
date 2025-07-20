@@ -202,7 +202,9 @@ export const ForgotPasswordLink = styled(Link)`
 
   &:hover {
     color: ${({ theme }) => theme.colors.primary.main};
-    background: ${({ theme }) => theme.colors.primary[50]};
+    background: ${({ theme }) => theme.colors.background.primary === '#0F0F0F' 
+      ? theme.colors.primary[1000] 
+      : theme.colors.primary[50]};
   }
 
   &:focus {

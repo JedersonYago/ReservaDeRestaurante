@@ -6,6 +6,7 @@ import {
   Calendar,
   Clock,
   ArrowRight,
+  X,
 } from "lucide-react";
 import { Button } from "../Button";
 import { CancelButton } from "../Button/CancelButton";
@@ -45,22 +46,59 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
+  background: ${({ theme }) => theme.colors.background.primary};
+  border-radius: 16px;
+  padding: 1.5rem;
   width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
+  max-width: 600px;
+  max-height: 85vh;
   overflow-y: auto;
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+  
+  @media (max-width: 640px) {
+    padding: 1rem;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: ${({ theme }) => theme.colors.text.secondary};
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: ${({ theme }) => theme.colors.background.secondary};
+    color: ${({ theme }) => theme.colors.text.primary};
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
 const ModalHeader = styled.div`
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
 const WarningIcon = styled(AlertTriangle)`
@@ -70,35 +108,67 @@ const WarningIcon = styled(AlertTriangle)`
 
 const ModalTitle = styled.h2`
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: ${({ theme }) => theme.colors.text.primary};
+  
+  @media (max-width: 640px) {
+    font-size: 1.125rem;
+  }
 `;
 
 const ModalSubtitle = styled.p`
-  margin: 0;
-  color: #6b7280;
+  margin: 0.25rem 0 0 0;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
+  line-height: 1.4;
 `;
 
 const ReservationList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${({ theme }) => theme.colors.background.secondary};
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.neutral[400]};
+    border-radius: 3px;
+  }
 `;
 
 const ReservationItem = styled(Card)`
-  padding: 1.5rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const ReservationHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.5rem;
+  
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `;
 
 const ReservationInfo = styled.div`
@@ -109,58 +179,94 @@ const ReservationInfo = styled.div`
 
 const CustomerName = styled.h3`
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const ReservationDetails = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
+  
+  @media (max-width: 640px) {
+    gap: 0.5rem;
+  }
 `;
 
 const DetailItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #6b7280;
-  font-size: 0.875rem;
+  gap: 0.375rem;
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: 0.813rem;
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const ActionSection = styled.div`
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
 `;
 
 const ActionButton = styled.button<{ $isActive: boolean }>`
-  padding: 0.5rem 1rem;
-  border: 1px solid ${(props) => (props.$isActive ? "#3b82f6" : "#d1d5db")};
-  background: ${(props) => (props.$isActive ? "#3b82f6" : "white")};
-  color: ${(props) => (props.$isActive ? "white" : "#374151")};
-  border-radius: 6px;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid ${(props) => (props.$isActive ? "#3b82f6" : props.theme.colors.neutral[300])};
+  background: ${(props) => (props.$isActive ? "#3b82f6" : props.theme.colors.background.secondary)};
+  color: ${(props) => (props.$isActive ? "white" : props.theme.colors.text.primary)};
+  border-radius: 8px;
+  font-size: 0.813rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: fit-content;
+  
+  @media (max-width: 640px) {
+    flex: 1;
+    text-align: center;
+  }
 
   &:hover {
-    background: ${(props) => (props.$isActive ? "#2563eb" : "#f9fafb")};
+    background: ${(props) => (props.$isActive ? "#2563eb" : props.theme.colors.background.tertiary)};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
 const ReschedulingSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
 const ArrowIcon = styled(ArrowRight)`
@@ -171,20 +277,42 @@ const ArrowIcon = styled(ArrowRight)`
 const ModalFooter = styled.div`
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 2rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  
+  @media (max-width: 640px) {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
 `;
 
 const FooterLeft = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  
+  @media (max-width: 640px) {
+    width: 100%;
+    
+    button {
+      flex: 1;
+    }
+  }
 `;
 
 const FooterRight = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  
+  @media (max-width: 640px) {
+    width: 100%;
+    
+    button {
+      flex: 1;
+    }
+  }
 `;
 
 export function ReschedulingModal({
@@ -296,6 +424,9 @@ export function ReschedulingModal({
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
+        <CloseButton onClick={onClose}>
+          <X />
+        </CloseButton>
         <ModalHeader>
           <WarningIcon size={24} />
           <div>
