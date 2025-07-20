@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppRoutes } from "./routes";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ToastProvider } from "./components/Toast";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { GlobalStyle } from "./styles/global";
 import { initializeAuthCleanup } from "./utils/authUtils";
 import { useEffect } from "react";
@@ -40,6 +41,7 @@ function App() {
       <GlobalStyle />
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
+          <ScrollToTop />
           <AppRoutes />
         </ToastProvider>
       </QueryClientProvider>
