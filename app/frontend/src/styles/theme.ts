@@ -1,67 +1,5 @@
-export const theme = {
-  colors: {
-    primary: {
-      main: "#FA761F",
-      light: "#FFA855",
-      dark: "#E85D00",
-      contrast: "#FFFFFF",
-      50: "#FFF7F0",
-      100: "#FFEDD6",
-      200: "#FFD6AD",
-      300: "#FFB885",
-      400: "#FF975C",
-      500: "#FA761F",
-      600: "#E85D00",
-      700: "#C44F00",
-      800: "#A04200",
-      900: "#7D3500",
-    },
-    secondary: {
-      main: "#49A84C",
-      light: "#7BC47E",
-      dark: "#2E7D32",
-      contrast: "#FFFFFF",
-      50: "#F1F8F1",
-      100: "#DCEEDD",
-      200: "#B9DDB9",
-      300: "#96CC96",
-      400: "#73BB73",
-      500: "#49A84C",
-      600: "#2E7D32",
-      700: "#1B5E20",
-      800: "#0D3F0E",
-      900: "#052706",
-    },
-    neutral: {
-      50: "#FAFAFA",
-      100: "#F5F5F5",
-      200: "#EEEEEE",
-      300: "#E0E0E0",
-      400: "#BDBDBD",
-      500: "#9E9E9E",
-      600: "#757575",
-      700: "#616161",
-      800: "#424242",
-      900: "#212121",
-    },
-    semantic: {
-      success: "#49A84C",
-      warning: "#FA761F",
-      error: "#D32F2F",
-      info: "#1976D2",
-    },
-    background: {
-      primary: "#FFFFFF",
-      secondary: "#FAFAFA",
-      tertiary: "#F5F5F5",
-    },
-    text: {
-      primary: "#212121",
-      secondary: "#616161",
-      disabled: "#9E9E9E",
-      inverse: "#FFFFFF",
-    },
-  },
+// Base theme com propriedades compartilhadas
+const baseTheme = {
   typography: {
     fontFamily:
       "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif",
@@ -213,14 +151,163 @@ export const theme = {
   },
 } as const;
 
-export type Theme = typeof theme;
+// Light theme
+export const lightTheme = {
+  ...baseTheme,
+  colors: {
+    primary: {
+      main: "#FA761F",
+      light: "#FFA855",
+      dark: "#E85D00",
+      contrast: "#FFFFFF",
+      50: "#FFF7F0",
+      100: "#FFEDD6",
+      200: "#FFD6AD",
+      300: "#FFB885",
+      400: "#FF975C",
+      500: "#FA761F",
+      600: "#E85D00",
+      700: "#C44F00",
+      800: "#A04200",
+      900: "#7D3500",
+    },
+    secondary: {
+      main: "#49A84C",
+      light: "#7BC47E",
+      dark: "#2E7D32",
+      contrast: "#FFFFFF",
+      50: "#F1F8F1",
+      100: "#DCEEDD",
+      200: "#B9DDB9",
+      300: "#96CC96",
+      400: "#73BB73",
+      500: "#49A84C",
+      600: "#2E7D32",
+      700: "#1B5E20",
+      800: "#0D3F0E",
+      900: "#052706",
+    },
+    neutral: {
+      50: "#FAFAFA",
+      100: "#F5F5F5",
+      200: "#EEEEEE",
+      300: "#E0E0E0",
+      400: "#BDBDBD",
+      500: "#9E9E9E",
+      600: "#757575",
+      700: "#616161",
+      800: "#424242",
+      900: "#212121",
+    },
+    semantic: {
+      success: "#49A84C",
+      warning: "#FA761F",
+      error: "#D32F2F",
+      info: "#1976D2",
+    },
+    background: {
+      primary: "#FFFFFF",
+      secondary: "#FAFAFA",
+      tertiary: "#F5F5F5",
+    },
+    text: {
+      primary: "#212121",
+      secondary: "#616161",
+      disabled: "#9E9E9E",
+      inverse: "#FFFFFF",
+    },
+  },
+} as const;
+
+// Dark theme
+export const darkTheme = {
+  ...baseTheme,
+  colors: {
+    primary: {
+      main: "#FA761F",
+      light: "#FFA855",
+      dark: "#E85D00",
+      contrast: "#FFFFFF",
+      50: "#FFF7F0",
+      100: "#FFEDD6",
+      200: "#FFD6AD",
+      300: "#FFB885",
+      400: "#FF975C",
+      500: "#FA761F",
+      600: "#E85D00",
+      700: "#C44F00",
+      800: "#A04200",
+      900: "#7D3500",
+    },
+    secondary: {
+      main: "#49A84C",
+      light: "#7BC47E",
+      dark: "#2E7D32",
+      contrast: "#FFFFFF",
+      50: "#F1F8F1",
+      100: "#DCEEDD",
+      200: "#B9DDB9",
+      300: "#96CC96",
+      400: "#73BB73",
+      500: "#49A84C",
+      600: "#2E7D32",
+      700: "#1B5E20",
+      800: "#0D3F0E",
+      900: "#052706",
+    },
+    neutral: {
+      50: "#18181B",
+      100: "#27272A",
+      200: "#3F3F46",
+      300: "#52525B",
+      400: "#71717A",
+      500: "#A1A1AA",
+      600: "#D4D4D8",
+      700: "#E4E4E7",
+      800: "#F4F4F5",
+      900: "#FAFAFA",
+    },
+    semantic: {
+      success: "#22C55E",
+      warning: "#F59E0B",
+      error: "#EF4444",
+      info: "#3B82F6",
+    },
+    background: {
+      primary: "#0F0F0F",
+      secondary: "#18181B",
+      tertiary: "#27272A",
+    },
+    text: {
+      primary: "#FAFAFA",
+      secondary: "#D4D4D8",
+      disabled: "#71717A",
+      inverse: "#18181B",
+    },
+  },
+  shadows: {
+    ...baseTheme.shadows,
+    sm: "0 1px 2px 0 rgba(0, 0, 0, 0.2)",
+    md: "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)",
+    lg: "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
+    xl: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
+    "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
+    inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.2)",
+  },
+} as const;
+
+// Tema padrão (light theme)
+export const theme = lightTheme;
+
+export type Theme = typeof lightTheme | typeof darkTheme;
+export type ThemeMode = "light" | "dark";
 
 // Utility types para autocomplete
-export type Colors = keyof typeof theme.colors;
-export type ColorShades = keyof typeof theme.colors.primary;
-export type FontSizes = keyof typeof theme.typography.fontSize;
-export type FontWeights = keyof typeof theme.typography.fontWeight;
-export type Spacing = keyof typeof theme.spacing;
-export type Breakpoints = keyof typeof theme.breakpoints;
-export type Shadows = keyof typeof theme.shadows;
-export type BorderRadius = keyof typeof theme.borderRadius;
+export type Colors = keyof typeof lightTheme.colors;
+export type ColorShades = keyof typeof lightTheme.colors.primary;
+export type FontSizes = keyof typeof lightTheme.typography.fontSize;
+export type FontWeights = keyof typeof lightTheme.typography.fontWeight;
+export type Spacing = keyof typeof lightTheme.spacing;
+export type Breakpoints = keyof typeof lightTheme.breakpoints;
+export type Shadows = keyof typeof lightTheme.shadows;
+export type BorderRadius = keyof typeof lightTheme.borderRadius;

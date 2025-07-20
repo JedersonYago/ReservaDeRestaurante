@@ -18,6 +18,15 @@ export const GlobalStyle = createGlobalStyle`
     width: 100%;
     height: 100%;
     overflow-x: hidden;
+    
+    /* Suporte para transições suaves do tema */
+    &[data-theme="dark"] {
+      color-scheme: dark;
+    }
+    
+    &[data-theme="light"] {
+      color-scheme: light;
+    }
   }
 
   body {
@@ -32,6 +41,14 @@ export const GlobalStyle = createGlobalStyle`
     width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
+    
+    /* Transição suave para mudanças de tema */
+    transition: background-color ${({ theme }) =>
+      theme.transitions.duration[300]} ${({ theme }) =>
+  theme.transitions.timing.out},
+                color ${({ theme }) => theme.transitions.duration[300]} ${({
+  theme,
+}) => theme.transitions.timing.out};
   }
 
   #root {
@@ -42,11 +59,21 @@ export const GlobalStyle = createGlobalStyle`
   button {
     cursor: pointer;
     font-family: inherit;
+    
+    /* Transição suave para botões */
+    transition: all ${({ theme }) => theme.transitions.duration[200]} ${({
+  theme,
+}) => theme.transitions.timing.out};
   }
 
   a {
     text-decoration: none;
     color: inherit;
+    
+    /* Transição suave para links */
+    transition: color ${({ theme }) => theme.transitions.duration[200]} ${({
+  theme,
+}) => theme.transitions.timing.out};
   }
 
   /* Melhora o contraste para leitores de tela */
@@ -91,6 +118,10 @@ export const GlobalStyle = createGlobalStyle`
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+    
+    html {
+      scroll-behavior: auto !important;
+    }
   }
 
   /* Melhor tipografia para diferentes tamanhos de tela */
@@ -115,5 +146,39 @@ export const GlobalStyle = createGlobalStyle`
     html {
       font-size: 18px;
     }
+  }
+
+  /* Melhorias específicas para dark mode */
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+    }
+  }
+
+  /* Scrollbar personalizada para dark mode */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: ${({ theme }) => theme.colors.neutral[100]};
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.neutral[400]};
+    border-radius: ${({ theme }) => theme.borderRadius.full};
+    
+    &:hover {
+      background: ${({ theme }) => theme.colors.neutral[500]};
+    }
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: ${({ theme }) => theme.colors.neutral[400]} ${({
+  theme,
+}) => theme.colors.neutral[100]};
   }
 `;
