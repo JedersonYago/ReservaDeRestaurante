@@ -131,3 +131,85 @@ export function isWithinBusinessHours(config: Config | null): {
 
   return { isOpen: true };
 }
+
+/**
+ * Detecta se dois intervalos de tempo se sobrepõem
+ */
+function timeIntervalsOverlap(
+  start1: string,
+  end1: string,
+  start2: string,
+  end2: string
+): boolean {
+  const [start1Hours, start1Minutes] = start1.split(":").map(Number);
+  const [end1Hours, end1Minutes] = end1.split(":").map(Number);
+  const [start2Hours, start2Minutes] = start2.split(":").map(Number);
+  const [end2Hours, end2Minutes] = end2.split(":").map(Number);
+
+  const start1InMinutes = start1Hours * 60 + start1Minutes;
+  const end1InMinutes = end1Hours * 60 + end1Minutes;
+  const start2InMinutes = start2Hours * 60 + start2Minutes;
+  const end2InMinutes = end2Hours * 60 + end2Minutes;
+
+  // Dois intervalos se sobrepõem se:
+  // - O início do primeiro está antes do fim do segundo E
+  // - O início do segundo está antes do fim do primeiro
+  return start1InMinutes < end2InMinutes && start2InMinutes < end1InMinutes;
+}
+
+/**
+ * Verifica se um novo intervalo se sobrepõe com intervalos existentes
+ */
+export function checkTimeIntervalOverlap(
+  newStartTime: string,
+  newEndTime: string,
+  existingIntervals: { startTime: string; endTime: string }[]
+): { hasOverlap: boolean; overlappingInterval?: string } {
+  for (const interval of existingIntervals) {
+    if (
+      timeIntervalsOverlap(
+        newStartTime,
+        newEndTime,
+        interval.startTime,
+        interval.endTime
+      )
+    ) {
+      return {
+        hasOverlap: true,
+        overlappingInterval: `${interval.startTime}-${interval.endTime}`,
+      };
+    }
+  }
+
+  return { hasOverlap: false };
+}
+
+/**
+ * Verifica se um novo intervalo (formato "HH:MM-HH:MM") se sobrepõe com intervalos existentes
+ */
+export function checkTimeIntervalOverlapString(
+  newInterval: string,
+  existingIntervals: string[]
+): { hasOverlap: boolean; overlappingInterval?: string } {
+  const [newStartTime, newEndTime] = newInterval.split("-");
+
+  for (const existingInterval of existingIntervals) {
+    const [existingStartTime, existingEndTime] = existingInterval.split("-");
+
+    if (
+      timeIntervalsOverlap(
+        newStartTime,
+        newEndTime,
+        existingStartTime,
+        existingEndTime
+      )
+    ) {
+      return {
+        hasOverlap: true,
+        overlappingInterval: existingInterval,
+      };
+    }
+  }
+
+  return { hasOverlap: false };
+}

@@ -8,6 +8,7 @@ import { parseISO, getDay } from "date-fns";
 import mongoose from "mongoose";
 import { formatToYMD } from "../../../shared/utils/dateFormat";
 import { updateTableStatus } from "./reservationController";
+import { validateTableAvailabilityOverlaps } from "../utils/reservationUtils";
 
 function getDayOfWeek(dateStr: string) {
   const dayIdx = getDay(parseISO(dateStr));
@@ -72,6 +73,16 @@ export const tableController = {
         return res.status(400).json({ message: error.details[0].message });
       }
 
+      // Validar sobreposições de horários na disponibilidade
+      if (req.body.availability && req.body.availability.length > 0) {
+        const overlapValidation = validateTableAvailabilityOverlaps(
+          req.body.availability
+        );
+        if (!overlapValidation.isValid) {
+          return res.status(400).json({ message: overlapValidation.error });
+        }
+      }
+
       const table = await Table.create(req.body);
       res.status(201).json(table);
     } catch (error: any) {
@@ -91,6 +102,16 @@ export const tableController = {
       const { error } = tableSchema.validate(req.body);
       if (error) {
         return res.status(400).json({ message: error.details[0].message });
+      }
+
+      // Validar sobreposições de horários na disponibilidade
+      if (req.body.availability && req.body.availability.length > 0) {
+        const overlapValidation = validateTableAvailabilityOverlaps(
+          req.body.availability
+        );
+        if (!overlapValidation.isValid) {
+          return res.status(400).json({ message: overlapValidation.error });
+        }
       }
 
       // Impedir que o status "expired" seja definido manualmente

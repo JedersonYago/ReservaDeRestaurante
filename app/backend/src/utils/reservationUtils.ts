@@ -101,3 +101,58 @@ export const updateTableStatus = async (
 ): Promise<void> => {
   await Table.findByIdAndUpdate(tableId, { status });
 };
+
+/**
+ * Detecta se dois intervalos de tempo se sobrepõem
+ */
+function timeIntervalsOverlap(
+  start1: string,
+  end1: string,
+  start2: string,
+  end2: string
+): boolean {
+  const [start1Hours, start1Minutes] = start1.split(":").map(Number);
+  const [end1Hours, end1Minutes] = end1.split(":").map(Number);
+  const [start2Hours, start2Minutes] = start2.split(":").map(Number);
+  const [end2Hours, end2Minutes] = end2.split(":").map(Number);
+
+  const start1InMinutes = start1Hours * 60 + start1Minutes;
+  const end1InMinutes = end1Hours * 60 + end1Minutes;
+  const start2InMinutes = start2Hours * 60 + start2Minutes;
+  const end2InMinutes = end2Hours * 60 + end2Minutes;
+
+  // Dois intervalos se sobrepõem se:
+  // - O início do primeiro está antes do fim do segundo E
+  // - O início do segundo está antes do fim do primeiro
+  return start1InMinutes < end2InMinutes && start2InMinutes < end1InMinutes;
+}
+
+/**
+ * Valida se há sobreposições de horários na disponibilidade de uma mesa
+ * @param availability Array de blocos de disponibilidade
+ * @returns {isValid: boolean, error?: string}
+ */
+export const validateTableAvailabilityOverlaps = (
+  availability: { date: string; times: string[] }[]
+): { isValid: boolean; error?: string } => {
+  for (const block of availability) {
+    const { date, times } = block;
+
+    // Verificar sobreposições dentro do mesmo bloco (mesmo dia)
+    for (let i = 0; i < times.length; i++) {
+      for (let j = i + 1; j < times.length; j++) {
+        const [start1, end1] = times[i].split("-");
+        const [start2, end2] = times[j].split("-");
+
+        if (timeIntervalsOverlap(start1, end1, start2, end2)) {
+          return {
+            isValid: false,
+            error: `Horários sobrepostos encontrados na data ${date}: ${times[i]} e ${times[j]}. Ajuste os horários para evitar conflitos.`,
+          };
+        }
+      }
+    }
+  }
+
+  return { isValid: true };
+};
