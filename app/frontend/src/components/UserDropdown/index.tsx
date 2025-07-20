@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Moon, Sun } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useThemeContext } from "../ThemeProvider";
 
 interface UserDropdownProps {
   className?: string;
@@ -10,6 +11,7 @@ interface UserDropdownProps {
 
 export function UserDropdown({ className }: UserDropdownProps) {
   const { user, signOut } = useAuth();
+  const { isDark, toggleTheme } = useThemeContext();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -52,6 +54,11 @@ export function UserDropdown({ className }: UserDropdownProps) {
   };
 
   const handleMenuItemClick = () => {
+    setIsOpen(false);
+  };
+
+  const handleThemeToggle = () => {
+    toggleTheme();
     setIsOpen(false);
   };
 
@@ -106,6 +113,13 @@ export function UserDropdown({ className }: UserDropdownProps) {
             Configurações
           </DropdownItem>
         )}
+
+        <DropdownDivider />
+
+        <DropdownItem as="button" onClick={handleThemeToggle} role="menuitem">
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          {isDark ? "Modo Claro" : "Modo Escuro"}
+        </DropdownItem>
 
         <DropdownDivider />
 

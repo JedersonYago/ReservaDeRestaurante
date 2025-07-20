@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import api from "../services/api";
 import { useAuth } from "./useAuth";
 
@@ -71,9 +70,9 @@ export function useDashboard() {
     queryKey: ["dashboard", "client", user?._id],
     queryFn: dashboardService.getClientStats,
     enabled: !!user && !isAdmin,
-    staleTime: 2 * 60 * 1000, // 2 minutos (reduzido para maior atualização)
-    refetchInterval: 5 * 60 * 1000, // Atualização automática a cada 5 minutos
-    refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchInterval: 10 * 60 * 1000, // Atualização automática a cada 10 minutos
+    refetchOnWindowFocus: false, // Desabilita refetch automático no foco
     refetchOnMount: true,
   });
 
@@ -86,41 +85,11 @@ export function useDashboard() {
     queryKey: ["dashboard", "admin", user?._id],
     queryFn: dashboardService.getAdminStats,
     enabled: !!user && isAdmin,
-    staleTime: 30 * 1000, // 30 segundos (dados mais dinâmicos para admin)
-    refetchInterval: 2 * 60 * 1000, // Atualização automática a cada 2 minutos para admin
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    refetchInterval: 5 * 60 * 1000, // Atualização automática a cada 5 minutos
+    refetchOnWindowFocus: false, // Desabilita refetch automático no foco
     refetchOnMount: true,
   });
-
-  // Atualização manual mais frequente para dados críticos
-  useEffect(() => {
-    if (!user) return;
-
-    const interval = setInterval(() => {
-      if (isAdmin) {
-        refetchAdmin();
-      } else {
-        refetchClient();
-      }
-    }, 60 * 1000); // Força atualização a cada 1 minuto
-
-    // Cleanup
-    return () => clearInterval(interval);
-  }, [user, isAdmin, refetchAdmin, refetchClient]);
-
-  // Atualização quando a tab volta ao foco
-  useEffect(() => {
-    const handleFocus = () => {
-      if (isAdmin) {
-        refetchAdmin();
-      } else {
-        refetchClient();
-      }
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [isAdmin, refetchAdmin, refetchClient]);
 
   return {
     // Client data

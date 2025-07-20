@@ -16,8 +16,15 @@ const queryClient = new QueryClient({
         if (error?.response?.status === 409) {
           return false;
         }
-        return failureCount < 3;
+        // Não fazer retry para erros 429 (too many requests)
+        if (error?.response?.status === 429) {
+          return false;
+        }
+        return failureCount < 2; // Reduzido de 3 para 2
       },
+      staleTime: 5 * 60 * 1000, // 5 minutos padrão
+      refetchOnWindowFocus: false, // Desabilita refetch automático no foco
+      refetchOnReconnect: false, // Desabilita refetch automático na reconexão
     },
     mutations: {
       retry: (failureCount, error: any) => {
@@ -25,7 +32,11 @@ const queryClient = new QueryClient({
         if (error?.response?.status === 409) {
           return false;
         }
-        return failureCount < 3;
+        // Não fazer retry para erros 429 (too many requests)
+        if (error?.response?.status === 429) {
+          return false;
+        }
+        return failureCount < 1; // Reduzido para 1 retry apenas
       },
     },
   },

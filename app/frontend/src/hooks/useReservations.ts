@@ -22,9 +22,9 @@ export const useReservations = () => {
   } = useQuery({
     queryKey: ["reservations", user?._id], // Adiciona o ID do usuário como dependência
     queryFn: reservationService.list,
-    staleTime: 10000, // 10 segundos para capturar mudanças de status mais rapidamente
-    refetchInterval: 15000, // Atualiza a cada 15 segundos automaticamente
-    refetchOnWindowFocus: true,
+    staleTime: 30000, // 30 segundos para reduzir requisições
+    refetchInterval: 60000, // Atualiza a cada 1 minuto automaticamente
+    refetchOnWindowFocus: false, // Desabilita refetch automático no foco
     refetchOnMount: true,
     enabled: !!user, // Só executa se houver um usuário logado
   });
@@ -127,10 +127,10 @@ export function useReservationsByTable(tableId: string) {
   } = useQuery({
     queryKey: ["reservations"],
     queryFn: reservationService.list,
-    staleTime: 10000, // 10 segundos para dados mais frescos
-    refetchInterval: 15000, // Atualiza a cada 15 segundos
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
+    staleTime: 30000, // 30 segundos para reduzir requisições
+    refetchInterval: false, // Desabilita refetch automático
+    refetchOnWindowFocus: false, // Desabilita refetch automático no foco
+    refetchOnMount: false, // Não refetch no mount, usa cache
   });
 
   const reservations = allReservations.filter((res: PopulatedReservation) => {
