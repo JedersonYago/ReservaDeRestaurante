@@ -609,6 +609,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ## 👥 Equipe
 
 **Desenvolvido por**: Angelica, Alisson, Darliany, Debora, Denylson, Jederson, Lisboa, Vinicios e Zirlangio.
+
 **Repositório**: [ReservaDeRestaurante](https://github.com/JedersonYago/ReservaDeRestaurante)
 
 ## 📚 Documentação Adicional
