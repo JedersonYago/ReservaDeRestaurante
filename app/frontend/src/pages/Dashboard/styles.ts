@@ -63,20 +63,20 @@ export const ReservationsList = styled.div`
 export const AlertsList = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing[4]};
+  gap: ${({ theme }: any) => theme.spacing[4]};
   max-height: 200px;
   overflow-y: auto;
-  padding-right: ${({ theme }) => theme.spacing[2]};
+  padding-right: ${({ theme }: any) => theme.spacing[2]};
 
   /* Garantir que mostra apenas uma "linha" de 3 itens */
   grid-auto-rows: min-content;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+  @media (max-width: ${({ theme }: any) => theme.breakpoints.lg}) {
     grid-template-columns: repeat(2, 1fr);
     max-height: 300px; /* Altura ajustada para 2 colunas */
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+  @media (max-width: ${({ theme }: any) => theme.breakpoints.md}) {
     grid-template-columns: 1fr;
     max-height: 250px; /* Altura ajustada para 1 coluna */
   }
@@ -87,37 +87,37 @@ export const AlertsList = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: ${({ theme }) => theme.colors.neutral[100]};
+    background: ${({ theme }: any) => theme.colors.neutral[100]};
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors.neutral[300]};
+    background: ${({ theme }: any) => theme.colors.neutral[300]};
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => theme.colors.neutral[400]};
+    background: ${({ theme }: any) => theme.colors.neutral[400]};
   }
 `;
 
 export const ClientReservationsList = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing[4]};
+  gap: ${({ theme }: any) => theme.spacing[4]};
   max-height: 280px; /* Altura para mostrar exatamente 1 linha de cards */
   overflow-y: auto;
-  padding-right: ${({ theme }) => theme.spacing[2]};
+  padding-right: ${({ theme }: any) => theme.spacing[2]};
 
   /* Garantir que mostra apenas uma "linha" de 3 itens visível */
   grid-auto-rows: min-content;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+  @media (max-width: ${({ theme }: any) => theme.breakpoints.lg}) {
     grid-template-columns: repeat(2, 1fr);
     max-height: 280px; /* Altura para mostrar 1 linha de 2 cards */
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+  @media (max-width: ${({ theme }: any) => theme.breakpoints.md}) {
     grid-template-columns: 1fr;
     max-height: 280px; /* Altura para mostrar 1 card por vez */
   }
@@ -128,17 +128,17 @@ export const ClientReservationsList = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: ${({ theme }) => theme.colors.neutral[100]};
+    background: ${({ theme }: any) => theme.colors.neutral[100]};
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors.neutral[300]};
+    background: ${({ theme }: any) => theme.colors.neutral[300]};
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => theme.colors.neutral[400]};
+    background: ${({ theme }: any) => theme.colors.neutral[400]};
   }
 `;
 

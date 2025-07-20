@@ -9,18 +9,22 @@ import {
   X,
   LogOut,
   Settings,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { useAuth } from "../hooks/useAuth";
 import { Container as LayoutContainer } from "./Layout/Container";
 import { Button } from "./Button";
 import { UserDropdown } from "./UserDropdown";
+import { useThemeContext } from "./ThemeProvider";
 
 export function Header() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isDark, toggleTheme } = useThemeContext();
 
   // Fechar menu mobile quando navegar
   useEffect(() => {
@@ -69,7 +73,11 @@ export function Header() {
                     : "ReservaFácil - Página inicial"
                 }
               >
-                <ResponsiveLogo size="lg" variant="full" />
+                <ResponsiveLogo
+                  key={isDark ? "dark" : "light"}
+                  size="lg"
+                  variant="full"
+                />
               </LogoLink>
             </LogoSection>
 
@@ -103,7 +111,11 @@ export function Header() {
                 aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
                 $isOpen={mobileMenuOpen}
               >
-                {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                {mobileMenuOpen ? (
+                  <X size={40} strokeWidth={4} />
+                ) : (
+                  <Menu size={40} strokeWidth={4} />
+                )}
               </MobileMenuButton>
             </HeaderActions>
           </HeaderContent>
@@ -111,10 +123,12 @@ export function Header() {
       </HeaderContainer>
 
       {/* Mobile Menu Overlay */}
-      <MobileMenuOverlay
-        $isOpen={mobileMenuOpen}
-        onClick={() => setMobileMenuOpen(false)}
-      />
+      {mobileMenuOpen && (
+        <MobileMenuOverlay
+          $isOpen={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Mobile Menu */}
       <MobileMenu $isOpen={mobileMenuOpen}>
@@ -166,6 +180,14 @@ export function Header() {
             <Button
               variant="outline"
               fullWidth
+              onClick={toggleTheme}
+              leftIcon={isDark ? <Sun size={20} /> : <Moon size={20} />}
+            >
+              {isDark ? "Modo Claro" : "Modo Escuro"}
+            </Button>
+            <Button
+              variant="outline"
+              fullWidth
               onClick={handleLogout}
               leftIcon={<LogOut size={20} />}
             >
@@ -180,7 +202,7 @@ export function Header() {
 
 // Responsive Logo
 const ResponsiveLogo = styled(Logo)`
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+  @media (max-width: ${({ theme }: any) => theme.breakpoints.md}) {
     transform: scale(0.8);
   }
 `;
@@ -188,27 +210,27 @@ const ResponsiveLogo = styled(Logo)`
 // Header Container
 const HeaderContainer = styled.header`
   width: 100%;
-  background: ${({ theme }) => theme.colors.background.primary};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  background: ${({ theme }: any) => theme.colors.background.primary};
+  border-bottom: 1px solid ${({ theme }: any) => theme.colors.neutral[200]};
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: ${({ theme }) => theme.zIndex.sticky};
+  z-index: ${({ theme }: any) => theme.zIndex.sticky};
   backdrop-filter: blur(10px);
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+  box-shadow: ${({ theme }: any) => theme.shadows.sm};
 `;
 
 const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ${({ theme }) => theme.spacing[3]} 0;
-  min-height: ${({ theme }) => theme.spacing[14]};
+  padding: ${({ theme }: any) => theme.spacing[3]} 0;
+  min-height: ${({ theme }: any) => theme.spacing[14]};
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    padding: ${({ theme }) => theme.spacing[4]} 0;
-    min-height: ${({ theme }) => theme.spacing[16]};
+  @media (min-width: ${({ theme }: any) => theme.breakpoints.md}) {
+    padding: ${({ theme }: any) => theme.spacing[4]} 0;
+    min-height: ${({ theme }: any) => theme.spacing[16]};
   }
 `;
 
@@ -221,19 +243,19 @@ const LogoSection = styled.div`
 const LogoLink = styled(Link)`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
+  gap: ${({ theme }: any) => theme.spacing[2]};
   text-decoration: none;
-  transition: all ${({ theme }) => theme.transitions.duration[200]}
-    ${({ theme }) => theme.transitions.timing.out};
+  transition: all ${({ theme }: any) => theme.transitions.duration[200]}
+    ${({ theme }: any) => theme.transitions.timing.out};
 
   &:hover {
     transform: scale(1.02);
   }
 
   &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary.main};
+    outline: 2px solid ${({ theme }: any) => theme.colors.primary.main};
     outline-offset: 2px;
-    border-radius: ${({ theme }) => theme.borderRadius.md};
+    border-radius: ${({ theme }: any) => theme.borderRadius.md};
   }
 `;
 
@@ -305,39 +327,33 @@ const MobileMenuButton = styled.button<{ $isOpen: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${({ theme }) => theme.spacing[12]};
-  height: ${({ theme }) => theme.spacing[12]};
-  background: ${({ theme }) => theme.colors.background.primary};
-  border: 1px solid ${({ theme }) => theme.colors.primary.main};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  width: 56px;
+  height: 42px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  color: ${({ theme }) => theme.colors.primary.main};
-  transition: all ${({ theme }) => theme.transitions.duration[200]}
-    ${({ theme }) => theme.transitions.timing.out};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+  color: #333;
+  transition: all 0.2s ease;
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+  @media (min-width: 768px) {
     display: none;
   }
 
   &:hover {
-    background: ${({ theme }) => theme.colors.primary.main};
-    color: ${({ theme }) => theme.colors.primary.contrast};
-    border-color: ${({ theme }) => theme.colors.primary.main};
-    transform: scale(1.05);
+    background: rgba(250, 118, 31, 0.1);
   }
 
   &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary.main};
+    outline: 2px solid #fa761f;
     outline-offset: 2px;
   }
 
   svg {
-    stroke-width: 3;
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px;
-    min-height: 28px;
+    stroke: #fa761f;
+    fill: none;
+    width: 40px;
+    height: 40px;
   }
 `;
 
@@ -349,13 +365,13 @@ const MobileMenuOverlay = styled.div<{ $isOpen: boolean }>`
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: ${({ theme }) => theme.zIndex.overlay};
-  opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
-  visibility: ${({ $isOpen }) => ($isOpen ? "visible" : "hidden")};
-  transition: all ${({ theme }) => theme.transitions.duration[300]}
-    ${({ theme }) => theme.transitions.timing.out};
+  z-index: 1300;
+  opacity: 1;
+  visibility: visible;
+  transition: all ${({ theme }: any) => theme.transitions.duration[300]}
+    ${({ theme }: any) => theme.transitions.timing.out};
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+  @media (min-width: ${({ theme }: any) => theme.breakpoints.md}) {
     display: none;
   }
 `;
@@ -368,16 +384,16 @@ const MobileMenu = styled.div<{ $isOpen: boolean }>`
   width: min(85vw, 300px);
   max-width: 300px;
   height: 100vh;
-  background: ${({ theme }) => theme.colors.background.primary};
-  box-shadow: ${({ theme }) => theme.shadows.xl};
-  z-index: ${({ theme }) => theme.zIndex.modal};
+  background: ${({ theme }: any) => theme.colors.background.primary};
+  box-shadow: ${({ theme }: any) => theme.shadows.xl};
+  z-index: 1400;
   transform: translateX(${({ $isOpen }) => ($isOpen ? "0" : "100%")});
-  transition: transform ${({ theme }) => theme.transitions.duration[300]}
-    ${({ theme }) => theme.transitions.timing.out};
+  transition: transform ${({ theme }: any) => theme.transitions.duration[300]}
+    ${({ theme }: any) => theme.transitions.timing.out};
   overflow-y: auto;
   overflow-x: hidden;
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+  @media (min-width: ${({ theme }: any) => theme.breakpoints.md}) {
     display: none;
   }
 
@@ -506,4 +522,7 @@ const MobileNavItem = styled(Link)<{ $isActive?: boolean }>`
 const MobileMenuActions = styled.div`
   padding-top: ${({ theme }) => theme.spacing[4]};
   border-top: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[3]};
 `;

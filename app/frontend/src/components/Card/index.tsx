@@ -33,7 +33,7 @@ const Container = styled.div<{
   $padding: string;
   $clickable: boolean;
 }>`
-  background: white;
+  background: ${({ theme }: any) => theme.colors.background.primary};
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
@@ -93,7 +93,7 @@ const Container = styled.div<{
   }}
 
   h1, h2, h3, h4, h5, h6 {
-    color: #333;
+    color: ${({ theme }: any) => theme.colors.text.primary};
     margin-bottom: 1rem;
 
     &:last-child {
@@ -102,7 +102,7 @@ const Container = styled.div<{
   }
 
   p {
-    color: #666;
+    color: ${({ theme }: any) => theme.colors.text.secondary};
     margin: 0;
     line-height: 1.5;
   }
