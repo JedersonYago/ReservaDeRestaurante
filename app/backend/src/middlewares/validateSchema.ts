@@ -1,24 +1,21 @@
 import { Request, Response, NextFunction } from "express";
-import { Schema } from "joi";
+import { ZodSchema } from "zod";
 
-export const validateSchema = (schema: Schema) => {
+export const validateSchema = (schema: ZodSchema<any>) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const { error } = schema.validate(req.body, { abortEarly: false });
-    if (error) {
-      console.error("Erro de validação Joi:", error.details);
-
-      const errorMessage = error.details
-        .map((detail) => detail.message)
-        .join(", ");
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      const errorDetails = result.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      }));
+      const errorMessage = errorDetails.map((e) => e.message).join(", ");
       return res.status(400).json({
         message: errorMessage,
-        details: error.details.map((detail) => ({
-          path: detail.path,
-          message: detail.message,
-        })),
+        details: errorDetails,
       });
     }
-
+    req.body = result.data;
     next();
   };
 };

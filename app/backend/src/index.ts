@@ -75,8 +75,10 @@ const startServer = async () => {
 
     // Iniciar o servidor
     const server = app.listen(config.server.port, () => {
-      console.log(`Servidor rodando na porta ${config.server.port}`);
-      console.log(`Ambiente: ${config.server.nodeEnv}`);
+      console.log(`🚀 ReservaFácil Backend - Porta ${config.server.port}`);
+      if (config.server.nodeEnv === 'development') {
+        console.log(`📝 API: http://localhost:${config.server.port}/api`);
+      }
     });
 
     // Tratamento de encerramento
