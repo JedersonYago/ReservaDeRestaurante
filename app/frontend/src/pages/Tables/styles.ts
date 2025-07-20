@@ -430,7 +430,7 @@ export const DeleteButton = styled.button`
   width: 100%;
   padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
   background: ${({ theme }) => theme.colors.semantic.error};
-  color: ${({ theme }) => theme.colors.background.primary};
+  color: #ffffff;
   border: 1px solid ${({ theme }) => theme.colors.semantic.error};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   font-size: ${({ theme }) => theme.typography.fontSize.xs};

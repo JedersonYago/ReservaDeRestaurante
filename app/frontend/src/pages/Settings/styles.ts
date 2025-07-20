@@ -5,18 +5,19 @@ import { spin } from "../../styles/animations";
 // import { PageWrapper } from "../../components/Layout/PageWrapper";
 
 export const HeaderSection = styled.header`
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: ${({ theme }) => theme.spacing[6]};
+  margin-bottom: ${({ theme }) => theme.spacing[6]};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 24px;
+  gap: ${({ theme }) => theme.spacing[6]};
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -34,11 +35,11 @@ export const Title = styled.h1`
   gap: 12px;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 8px 0;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
   }
 
   @media (max-width: 768px) {
@@ -47,7 +48,7 @@ export const Title = styled.h1`
 `;
 
 export const Subtitle = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
   margin: 0;
 `;
@@ -55,31 +56,43 @@ export const Subtitle = styled.p`
 export const Content = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: ${({ theme }) => theme.spacing[6]};
   padding-bottom: 120px; /* Espaço para FixedActionBar */
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    gap: ${({ theme }) => theme.spacing[6]};
+  }
 
   @media (max-width: 768px) {
     padding-bottom: 140px; /* Mais espaço em mobile */
   }
+
+  /* Garantir que o form herde o gap */
+  & > form {
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
+  }
 `;
 
 export const ConfigCard = styled.div`
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: ${({ theme }) => theme.spacing[6]};
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+    border-color: ${({ theme }) => theme.colors.primary.main}40;
   }
 `;
 
 export const ConfigSection = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: ${({ theme }) => theme.spacing[5]};
 `;
 
 export const SectionHeader = styled.div`
@@ -94,16 +107,16 @@ export const SectionTitle = styled.h2`
   gap: 8px;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
   }
 `;
 
 export const SectionDescription = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.75rem;
   margin: 0;
 `;
@@ -113,15 +126,15 @@ export const ToggleContainer = styled.div`
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   border-radius: 8px;
   transition: all 0.2s ease;
   cursor: pointer;
 
   &:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
+    background-color: ${({ theme }) => theme.colors.neutral[100]};
+    border-color: ${({ theme }) => theme.colors.neutral[300]};
   }
 `;
 
@@ -139,7 +152,8 @@ export const ToggleSlider = styled.span<{ checked: boolean }>`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: ${(props) => (props.checked ? "#fa761f" : "#d1d5db")};
+  background-color: ${({ checked, theme }) =>
+    checked ? theme.colors.primary.main : theme.colors.neutral[300]};
   transition: 0.3s;
   border-radius: 24px;
 
@@ -150,10 +164,10 @@ export const ToggleSlider = styled.span<{ checked: boolean }>`
     width: 18px;
     left: ${(props) => (props.checked ? "23px" : "3px")};
     top: 3px;
-    background-color: white;
+    background-color: ${({ theme }) => theme.colors.background.primary};
     transition: 0.3s;
     border-radius: 50%;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 `;
 
@@ -162,12 +176,12 @@ export const ToggleLabel = styled.span`
   align-items: center;
   gap: 8px;
   font-weight: 500;
-  color: #374151;
+  color: ${({ theme }) => theme.colors.text.primary};
   cursor: pointer;
   font-size: 0.75rem;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
   }
 `;
 
@@ -198,16 +212,16 @@ export const HelpText = styled.div`
   align-items: flex-start;
   gap: 8px;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   margin-top: 8px;
   padding: 12px;
-  background: #f0f9ff;
+  background: ${({ theme }) => theme.colors.primary.main}10;
   border-radius: 6px;
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid ${({ theme }) => theme.colors.primary.main};
   line-height: 1.4;
 
   svg {
-    color: #0ea5e9;
+    color: ${({ theme }) => theme.colors.primary.main};
     flex-shrink: 0;
     margin-top: 2px;
   }
@@ -230,14 +244,15 @@ export const LoadingContainer = styled.div`
   align-items: center;
   justify-content: center;
   padding: 64px 24px;
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const LoadingSpinner = styled.div`
   margin-bottom: 16px;
-  color: #fa761f;
+  color: ${({ theme }) => theme.colors.primary.main};
 
   svg {
     animation: ${spin} 1s linear infinite;
@@ -245,7 +260,7 @@ export const LoadingSpinner = styled.div`
 `;
 
 export const LoadingText = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
   margin: 0;
 `;
@@ -256,15 +271,16 @@ export const ErrorContainer = styled.div`
   align-items: center;
   justify-content: center;
   padding: 64px 24px;
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   text-align: center;
 `;
 
 export const ErrorIcon = styled.div`
   margin-bottom: 24px;
-  color: #dc2626;
+  color: ${({ theme }) => theme.colors.semantic.error};
 `;
 
 export const ErrorContent = styled.div`
@@ -277,12 +293,12 @@ export const ErrorContent = styled.div`
 export const ErrorTitle = styled.h2`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0;
 `;
 
 export const ErrorDescription = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
   margin: 0;
   line-height: 1.5;
@@ -294,19 +310,27 @@ export const MessageContainer = styled.div<{ $variant: "error" | "success" }>`
   gap: 12px;
   padding: 16px;
   border-radius: 8px;
-  background-color: ${(props) =>
-    props.$variant === "error" ? "#fef2f2" : "#f0fdf4"};
+  background-color: ${({ $variant, theme }) =>
+    $variant === "error"
+      ? `${theme.colors.semantic.error}15`
+      : `${theme.colors.semantic.success}15`};
   border: 1px solid
-    ${(props) => (props.$variant === "error" ? "#fecaca" : "#bbf7d0")};
+    ${({ $variant, theme }) =>
+      $variant === "error"
+        ? `${theme.colors.semantic.error}30`
+        : `${theme.colors.semantic.success}30`};
 `;
 
 export const MessageIcon = styled.div<{ $variant?: "error" | "success" }>`
-  color: ${(props) => (props.$variant === "error" ? "#dc2626" : "#16a34a")};
+  color: ${({ $variant, theme }) =>
+    $variant === "error"
+      ? theme.colors.semantic.error
+      : theme.colors.semantic.success};
   flex-shrink: 0;
 `;
 
 export const MessageText = styled.span`
-  color: #374151;
+  color: ${({ theme }) => theme.colors.text.primary};
   font-size: 0.75rem;
   font-weight: 500;
 `;

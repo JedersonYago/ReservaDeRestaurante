@@ -5,11 +5,12 @@ import { fadeIn } from "../../../styles/animations";
 // PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   animation: ${fadeIn} 0.6s ease-out;
 `;
 
@@ -38,12 +39,12 @@ export const Title = styled.h1`
   gap: 0.75rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 0.5rem 0;
   line-height: 1.25;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
     flex-shrink: 0;
   }
 
@@ -54,7 +55,7 @@ export const Title = styled.h1`
 
 export const Subtitle = styled.p`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   margin: 0;
   line-height: 1.625;
 
@@ -78,22 +79,22 @@ export const HeaderActions = styled.div`
 export const Content = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: ${({ theme }) => theme.spacing[6]};
   padding-bottom: 120px; /* Espaço para FixedActionBar */
   animation: ${fadeIn} 0.6s ease-out 0.1s both;
 
   @media (max-width: 768px) {
-    gap: 1.5rem;
+    gap: ${({ theme }) => theme.spacing[6]};
     padding-bottom: 140px; /* Mais espaço em mobile */
   }
 `;
 
 export const FormSection = styled.section`
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 0.75rem;
   padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
+  box-shadow: ${({ theme }) => theme.shadows.md};
 
   @media (max-width: 768px) {
     padding: 1.5rem;
@@ -107,18 +108,18 @@ export const SectionTitle = styled.h2`
   gap: 0.75rem;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 0.5rem 0;
 
   svg {
-    color: #fa761f;
+    color: ${({ theme }) => theme.colors.primary.main};
     flex-shrink: 0;
   }
 `;
 
 export const SectionDescription = styled.p`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   margin: 0 0 1.5rem 0;
   line-height: 1.625;
 `;
@@ -143,7 +144,7 @@ export const ErrorMessage = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #dc2626;
+  color: ${({ theme }) => theme.colors.semantic.error};
   font-size: 0.875rem;
   font-weight: 500;
   margin-top: 0.5rem;
@@ -159,10 +160,11 @@ export const AvailabilitySection = styled.div`
 
 export const AvailabilityModeSelector = styled.div`
   display: flex;
-  background: #f3f4f6;
+  background: ${({ theme }) => theme.colors.background.secondary};
   border-radius: 0.5rem;
   padding: 0.25rem;
   margin-bottom: 1.5rem;
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const ModeOption = styled.button<{ $active: boolean }>`
@@ -179,20 +181,20 @@ export const ModeOption = styled.button<{ $active: boolean }>`
   cursor: pointer;
   transition: all 0.2s ease;
 
-  ${({ $active }) =>
+  ${({ $active, theme }) =>
     $active
       ? `
-    background: #FA761F;
-    color: white;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    background: ${theme.colors.primary.main};
+    color: ${theme.colors.primary.contrast};
+    box-shadow: ${theme.shadows.sm};
   `
       : `
     background: transparent;
-    color: #6b7280;
+    color: ${theme.colors.text.secondary};
     
     &:hover {
-      background: white;
-      color: #111827;
+      background: ${theme.colors.background.primary};
+      color: ${theme.colors.text.primary};
     }
   `}
 
@@ -202,10 +204,11 @@ export const ModeOption = styled.button<{ $active: boolean }>`
 `;
 
 export const AvailabilityBlock = styled.div`
-  border: 1px solid #e5e7eb;
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   border-radius: 0.5rem;
   overflow: hidden;
   margin-bottom: 1rem;
+  background: ${({ theme }) => theme.colors.background.primary};
 `;
 
 export const BlockHeader = styled.div`
@@ -213,18 +216,18 @@ export const BlockHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
   > div {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-weight: 500;
-    color: #111827;
+    color: ${({ theme }) => theme.colors.text.primary};
 
     svg {
-      color: #fa761f;
+      color: ${({ theme }) => theme.colors.primary.main};
     }
   }
 `;
@@ -241,7 +244,7 @@ export const BlockContent = styled.div`
 export const TimeInputContainer = styled.div`
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const TimeSlot = styled.div`
@@ -269,12 +272,13 @@ export const WarningBadge = styled.span`
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
-  background: #fef3c7;
-  color: #92400e;
+  background: ${({ theme }) => theme.colors.semantic.warning}20;
+  color: ${({ theme }) => theme.colors.semantic.warning};
   border-radius: 0.375rem;
   font-size: 0.625rem;
   font-weight: 500;
   margin-left: 0.5rem;
+  border: 1px solid ${({ theme }) => theme.colors.semantic.warning}40;
 
   svg {
     flex-shrink: 0;
@@ -303,15 +307,15 @@ export const EmptyTimeSlots = styled.div`
   justify-content: center;
   gap: 0.75rem;
   padding: 2rem;
-  background: #f9fafb;
-  border: 2px dashed #d1d5db;
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border: 2px dashed ${({ theme }) => theme.colors.neutral[300]};
   border-radius: 0.5rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
   font-weight: 500;
 
   svg {
-    color: #9ca3af;
+    color: ${({ theme }) => theme.colors.neutral[400]};
   }
 
   @media (max-width: 768px) {
@@ -354,7 +358,7 @@ export const ActionButtons = styled.div`
   display: flex;
   gap: 1rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
   @media (max-width: 768px) {
     flex-direction: column;

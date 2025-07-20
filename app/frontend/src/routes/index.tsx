@@ -6,7 +6,7 @@ import { PageLoader } from "../components/Loading/PageLoader";
 // Páginas públicas (carregadas imediatamente)
 import { Home } from "../pages/Home";
 import { Login } from "../pages/Login";
-import { Register } from "../pages/Register";
+import { Register } from "../pages/Register/index";
 import { ForgotPassword } from "../pages/ForgotPassword";
 import { ResetPassword } from "../pages/ResetPassword";
 

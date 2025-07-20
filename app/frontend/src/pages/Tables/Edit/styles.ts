@@ -4,11 +4,12 @@ import { spin } from "../../../styles/animations";
 // PageWrapper removido - agora usando componente centralizado
 
 export const Header = styled.header`
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   padding: ${({ theme }) => theme.spacing[6]};
   margin-bottom: ${({ theme }) => theme.spacing[6]};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const HeaderContent = styled.div`
@@ -65,11 +66,22 @@ export const HeaderActions = styled.div`
 export const Content = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: ${({ theme }) => theme.spacing[6]};
   padding-bottom: 120px; /* Espaço para FixedActionBar */
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    gap: ${({ theme }) => theme.spacing[6]};
+  }
 
   @media (max-width: 768px) {
     padding-bottom: 140px; /* Mais espaço em mobile */
+  }
+
+  /* Garantir que o form herde o gap */
+  & > form {
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
   }
 `;
 
@@ -78,6 +90,7 @@ export const FormSection = styled.section`
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   padding: ${({ theme }) => theme.spacing[6]};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const SectionTitle = styled.h2`
@@ -127,6 +140,7 @@ export const AvailabilitySection = styled.section`
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   padding: ${({ theme }) => theme.spacing[6]};
   box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const AvailabilityGrid = styled.div`
@@ -172,11 +186,7 @@ export const BlockHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${({ theme }) => theme.spacing[4]};
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.neutral[50]},
-    ${({ theme }) => theme.colors.neutral[100]}
-  );
+  background: ${({ theme }) => theme.colors.background.secondary};
   border-bottom: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
   > div:first-child {
@@ -248,7 +258,7 @@ export const TimeSlotsList = styled.div`
   max-height: 400px;
   overflow-y: auto;
   padding: ${({ theme }) => theme.spacing[2]};
-  background: ${({ theme }) => theme.colors.neutral[50]};
+  background: ${({ theme }) => theme.colors.background.secondary};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
@@ -314,7 +324,7 @@ export const TimeSlotItem = styled.div`
   position: relative;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.neutral[50]};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
     border-color: ${({ theme }) => theme.colors.primary.main};
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.shadows.sm};
@@ -380,8 +390,8 @@ export const TimeSlotActions = styled.div`
 export const TimeInputContainer = styled.div`
   margin-top: 12px;
   padding: 16px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   border-radius: 8px;
 `;
 
@@ -393,23 +403,23 @@ export const TimeInputGroup = styled.div`
 
   input[type="time"] {
     padding: 6px 10px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid ${({ theme }) => theme.colors.neutral[300]};
     border-radius: 6px;
     font-size: 0.75rem;
-    color: #6b7280;
-    background-color: #f9fafb;
+    color: ${({ theme }) => theme.colors.text.primary};
+    background-color: ${({ theme }) => theme.colors.background.primary};
     transition: all 0.2s ease;
 
     &:focus {
       outline: none;
-      border-color: #fa761f;
-      box-shadow: 0 0 0 3px rgba(250, 118, 31, 0.1);
-      background-color: white;
+      border-color: ${({ theme }) => theme.colors.primary.main};
+      box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary.main}20;
+      background-color: ${({ theme }) => theme.colors.background.primary};
     }
   }
 
   span {
-    color: #6b7280;
+    color: ${({ theme }) => theme.colors.text.secondary};
     font-weight: 500;
     font-size: 0.75rem;
   }
@@ -514,25 +524,25 @@ export const EmptyTimeSlots = styled.div`
   justify-content: center;
   gap: 12px;
   padding: 32px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   border-radius: 8px;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
 
   svg {
-    color: #d1d5db;
+    color: ${({ theme }) => theme.colors.neutral[400]};
   }
 
   h4 {
     margin: 0 0 4px 0;
-    color: #374151;
+    color: ${({ theme }) => theme.colors.text.primary};
     font-size: 0.875rem;
   }
 
   p {
     margin: 0;
-    color: #6b7280;
+    color: ${({ theme }) => theme.colors.text.secondary};
     font-size: 0.875rem;
   }
 
@@ -549,11 +559,7 @@ export const AddBlockButton = styled.button`
   gap: ${({ theme }) => theme.spacing[3]};
   width: 100%;
   padding: ${({ theme }) => theme.spacing[4]} ${({ theme }) => theme.spacing[5]};
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.neutral[50]},
-    ${({ theme }) => theme.colors.neutral[100]}
-  );
+  background: ${({ theme }) => theme.colors.background.secondary};
   border: 2px dashed ${({ theme }) => theme.colors.primary.main}40;
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   color: ${({ theme }) => theme.colors.primary.main};
@@ -590,7 +596,7 @@ export const ActionButtons = styled.div`
   display: flex;
   gap: 12px;
   padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -603,23 +609,24 @@ export const LoadingContainer = styled.div`
   align-items: center;
   justify-content: center;
   padding: 64px 24px;
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 `;
 
 export const LoadingSpinner = styled.div`
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top: 3px solid #fa761f;
+  border: 3px solid ${({ theme }) => theme.colors.neutral[200]};
+  border-top: 3px solid ${({ theme }) => theme.colors.primary.main};
   border-radius: 50%;
   animation: ${spin} 1s linear infinite;
   margin-bottom: 16px;
 `;
 
 export const LoadingText = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
   margin: 0;
 `;
@@ -630,15 +637,16 @@ export const NotFoundContainer = styled.div`
   align-items: center;
   justify-content: center;
   padding: 64px 24px;
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
   text-align: center;
 `;
 
 export const NotFoundIcon = styled.div`
   margin-bottom: 24px;
-  color: #d1d5db;
+  color: ${({ theme }) => theme.colors.neutral[400]};
 `;
 
 export const NotFoundContent = styled.div`
@@ -648,12 +656,12 @@ export const NotFoundContent = styled.div`
 export const NotFoundTitle = styled.h2`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 8px 0;
 `;
 
 export const NotFoundDescription = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 0.875rem;
   margin: 0 0 24px 0;
   line-height: 1.5;
@@ -664,12 +672,12 @@ export const WarningBadge = styled.span`
   align-items: center;
   gap: ${({ theme }) => theme.spacing[1]};
   padding: ${({ theme }) => theme.spacing[1]} ${({ theme }) => theme.spacing[2]};
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: ${({ theme }) => theme.colors.semantic.warning}20;
+  color: ${({ theme }) => theme.colors.semantic.warning};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   font-size: ${({ theme }) => theme.typography.fontSize.xs};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  border: 1px solid #fbbf24;
+  border: 1px solid ${({ theme }) => theme.colors.semantic.warning}40;
 
   svg {
     color: currentColor;
@@ -681,9 +689,9 @@ export const InfoMessage = styled.div`
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: #49a84c15;
-  color: #49a84c;
-  border: 1px solid #49a84c30;
+  background: ${({ theme }) => theme.colors.semantic.success}15;
+  color: ${({ theme }) => theme.colors.semantic.success};
+  border: 1px solid ${({ theme }) => theme.colors.semantic.success}30;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -706,11 +714,7 @@ export const ScrollIndicator = styled.div`
   gap: ${({ theme }) => theme.spacing[2]};
   padding: ${({ theme }) => theme.spacing[3]};
   margin-top: ${({ theme }) => theme.spacing[2]};
-  background: linear-gradient(
-    to bottom,
-    rgba(250, 118, 31, 0.05),
-    rgba(250, 118, 31, 0.1)
-  );
+  background: ${({ theme }) => theme.colors.primary.main}10;
   border: 1px solid ${({ theme }) => theme.colors.primary.main}40;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   color: ${({ theme }) => theme.colors.primary.main};
@@ -742,4 +746,58 @@ export const ScrollIndicator = styled.div`
     font-size: ${({ theme }) => theme.typography.fontSize.xs};
     padding: ${({ theme }) => theme.spacing[2]};
   }
+`;
+
+export const BlockInfoText = styled.span`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-weight: 400;
+`;
+
+export const BlockTimePreview = styled.span`
+  margin-left: 8px;
+  font-size: 0.75rem;
+`;
+
+export const ReservationBadge = styled.span`
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: ${({ theme }) => theme.colors.semantic.error};
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+`;
+
+export const DangerWarningBadge = styled(WarningBadge)`
+  background-color: ${({ theme }) => theme.colors.semantic.error};
+  color: #ffffff;
+  border-color: ${({ theme }) => theme.colors.semantic.error};
+`;
+
+export const TimeLabel = styled.label`
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+export const AffectedReservationsList = styled.ul`
+  margin: 0;
+  padding-left: 20px;
+  color: ${({ theme }) => theme.colors.semantic.error};
+`;
+
+export const ModalWarningContainer = styled.div`
+  margin-top: 12px;
+  padding: 12px;
+  background-color: ${({ theme }) => theme.colors.semantic.error}15;
+  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.colors.semantic.error}30;
+`;
+
+export const ModalWarningText = styled.p`
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.semantic.error};
+  margin-bottom: 8px;
 `;
