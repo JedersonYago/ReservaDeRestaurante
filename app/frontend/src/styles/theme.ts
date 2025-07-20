@@ -79,11 +79,11 @@ const baseTheme = {
   },
   breakpoints: {
     xs: "0px",
-    sm: "576px",
-    md: "768px",
-    lg: "992px",
-    xl: "1200px",
-    "2xl": "1400px",
+    sm: "540px",   // Reduzido de 576px
+    md: "720px",   // Reduzido de 768px
+    lg: "940px",   // Reduzido de 992px
+    xl: "1140px",  // Reduzido de 1200px
+    "2xl": "1320px", // Reduzido de 1400px
   },
   shadows: {
     none: "none",

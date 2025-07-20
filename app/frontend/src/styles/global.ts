@@ -13,7 +13,7 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   html {
-    font-size: 16px;
+    font-size: 14px; /* Reduzido de 16px para 14px para diminuir a escala geral */
     scroll-behavior: smooth;
     width: 100%;
     height: 100%;
@@ -127,7 +127,7 @@ export const GlobalStyle = createGlobalStyle`
   /* Melhor tipografia para diferentes tamanhos de tela */
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     html {
-      font-size: 14px;
+      font-size: 13px; /* Reduzido de 14px para 13px */
     }
     
     body {
@@ -138,13 +138,13 @@ export const GlobalStyle = createGlobalStyle`
 
   @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
     html {
-      font-size: 16px;
+      font-size: 14px; /* Mantido em 14px em vez de aumentar para 16px */
     }
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints["2xl"]}) {
     html {
-      font-size: 18px;
+      font-size: 15px; /* Reduzido de 18px para 15px para telas muito grandes */
     }
   }
 

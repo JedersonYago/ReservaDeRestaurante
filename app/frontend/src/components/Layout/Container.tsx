@@ -15,8 +15,8 @@ export const Container = styled.div<ContainerProps>`
     const maxWidths = {
       sm: theme.breakpoints.sm,
       md: theme.breakpoints.md,
-      lg: theme.breakpoints.lg,
-      xl: theme.breakpoints.xl, // 1200px - padrão mais comum
+      lg: theme.breakpoints.lg, // 992px - novo padrão mais compacto
+      xl: theme.breakpoints.xl, // 1200px - para casos especiais
       "2xl": theme.breakpoints["2xl"], // 1400px - para casos especiais
       full: "100%", // Largura total da tela
     };
