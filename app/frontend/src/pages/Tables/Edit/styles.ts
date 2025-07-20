@@ -66,6 +66,11 @@ export const Content = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding-bottom: 120px; /* Espaço para FixedActionBar */
+
+  @media (max-width: 768px) {
+    padding-bottom: 140px; /* Mais espaço em mobile */
+  }
 `;
 
 export const FormSection = styled.section`
@@ -124,20 +129,41 @@ export const AvailabilitySection = styled.section`
   box-shadow: ${({ theme }) => theme.shadows.md};
 `;
 
-export const AvailabilityBlock = styled.div`
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  transition: all 0.2s ease;
+export const AvailabilityGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: ${({ theme }) => theme.spacing[4]};
+  margin-top: ${({ theme }) => theme.spacing[4]};
 
-  &:hover {
-    border-color: #fa761f;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: ${({ theme }) => theme.spacing[3]};
   }
 
-  &:last-child {
-    margin-bottom: 0;
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing[3]};
+  }
+`;
+
+export const AvailabilityBlock = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.neutral[300]};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  overflow: hidden;
+  transition: all ${({ theme }) => theme.transitions.duration[200]} ease;
+  background: ${({ theme }) => theme.colors.background.primary};
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    transform: translateY(-2px);
   }
 `;
 
@@ -145,33 +171,46 @@ export const BlockHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  padding: ${({ theme }) => theme.spacing[4]};
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.neutral[50]},
+    ${({ theme }) => theme.colors.neutral[100]}
+  );
+  border-bottom: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
   > div:first-child {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: #374151;
+    gap: ${({ theme }) => theme.spacing[2]};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+    font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    color: ${({ theme }) => theme.colors.text.primary};
+    flex: 1;
 
     svg {
-      color: #fa761f;
+      color: ${({ theme }) => theme.colors.primary.main};
+      flex-shrink: 0;
     }
   }
 
   @media (max-width: 768px) {
+    padding: ${({ theme }) => theme.spacing[3]};
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: ${({ theme }) => theme.spacing[3]};
   }
 `;
 
 export const BlockActions = styled.div`
   display: flex;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing[2]};
+  align-items: center;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    justify-content: flex-end;
+  }
 `;
 
 export const BlockContent = styled.div`
@@ -202,81 +241,139 @@ export const BlockContent = styled.div`
 `;
 
 export const TimeSlotsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 12px 0;
-  max-height: 280px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: ${({ theme }) => theme.spacing[3]};
+  margin: ${({ theme }) => theme.spacing[3]} 0;
+  max-height: 400px;
   overflow-y: auto;
+  padding: ${({ theme }) => theme.spacing[2]};
+  background: ${({ theme }) => theme.colors.neutral[50]};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[200]};
 
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    max-height: 450px;
+  }
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    max-height: 350px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: ${({ theme }) => theme.spacing[2]};
+    max-height: 300px;
+    padding: ${({ theme }) => theme.spacing[2]};
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    max-height: 250px;
+    gap: ${({ theme }) => theme.spacing[2]};
+  }
+
+  /* Scrollbar styling */
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
   }
 
   &::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 3px;
+    background: ${({ theme }) => theme.colors.neutral[100]};
+    border-radius: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+    background: ${({ theme }) => theme.colors.neutral[400]};
+    border-radius: 4px;
+    transition: background 0.2s ease;
 
     &:hover {
-      background: #94a3b8;
+      background: ${({ theme }) => theme.colors.neutral[500]};
     }
   }
 
+  /* Firefox scrollbar */
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-color: ${({ theme }) => theme.colors.neutral[400]}
+    ${({ theme }) => theme.colors.neutral[100]};
 `;
 
 export const TimeSlotItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => theme.spacing[3]};
+  background-color: ${({ theme }) => theme.colors.background.primary};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[300]};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  transition: all ${({ theme }) => theme.transitions.duration[200]} ease;
+  min-height: 80px;
+  position: relative;
 
   &:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
+    background-color: ${({ theme }) => theme.colors.neutral[50]};
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+  @media (max-width: 480px) {
+    min-height: auto;
+    padding: ${({ theme }) => theme.spacing[2]};
   }
 `;
 
 export const TimeSlotInfo = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
   flex: 1;
 
-  svg {
-    color: #6b7280;
+  .time-display {
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing[2]};
+
+    svg {
+      color: ${({ theme }) => theme.colors.primary.main};
+      flex-shrink: 0;
+    }
+
+    span {
+      font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+      font-size: ${({ theme }) => theme.typography.fontSize.sm};
+      color: ${({ theme }) => theme.colors.text.primary};
+    }
   }
 
-  span {
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: #374151;
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: ${({ theme }) => theme.spacing[1]};
   }
 `;
 
 export const TimeSlotActions = styled.div`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing[2]};
+  right: ${({ theme }) => theme.spacing[2]};
   display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: ${({ theme }) => theme.spacing[1]};
+  opacity: 0.7;
+  transition: opacity ${({ theme }) => theme.transitions.duration[200]} ease;
 
-  @media (max-width: 768px) {
-    justify-content: stretch;
+  ${TimeSlotItem}:hover & {
+    opacity: 1;
+  }
+
+  @media (max-width: 480px) {
+    position: static;
+    opacity: 1;
+    justify-content: flex-end;
+    margin-top: auto;
   }
 `;
 
@@ -344,7 +441,7 @@ export const AddTimeButton = styled.button`
   transition: all ${({ theme }) => theme.transitions.duration[200]} ease;
   margin-top: ${({ theme }) => theme.spacing[3]};
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${({ theme }) => theme.colors.primary.main};
     border-color: ${({ theme }) => theme.colors.primary.main};
     color: ${({ theme }) => theme.colors.primary.contrast};
@@ -352,9 +449,17 @@ export const AddTimeButton = styled.button`
     box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.colors.neutral[50]};
+    border-color: ${({ theme }) => theme.colors.neutral[200]};
+    color: ${({ theme }) => theme.colors.text.disabled};
   }
 
   svg {
@@ -377,7 +482,7 @@ export const AddActionButton = styled.button`
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.duration[200]} ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${({ theme }) => theme.colors.primary.main};
     border-color: ${({ theme }) => theme.colors.primary.main};
     color: ${({ theme }) => theme.colors.primary.contrast};
@@ -385,9 +490,17 @@ export const AddActionButton = styled.button`
     box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.colors.neutral[50]};
+    border-color: ${({ theme }) => theme.colors.neutral[200]};
+    color: ${({ theme }) => theme.colors.text.disabled};
   }
 
   svg {
@@ -433,30 +546,39 @@ export const AddBlockButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: ${({ theme }) => theme.spacing[3]};
   width: 100%;
-  padding: 14px 20px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  color: #fa761f;
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: ${({ theme }) => theme.spacing[4]} ${({ theme }) => theme.spacing[5]};
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.neutral[50]},
+    ${({ theme }) => theme.colors.neutral[100]}
+  );
+  border: 2px dashed ${({ theme }) => theme.colors.primary.main}40;
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  color: ${({ theme }) => theme.colors.primary.main};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 16px;
+  transition: all ${({ theme }) => theme.transitions.duration[200]} ease;
+  margin-top: ${({ theme }) => theme.spacing[6]};
 
   &:hover {
-    background-color: #fa761f;
-    border-color: #fa761f;
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(250, 118, 31, 0.15);
+    background: linear-gradient(
+      135deg,
+      ${({ theme }) => theme.colors.primary.main},
+      ${({ theme }) => theme.colors.primary.dark}
+    );
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    border-style: solid;
+    color: ${({ theme }) => theme.colors.primary.contrast};
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.lg};
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(250, 118, 31, 0.15);
+    box-shadow: ${({ theme }) => theme.shadows.md};
   }
 
   svg {
@@ -581,20 +703,23 @@ export const ScrollIndicator = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => theme.spacing[3]};
+  margin-top: ${({ theme }) => theme.spacing[2]};
   background: linear-gradient(
     to bottom,
-    rgba(249, 250, 251, 0.8),
-    rgba(249, 250, 251, 1)
+    rgba(250, 118, 31, 0.05),
+    rgba(250, 118, 31, 0.1)
   );
-  border-top: 1px solid #e5e7eb;
-  color: #6b7280;
-  font-size: 0.75rem;
-  font-weight: 500;
+  border: 1px solid ${({ theme }) => theme.colors.primary.main}40;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  color: ${({ theme }) => theme.colors.primary.main};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
 
   svg {
-    animation: bounce 1s infinite;
+    animation: bounce 1.5s infinite;
+    color: ${({ theme }) => theme.colors.primary.main};
   }
 
   @keyframes bounce {
@@ -606,10 +731,15 @@ export const ScrollIndicator = styled.div`
       transform: translateY(0);
     }
     40% {
-      transform: translateY(-3px);
+      transform: translateY(-4px);
     }
     60% {
       transform: translateY(-2px);
     }
+  }
+
+  @media (max-width: 480px) {
+    font-size: ${({ theme }) => theme.typography.fontSize.xs};
+    padding: ${({ theme }) => theme.spacing[2]};
   }
 `;

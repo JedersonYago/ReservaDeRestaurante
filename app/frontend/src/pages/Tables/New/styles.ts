@@ -79,10 +79,12 @@ export const Content = styled.form`
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  padding-bottom: 120px; /* Espaço para FixedActionBar */
   animation: ${fadeIn} 0.6s ease-out 0.1s both;
 
   @media (max-width: 768px) {
     gap: 1.5rem;
+    padding-bottom: 140px; /* Mais espaço em mobile */
   }
 `;
 
@@ -279,6 +281,22 @@ export const WarningBadge = styled.span`
   }
 `;
 
+export const TimeIntervalsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
 export const EmptyTimeSlots = styled.div`
   display: flex;
   align-items: center;
@@ -359,7 +377,7 @@ export const AddActionButton = styled.button`
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.duration[200]} ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${({ theme }) => theme.colors.primary.main};
     border-color: ${({ theme }) => theme.colors.primary.main};
     color: ${({ theme }) => theme.colors.primary.contrast};
@@ -367,9 +385,17 @@ export const AddActionButton = styled.button`
     box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.colors.neutral[50]};
+    border-color: ${({ theme }) => theme.colors.neutral[200]};
+    color: ${({ theme }) => theme.colors.text.disabled};
   }
 
   svg {
