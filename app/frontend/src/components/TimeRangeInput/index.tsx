@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { Button } from "../Button";
+import { DeleteButton } from "../Button/DeleteButton";
 import { Input } from "../Input";
 
 interface TimeRange {
@@ -37,13 +38,12 @@ export function TimeRangeInput({ value, onChange }: TimeRangeInputProps) {
             <span>
               {range.start} - {range.end}
             </span>
-            <Button
+            <DeleteButton
               type="button"
-              variant="danger"
               onClick={() => handleRemoveRange(index)}
             >
               Remover
-            </Button>
+            </DeleteButton>
           </TimeRangeItem>
         ))}
       </TimeRangeList>
