@@ -2,11 +2,23 @@
   "name": "@restaurant-reservation/shared",
   "version": "1.0.0",
   "description": "Biblioteca compartilhada entre frontend e backend",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "clean": "rimraf dist"
   },
   "keywords": [
     "restaurant",
@@ -18,5 +30,8 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
   }
 }

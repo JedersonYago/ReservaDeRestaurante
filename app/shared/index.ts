@@ -14,3 +14,6 @@ export * from "./utils";
 
 // Padrões de validação
 export * from "./patterns/validation";
+
+// Schemas de validação
+export * from "./validation/schemas";
