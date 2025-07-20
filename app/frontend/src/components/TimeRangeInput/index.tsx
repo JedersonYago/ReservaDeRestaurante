@@ -1,6 +1,5 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { Button } from "../Button";
 import { DeleteButton } from "../Button/DeleteButton";
 import { Input } from "../Input";
 
@@ -61,9 +60,9 @@ export function TimeRangeInput({ value, onChange }: TimeRangeInputProps) {
           onChange={(e) => setNewRange({ ...newRange, end: e.target.value })}
           label="Fim"
         />
-        <Button type="button" onClick={handleAddRange}>
+        <AddButton type="button" onClick={handleAddRange}>
           Adicionar Horário
-        </Button>
+        </AddButton>
       </TimeRangeForm>
     </Container>
   );
@@ -99,4 +98,26 @@ const TimeRangeForm = styled.div`
   grid-template-columns: 1fr 1fr auto;
   gap: 1rem;
   align-items: end;
+`;
+
+const AddButton = styled.button`
+  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+  background: ${({ theme }) => theme.colors.primary.main};
+  color: ${({ theme }) => theme.colors.primary.contrast};
+  border: none;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.duration[200]} ${({ theme }) => theme.transitions.timing.out};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary.dark};
+  }
+
+  &:disabled {
+    background: ${({ theme }) => theme.colors.neutral[300]};
+    color: ${({ theme }) => theme.colors.text.disabled};
+    cursor: not-allowed;
+  }
 `;
