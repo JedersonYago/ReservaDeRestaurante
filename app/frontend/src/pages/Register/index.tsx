@@ -14,7 +14,6 @@ import {
   User,
   Mail,
   Lock,
-  ArrowLeft,
   CheckCircle,
   X,
   AlertTriangle,
@@ -114,10 +113,7 @@ export function Register() {
                 <Logo size="lg" variant="full" onClick={() => navigate("/")} />
               </S.BrandSection>
 
-              <S.BackButton onClick={() => navigate("/")}>
-                <ArrowLeft size={16} />
-                Voltar
-              </S.BackButton>
+              {/* Botão de voltar removido */}
               <S.FormHeader>
                 <S.WelcomeTitle>Criar sua conta</S.WelcomeTitle>
                 <S.WelcomeSubtitle>

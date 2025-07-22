@@ -12,7 +12,6 @@ import { useEffect } from "react";
 import { loginSchema } from "../../schemas/auth";
 import { z } from "zod";
 import {
-  ArrowLeft,
   User,
   Lock,
   XCircle,
@@ -125,10 +124,7 @@ const Login: React.FC = () => {
                 <Logo size="lg" variant="full" onClick={() => navigate("/")} />
               </S.BrandSection>
 
-              <S.BackButton onClick={() => navigate("/")}>
-                <ArrowLeft size={16} />
-                Voltar
-              </S.BackButton>
+              {/* Botão de voltar removido */}
               <S.FormHeader>
                 <S.WelcomeTitle>Bem-vindo de volta!</S.WelcomeTitle>
                 <S.WelcomeSubtitle>

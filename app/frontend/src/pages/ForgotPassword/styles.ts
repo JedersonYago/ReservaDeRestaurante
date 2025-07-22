@@ -135,7 +135,6 @@ export const InfoBox = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing[6]};
 
   div {
-    flex: 1;
 
     strong {
       display: block;
