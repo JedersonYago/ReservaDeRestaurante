@@ -5,7 +5,7 @@ import { AdminConfigProvider } from "../components/AdminConfigProvider";
 import { PageLoader } from "../components/Loading/PageLoader";
 
 // Páginas públicas (carregadas imediatamente)
-import { Home } from "../pages/Home";
+// import { Home } from "../pages/Home";
 import Login from "../pages/Login";
 import { Register } from "../pages/Register/index";
 import { ForgotPassword } from "../pages/ForgotPassword";
@@ -55,7 +55,7 @@ const NotFound = lazy(() =>
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      {/* <Route path="/" element={<Home />} /> */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
