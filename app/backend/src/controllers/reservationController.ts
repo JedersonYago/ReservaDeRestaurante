@@ -71,9 +71,36 @@ async function isTimeSlotAvailable(
   date: string,
   time: string
 ): Promise<boolean> {
+  // Primeiro verificar se a mesa existe
+  const table = await Table.findById(tableId);
+  if (!table) {
+    return false;
+  }
+
+  // Verificar se o horário está na disponibilidade da mesa
+  const targetDate = date.slice(0, 10);
+  const availabilityBlock = table.availability.find(
+    (block) => block.date === targetDate
+  );
+
+  if (!availabilityBlock) {
+    return false;
+  }
+
+  // Verificar se o horário específico está configurado na mesa
+  const isTimeConfigured = availabilityBlock.times.some((timeRange: string) => {
+    const [startTime] = timeRange.split("-");
+    return startTime === time;
+  });
+
+  if (!isTimeConfigured) {
+    return false;
+  }
+
+  // Verificar se não há reserva existente para este horário
   const existingReservation = await Reservation.findOne({
     tableId: tableId,
-    date: date.slice(0, 10),
+    date: targetDate,
     time,
     status: { $ne: "cancelled" },
   });
@@ -208,75 +235,37 @@ export async function updateTableStatus(tableId: string | null) {
 // Criar nova reserva
 export const createReservation = async (req: Request, res: Response) => {
   try {
-    const {
-      tableId,
-      customerName,
-      customerEmail,
-      date,
-      time,
-      observations,
-    } = req.body;
-
-    // Obter userId do usuário autenticado
+    const { tableId, customerName, customerEmail, date, time, observations } =
+      req.body;
     const userId = req.user?._id;
+
+    // Verificar se o usuário está autenticado
     if (!userId) {
-      return res.status(401).json({ error: "Usuário não autenticado" });
+      return res.status(401).json({
+        error: "Usuário não autenticado",
+      });
+    }
+
+    // Validações básicas
+    if (!tableId || !customerName || !customerEmail || !date || !time) {
+      return res.status(400).json({
+        error: "Todos os campos obrigatórios devem ser preenchidos",
+      });
     }
 
     // Verificar se a mesa existe
-    const tableExists = await Table.findById(tableId);
-    if (!tableExists) {
-      return res.status(404).json({ error: "Mesa não encontrada" });
-    }
-
-    // Verificar se a mesa está em manutenção ou expirada
-    if (tableExists.status === "maintenance") {
-      return res.status(400).json({
-        error: "Mesa está em manutenção e não está disponível para reserva",
+    const table = await Table.findById(tableId);
+    if (!table) {
+      return res.status(404).json({
+        error: "Mesa não encontrada",
       });
     }
 
-    if (tableExists.status === "expired") {
-      return res.status(400).json({
-        error: "Mesa expirou e não está disponível para reserva",
-      });
-    }
-
-    // Verificar se o horário está dentro dos horários disponíveis
-    const availabilityBlock = tableExists.availability.find(
-      (block: AvailabilityBlock) => block.date === date.slice(0, 10)
-    );
-
-    if (!availabilityBlock) {
-      return res.status(400).json({
-        error: "Data fora do período de disponibilidade da mesa",
-      });
-    }
-
-    const isTimeAvailable = availabilityBlock.times.some(
-      (timeRange: string) => {
-        const [startTime] = timeRange.split("-");
-        return startTime === time;
-      }
-    );
-
+    // Validar se o horário está disponível na mesa
+    const isTimeAvailable = await isTimeSlotAvailable(tableId, date, time);
     if (!isTimeAvailable) {
       return res.status(400).json({
-        error: "Horário fora do período de disponibilidade da mesa",
-      });
-    }
-
-    // Verificar se o horário específico está disponível
-    const isSlotAvailable = !(await Reservation.findOne({
-      tableId,
-      date: date.slice(0, 10),
-      time,
-      status: { $in: ["pending", "confirmed"] },
-    }));
-
-    if (!isSlotAvailable) {
-      return res.status(400).json({
-        error: "Horário já está reservado",
+        error: "Horário não disponível para esta mesa",
       });
     }
 
@@ -321,18 +310,31 @@ export const createReservation = async (req: Request, res: Response) => {
       status: "pending" as const,
     };
 
-    const reservation = new Reservation(reservationData);
-    await reservation.save();
+    // Criar reserva (o índice único vai prevenir duplicatas)
+    try {
+      const reservation = new Reservation(reservationData);
+      await reservation.save();
 
-    // Agendar confirmação automática da reserva
-    await scheduleAutoApproval(String(reservation._id));
+      // Agendar confirmação automática da reserva
+      await scheduleAutoApproval(String(reservation._id));
 
-    // Atualizar o status da mesa após criar a reserva
-    await updateTableStatus(tableId);
+      // Atualizar o status da mesa após criar a reserva
+      await updateTableStatus(tableId);
 
-    return res.status(201).json(reservation);
+      return res.status(201).json(reservation);
+    } catch (saveError: any) {
+      // Se for erro de índice único (código 11000), significa conflito de concorrência
+      if (saveError.code === 11000) {
+        return res.status(400).json({
+          error: "Horário já está reservado",
+        });
+      }
+      // Outros erros, re-lançar
+      throw saveError;
+    }
+
   } catch (error: any) {
-    console.error("Erro ao criar reserva:", error);
+    console.error("[createReservation] Erro ao criar reserva:", error);
     res.status(500).json({
       error: error.response?.data?.error || "Erro ao fazer reserva",
     });

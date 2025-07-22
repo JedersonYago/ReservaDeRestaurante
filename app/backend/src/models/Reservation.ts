@@ -62,4 +62,17 @@ const reservationSchema = new Schema<IReservation>(
 reservationSchema.index({ tableId: 1, date: 1, time: 1 });
 reservationSchema.index({ customerEmail: 1 });
 
+// CONTROLE DE CONCORRÊNCIA: Índice único composto para evitar reservas duplicadas
+// Apenas para reservas ativas (pending/confirmed)
+reservationSchema.index(
+  { tableId: 1, date: 1, time: 1 },
+  { 
+    unique: true,
+    partialFilterExpression: { 
+      status: { $in: ["pending", "confirmed"] } 
+    },
+    name: "unique_active_reservation"
+  }
+);
+
 export default model<IReservation>("Reservation", reservationSchema);

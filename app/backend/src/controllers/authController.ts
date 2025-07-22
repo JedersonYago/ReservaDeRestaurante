@@ -32,7 +32,13 @@ const authController = {
       // Gerar par de tokens
       const { accessToken, refreshToken } = generateTokenPair(user);
 
-      // Salvar refresh token no banco
+      // Revogar todos os refresh tokens anteriores do usuário
+      await RefreshToken.updateMany(
+        { userId: user._id, isRevoked: false },
+        { isRevoked: true }
+      );
+
+      // Salvar novo refresh token no banco
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 dias
 
@@ -64,12 +70,7 @@ const authController = {
   async register(req: Request, res: Response) {
     try {
       const { name, username, email, password, role, adminCode } = req.body;
-
-      if (role === "admin" && adminCode !== config.auth.adminCode) {
-        return res
-          .status(400)
-          .json({ message: "Código de administrador inválido" });
-      }
+      console.log('[register] role:', role, 'adminCode:', adminCode);
 
       // Verificação case-insensitive para email e username
       const existingUser = await User.findOne({
@@ -85,12 +86,20 @@ const authController = {
         });
       }
 
+      let finalRole: "client" | "admin" = "client";
+      if (role === "admin") {
+        if (adminCode !== config.auth.adminCode) {
+          return res.status(400).json({ message: "Código de administrador inválido" });
+        }
+        finalRole = "admin";
+      }
+
       const user = await User.create({
         name,
         username: username.toLowerCase().trim(),
         email: email.toLowerCase().trim(),
         password,
-        role,
+        role: finalRole,
       });
 
       // Gerar par de tokens
