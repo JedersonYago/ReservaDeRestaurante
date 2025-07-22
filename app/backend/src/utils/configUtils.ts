@@ -9,30 +9,20 @@ export async function applyConfigToReservation(
 ): Promise<{ isValid: boolean; error?: string }> {
   // Verificar horários de funcionamento - controla QUANDO é possível fazer reservas
   if (config.isOpeningHoursEnabled) {
-    const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(
-      now.getMinutes()
-    ).padStart(2, "0")}`;
+    // Valida o horário da reserva, não o horário atual do sistema
+    // reservationDate: 'YYYY-MM-DD', reservationTime: 'HH:mm'
+    const reservationDateTime = parseISO(`${reservationDate}T${reservationTime}`);
+    const openingDateTime = parseISO(`${reservationDate}T${config.openingHour}`);
+    const closingDateTime = parseISO(`${reservationDate}T${config.closingHour}`);
 
-    const currentDateTime = parseISO(
-      `${now.toISOString().slice(0, 10)}T${currentTime}`
-    );
-    const openingDateTime = parseISO(
-      `${now.toISOString().slice(0, 10)}T${config.openingHour}`
-    );
-    const closingDateTime = parseISO(
-      `${now.toISOString().slice(0, 10)}T${config.closingHour}`
-    );
-
-    // Verificar se estamos dentro do horário de funcionamento ATUAL
-    if (isBefore(currentDateTime, openingDateTime)) {
+    if (isBefore(reservationDateTime, openingDateTime)) {
       return {
         isValid: false,
         error: `Sistema de reservas disponível apenas a partir das ${config.openingHour}`,
       };
     }
 
-    if (isAfter(currentDateTime, closingDateTime)) {
+    if (isAfter(reservationDateTime, closingDateTime)) {
       return {
         isValid: false,
         error: `Sistema de reservas encerrado. Horário de funcionamento: ${config.openingHour} - ${config.closingHour}`,

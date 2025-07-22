@@ -1,3 +1,19 @@
+export const verifyToken = (token: string): TokenPayload => {
+  try {
+    return jwt.verify(
+      token,
+      config.auth.jwtSecret as jwt.Secret
+    ) as TokenPayload;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new Error("Token expirado");
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new Error("Token inválido");
+    }
+    throw new Error("Erro ao verificar token");
+  }
+};
 import jwt from "jsonwebtoken";
 import { config } from "../config";
 import { IUser } from "../models/User";
@@ -38,11 +54,13 @@ export const generateTokenPair = (user: IUser): TokenPair => {
     type: "access",
   };
 
-  const refreshPayload: TokenPayload = {
+  // Adiciona um campo jti aleatório para garantir unicidade do refresh token
+  const refreshPayload: TokenPayload & { jti: string } = {
     _id: user._id,
     role: user.role,
     username: user.username,
     type: "refresh",
+    jti: Math.random().toString(36).substring(2) + Date.now().toString(36),
   };
 
   const accessToken = jwt.sign(
@@ -57,30 +75,12 @@ export const generateTokenPair = (user: IUser): TokenPair => {
     refreshPayload,
     config.auth.jwtSecret as jwt.Secret,
     {
-      expiresIn: config.auth
-        .refreshTokenExpiresIn as jwt.SignOptions["expiresIn"],
+      expiresIn: config.auth.refreshTokenExpiresIn as jwt.SignOptions["expiresIn"],
     }
   );
 
   return { accessToken, refreshToken };
-};
-
-export const verifyToken = (token: string): TokenPayload => {
-  try {
-    return jwt.verify(
-      token,
-      config.auth.jwtSecret as jwt.Secret
-    ) as TokenPayload;
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      throw new Error("Token expirado");
-    }
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw new Error("Token inválido");
-    }
-    throw new Error("Erro ao verificar token");
-  }
-};
+}
 
 export const verifyRefreshToken = (token: string): TokenPayload => {
   try {
