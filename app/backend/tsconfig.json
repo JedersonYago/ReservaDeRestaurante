@@ -11,7 +11,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "typeRoots": ["../node_modules/@types", "./node_modules/@types", "./src/types"],
-    "types": ["node", "express"],
+    "types": ["node", "express", "jest"],
     "baseUrl": "../",
     "paths": {
       "*": ["../node_modules/*", "backend/node_modules/*", "backend/src/types/*"],
