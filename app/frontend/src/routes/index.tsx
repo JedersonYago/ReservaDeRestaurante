@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ProtectedLayout } from "../components/ProtectedLayout";
 import { AdminConfigProvider } from "../components/AdminConfigProvider";
@@ -55,6 +55,8 @@ const NotFound = lazy(() =>
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Redirecionar rota raiz para login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       {/* <Route path="/" element={<Home />} /> */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
