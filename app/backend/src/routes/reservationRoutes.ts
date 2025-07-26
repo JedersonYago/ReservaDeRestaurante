@@ -9,6 +9,8 @@ import {
   getAvailableTimes,
   confirmReservation,
   reservationController,
+  getReservationsByDate,
+  getReservationsByTable,
 } from "../controllers/reservationController";
 import { auth, adminAuth } from "../middlewares/auth";
 import { validateSchema } from "../middlewares/validateSchema";
@@ -17,6 +19,8 @@ import { reservationSchema } from "../validations/schemas";
 const router = Router();
 
 // Rotas gerais
+router.get("/table/:tableId", auth, getReservationsByTable);
+router.get("/date/:date", auth, getReservationsByDate);
 router.get("/", auth, listReservations);
 router.get("/:id", auth, getReservationById);
 router.post("/", auth, validateSchema(reservationSchema), createReservation);

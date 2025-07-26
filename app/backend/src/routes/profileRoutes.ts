@@ -25,6 +25,7 @@ router.put(
   validateSchema(changePasswordSchema),
   profileController.changePassword
 );
+router.put("/:username/change-username", profileController.changeUsername);
 router.delete(
   "/:username",
   validateSchema(deleteAccountSchema),

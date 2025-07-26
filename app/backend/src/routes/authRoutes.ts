@@ -27,6 +27,7 @@ router.post(
 );
 router.post("/refresh", refreshLimiter, authController.refresh);
 router.post("/logout", authLimiter, authController.logout);
+router.post("/logout-all", authenticate, authController.logoutAll);
 
 // Rotas de recuperação de senha (públicas)
 router.post(
@@ -41,11 +42,9 @@ router.post(
   validateSchema(resetPasswordSchema),
   authController.resetPassword
 );
-router.get("/verify-reset-token", authController.verifyResetToken);
+router.get("/verify-reset-token", authLimiter, authController.verifyResetToken);
 
-// Rotas protegidas
+// Rotas autenticadas
 router.get("/me", authenticate, authController.getCurrentUser);
-router.post("/logout-all", authenticate, authController.logoutAll);
-router.get("/validate", authenticate, authController.validateToken);
 
 export default router;
