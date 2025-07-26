@@ -157,11 +157,14 @@ export const InputWrapper = styled.div`
 
 export const InputIcon = styled.div`
   position: absolute;
-  top: 44px;
+  top: 55%;
   left: ${({ theme }) => theme.spacing[3]};
   color: ${({ theme }) => theme.colors.text.secondary};
   z-index: 1;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const SubmitButton = styled(Button)`
@@ -202,9 +205,10 @@ export const ForgotPasswordLink = styled(Link)`
 
   &:hover {
     color: ${({ theme }) => theme.colors.primary.main};
-    background: ${({ theme }) => theme.colors.background.primary === '#0F0F0F' 
-      ? theme.colors.primary[1000] 
-      : theme.colors.primary[50]};
+    background: ${({ theme }) =>
+      theme.colors.background.primary === "#0F0F0F"
+        ? theme.colors.primary[1000]
+        : theme.colors.primary[50]};
   }
 
   &:focus {

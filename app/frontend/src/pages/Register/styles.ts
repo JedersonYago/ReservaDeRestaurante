@@ -300,11 +300,14 @@ export const InputWrapper = styled.div`
 
 export const InputIcon = styled.div`
   position: absolute;
-  top: 44px;
+  top: 55%;
   left: ${({ theme }) => theme.spacing[3]};
   color: ${({ theme }) => theme.colors.text.secondary};
   z-index: 1;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const PasswordStrength = styled.div`
