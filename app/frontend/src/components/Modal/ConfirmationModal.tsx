@@ -20,7 +20,7 @@ interface ConfirmationModalProps {
 const typeConfig: Record<
   ConfirmationType,
   {
-    icon: React.ComponentType<{ size?: number }>;
+    icon: React.ComponentType<any>;
     color: string;
     confirmVariant: "primary" | "danger" | "success" | "warning";
   }

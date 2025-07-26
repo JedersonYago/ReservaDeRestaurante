@@ -13,7 +13,8 @@
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "removeComments": true,
-    "noEmitOnError": false
+    "noEmitOnError": false,
+    "types": []
   },
   "include": [
     "index.ts",

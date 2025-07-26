@@ -29,6 +29,7 @@
       "../../shared/types",
       "../../shared/validation"
     ],
+    "types": ["node", "react", "react-dom"],
     "baseUrl": ".",
     "paths": {
       "shared": ["../shared/dist"],
