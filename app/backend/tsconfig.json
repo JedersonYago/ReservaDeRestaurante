@@ -23,7 +23,7 @@
         "backend/node_modules/*",
         "backend/src/types/*"
       ],
-      "@shared/*": ["shared/dist/*"]
+      "@shared/*": ["shared/dist/*", "dist/shared/*"]
     },
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
@@ -36,6 +36,10 @@
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts",
-    "__tests__/**/*"
+    "__tests__/**/*",
+    "**/__tests__/**/*",
+    "**/__mocks__/**/*",
+    "**/*.test.js",
+    "**/*.spec.js"
   ]
 }
