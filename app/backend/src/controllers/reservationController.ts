@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Reservation, { IReservation } from "../models/Reservation";
 import Table, { ITable } from "../models/Table";
-import User from "../models/User";
+import { getUserModel } from "../models/User";
 import mongoose from "mongoose";
 import { reservationSchema } from "../validations/schemas";
 import { isDateInRange, isTimeInRange } from "../utils/dateUtils";
@@ -58,6 +58,18 @@ export const getReservationById = async (req: Request, res: Response) => {
     if (!reservation) {
       return res.status(404).json({ error: "Reserva não encontrada" });
     }
+
+    const isOwner =
+      reservation.userId && reservation.userId._id
+        ? reservation.userId._id.toString() === req.user?._id.toString()
+        : reservation.userId.toString() === req.user?._id.toString();
+    const isAdmin = req.user?.role === "admin";
+    if (!isOwner && !isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "Você não tem permissão para acessar esta reserva" });
+    }
+
     return res.json(reservation);
   } catch (error) {
     console.error("[getReservationById] Erro ao buscar reserva:", error);
@@ -127,9 +139,8 @@ function getDayOfWeek(dateStr: string) {
   ][dayIdx];
 }
 
-// Função para atualizar o status da mesa com base nas reservas ativas
 // Função para validar limite de reservas por usuário baseado na configuração
-async function validateUserReservationLimit(
+export async function validateUserReservationLimit(
   userId: string
 ): Promise<{ isValid: boolean; error?: string }> {
   try {
@@ -260,6 +271,12 @@ export const createReservation = async (req: Request, res: Response) => {
         error: "Mesa não encontrada",
       });
     }
+    // Bloquear reserva se a mesa estiver em manutenção
+    if (table.status === "maintenance") {
+      return res.status(400).json({
+        error: "Mesa está em manutenção e não está disponível para reserva",
+      });
+    }
 
     // Validar se o horário está disponível na mesa
     const isTimeAvailable = await isTimeSlotAvailable(tableId, date, time);
@@ -332,7 +349,6 @@ export const createReservation = async (req: Request, res: Response) => {
       // Outros erros, re-lançar
       throw saveError;
     }
-
   } catch (error: any) {
     console.error("[createReservation] Erro ao criar reserva:", error);
     res.status(500).json({
@@ -380,20 +396,37 @@ export const getAvailableTimes = async (req: Request, res: Response) => {
 // Cancelar reserva
 export const cancelReservation = async (req: Request, res: Response) => {
   try {
-    const reservation = await Reservation.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user?._id },
-      { status: "cancelled" },
-      { new: true }
-    );
-
+    // Buscar a reserva pelo id
+    const reservation = await Reservation.findById(req.params.id);
     if (!reservation) {
       return res.status(404).json({ error: "Reserva não encontrada" });
     }
+    // Bloquear se já estiver cancelada
+    if (reservation.status === "cancelled") {
+      return res.status(400).json({ error: "Reserva já está cancelada" });
+    }
 
-    // Atualizar status da mesa
-    await updateTableStatus(
-      reservation.tableId ? reservation.tableId.toString() : null
-    );
+    // Verificar permissão: dono ou admin
+    const isOwner = reservation.userId.toString() === req.user?._id.toString();
+    const isAdmin = req.user?.role === "admin";
+    if (!isOwner && !isAdmin) {
+      return res
+        .status(403)
+        .json({ error: "Você não tem permissão para cancelar esta reserva" });
+    }
+
+    // Atualizar status para cancelado
+    reservation.status = "cancelled";
+    await reservation.save();
+
+    // Remover a reserva do array reservations da mesa, se existir
+    if (reservation.tableId) {
+      await Table.findByIdAndUpdate(reservation.tableId, {
+        $pull: { reservations: reservation._id },
+      });
+      // Atualizar status da mesa
+      await updateTableStatus(reservation.tableId.toString());
+    }
 
     return res.json(reservation);
   } catch (error) {
@@ -438,16 +471,20 @@ export const deleteReservation = async (req: Request, res: Response) => {
 // Limpar reserva da lista do usuário (não exclui, apenas esconde)
 export const clearReservation = async (req: Request, res: Response) => {
   try {
-    const reservation = await Reservation.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user?._id },
-      { hiddenFromUser: true },
-      { new: true }
-    );
-
+    const reservation = await Reservation.findOne({
+      _id: req.params.id,
+      userId: req.user?._id,
+    });
     if (!reservation) {
       return res.status(404).json({ error: "Reserva não encontrada" });
     }
-
+    if (reservation.hiddenFromUser) {
+      return res
+        .status(400)
+        .json({ error: "Reserva já está oculta para o usuário" });
+    }
+    reservation.hiddenFromUser = true;
+    await reservation.save();
     return res.json({ message: "Reserva removida da sua lista" });
   } catch (error) {
     console.error("[clearReservation] Erro ao limpar reserva:", error);
@@ -492,15 +529,24 @@ export const getReservationsByDate = async (req: Request, res: Response) => {
 // Confirmar reserva
 export const confirmReservation = async (req: Request, res: Response) => {
   try {
-    const reservation = await Reservation.findOneAndUpdate(
-      { _id: req.params.id },
-      { status: "confirmed" },
-      { new: true }
-    );
+    // Permitir apenas admin
+    if (req.user?.role !== "admin") {
+      return res
+        .status(403)
+        .json({ error: "Apenas administradores podem confirmar reservas" });
+    }
 
+    const reservation = await Reservation.findById(req.params.id);
     if (!reservation) {
       return res.status(404).json({ error: "Reserva não encontrada" });
     }
+
+    if (reservation.status === "confirmed") {
+      return res.status(400).json({ error: "Reserva já está confirmada" });
+    }
+
+    reservation.status = "confirmed";
+    await reservation.save();
 
     // Atualizar status da mesa
     await updateTableStatus(
@@ -645,6 +691,12 @@ export const reservationController = {
 
   async update(req: Request, res: Response) {
     try {
+      // Permitir apenas admin
+      if (req.user?.role !== "admin") {
+        return res
+          .status(403)
+          .json({ error: "Apenas administradores podem atualizar reservas" });
+      }
       const { id } = req.params;
       const { table, date, time, status } = req.body;
 
@@ -652,6 +704,10 @@ export const reservationController = {
       const reservation = await Reservation.findById(id);
       if (!reservation) {
         return res.status(404).json({ error: "Reserva não encontrada" });
+      }
+      // Bloquear atualização se já estiver confirmada
+      if (reservation.status === "confirmed") {
+        return res.status(400).json({ error: "Reserva já está confirmada" });
       }
 
       // Se estiver mudando a mesa ou o horário, verificar disponibilidade

@@ -70,8 +70,8 @@ export const tableController = {
       // Validar dados da mesa
       const result = tableSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          message: result.error.errors[0].message 
+        return res.status(400).json({
+          message: result.error.errors[0].message,
         });
       }
 
@@ -103,8 +103,8 @@ export const tableController = {
       // Validar dados da mesa
       const result = tableSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          message: result.error.errors[0].message 
+        return res.status(400).json({
+          message: result.error.errors[0].message,
         });
       }
 
@@ -197,6 +197,21 @@ export const tableController = {
       const table = await Table.findById(tableId);
       if (!table) {
         return res.status(404).json({ message: "Mesa não encontrada" });
+      }
+
+      // Verificar reservas ativas
+      const activeReservations = await Reservation.find({
+        tableId: table._id,
+        status: { $in: ["pending", "confirmed"] },
+      });
+      if (activeReservations.length > 0 && !cancelReservations) {
+        return res.status(409).json({
+          message:
+            "Mesa tem reservas ativas que precisam ser remanejadas ou canceladas",
+          affectedReservations: activeReservations,
+          tableId: table._id,
+          tableName: table.name,
+        });
       }
 
       // Se cancelReservations for true, cancelar todas as reservas restantes

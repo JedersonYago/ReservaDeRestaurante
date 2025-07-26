@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import User from "../models/User";
+import { getUserModel } from "../models/User";
 
 const profileController = {
   async getProfile(req: Request, res: Response) {
     try {
       const { username } = req.params;
 
+      const User = getUserModel();
       const user = await User.findOne({ username }).select("-password");
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
@@ -37,7 +38,8 @@ const profileController = {
   async updateProfile(req: Request, res: Response) {
     try {
       const { username } = req.params;
-      const { name, email, username: newUsername, currentPassword } = req.body;
+      const { name, email, currentPassword, update } = req.body;
+      const newUsername = update?.newUsername;
 
       // Verifica se o usuário está tentando atualizar seu próprio perfil
       if (req.user?.username !== username) {
@@ -46,6 +48,7 @@ const profileController = {
           .json({ message: "Não autorizado a atualizar este perfil" });
       }
 
+      let User = getUserModel();
       const user = await User.findOne({ username });
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
@@ -108,6 +111,7 @@ const profileController = {
         }
 
         // Verifica se email já existe
+        User = getUserModel();
         const existingEmailUser = await User.findOne({
           email,
           _id: { $ne: user._id },
@@ -158,6 +162,7 @@ const profileController = {
         }
 
         // Verifica se username já existe
+        User = getUserModel();
         const existingUsernameUser = await User.findOne({
           username: newUsername,
           _id: { $ne: user._id },
@@ -218,19 +223,23 @@ const profileController = {
       const { username } = req.params;
       const { currentPassword, newPassword } = req.body;
 
-      // Verifica se o usuário está tentando alterar sua própria senha
-      if (req.user?.username !== username) {
+      // Checagem de permissão ANTES de buscar o usuário
+      if (!req.user || req.user.username !== username) {
         return res
           .status(403)
           .json({ message: "Não autorizado a alterar esta senha" });
       }
 
+      const User = getUserModel();
       const user = await User.findOne({ username });
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
 
       // Verifica se a senha atual está correta
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Senha atual é obrigatória" });
+      }
       const isCurrentPasswordValid = await user.comparePassword(
         currentPassword
       );
@@ -239,11 +248,14 @@ const profileController = {
       }
 
       // Verifica se a nova senha é diferente da atual
+      if (!newPassword) {
+        return res.status(400).json({ message: "Nova senha é obrigatória" });
+      }
       const isSamePassword = await user.comparePassword(newPassword);
       if (isSamePassword) {
-        return res.status(400).json({
-          message: "A nova senha deve ser diferente da senha atual",
-        });
+        return res
+          .status(400)
+          .json({ message: "A nova senha deve ser diferente da senha atual" });
       }
 
       // Atualiza a senha
@@ -253,6 +265,101 @@ const profileController = {
       res.json({ message: "Senha alterada com sucesso" });
     } catch (error) {
       res.status(500).json({ message: "Erro ao alterar senha" });
+    }
+  },
+
+  async changeUsername(req: Request, res: Response) {
+    try {
+      const { username } = req.params;
+      const { newUsername, currentPassword } = req.body;
+
+      // Verifica se o usuário está tentando atualizar seu próprio username
+      if (req.user?.username !== username) {
+        return res
+          .status(403)
+          .json({ message: "Not authorized to change this username" });
+      }
+
+      let User = getUserModel();
+      const user = await User.findOne({ username });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!newUsername || newUsername === user.username) {
+        return res.status(400).json({ message: "Invalid new username" });
+      }
+
+      // Verifica se a senha atual está correta
+      if (!currentPassword) {
+        return res
+          .status(400)
+          .json({ message: "Current password is required" });
+      }
+      const isPasswordValid = await user.comparePassword(currentPassword);
+      if (!isPasswordValid) {
+        return res.status(400).json({ message: "Incorrect current password" });
+      }
+
+      // Lógica de bloqueio de mudanças de username (igual updateProfile)
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      // Verifica se está bloqueado
+      if (
+        user.usernameChanges.blockedUntil &&
+        user.usernameChanges.blockedUntil > now
+      ) {
+        const daysLeft = Math.ceil(
+          (user.usernameChanges.blockedUntil.getTime() - now.getTime()) /
+            (24 * 60 * 60 * 1000)
+        );
+        return res.status(400).json({
+          message: `Você atingiu o limite de mudanças de nome de usuário. Tente novamente em ${daysLeft} dias.`,
+        });
+      }
+
+      // Verifica se pode fazer uma nova mudança (reset após 30 dias)
+      if (
+        user.usernameChanges.lastChangeAt &&
+        user.usernameChanges.lastChangeAt < thirtyDaysAgo
+      ) {
+        user.usernameChanges.count = 0;
+      }
+
+      // Verifica limite de mudanças
+      if (user.usernameChanges.count >= 2) {
+        const blockUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        user.usernameChanges.blockedUntil = blockUntil;
+        await user.save();
+        return res.status(400).json({
+          message:
+            "Você atingiu o limite de 2 mudanças de nome de usuário. Tente novamente em 30 dias.",
+        });
+      }
+
+      // Verifica se username já existe
+      const existingUsernameUser = await User.findOne({
+        username: newUsername,
+        _id: { $ne: user._id },
+      });
+      if (existingUsernameUser) {
+        return res
+          .status(400)
+          .json({ message: "This username is already taken" });
+      }
+
+      user.username = newUsername;
+      user.usernameChanges.count += 1;
+      user.usernameChanges.lastChangeAt = now;
+      await user.save();
+
+      res.json({
+        message: "Username updated successfully",
+        username: user.username,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating username" });
     }
   },
 
@@ -268,6 +375,7 @@ const profileController = {
           .json({ message: "Não autorizado a deletar esta conta" });
       }
 
+      let User = getUserModel();
       const user = await User.findOne({ username });
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
@@ -305,6 +413,7 @@ const profileController = {
         const Table = (await import("../models/Table")).default;
 
         // Verificar se há outros admins no sistema
+        User = getUserModel();
         const otherAdmins = await User.countDocuments({
           role: "admin",
           _id: { $ne: user._id },
@@ -326,6 +435,7 @@ const profileController = {
       }
 
       // Deletar o usuário
+      User = getUserModel();
       await User.findByIdAndDelete(user._id);
 
       res.json({ message: "Conta deletada com sucesso" });

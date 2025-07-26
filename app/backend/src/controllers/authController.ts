@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../models/User";
+import { getUserModel } from "../models/User";
 import RefreshToken from "../models/RefreshToken";
 import { PasswordReset } from "../models/PasswordReset";
 import { emailService } from "../services/emailService";
@@ -9,17 +9,33 @@ import {
   isTokenExpired,
 } from "../utils/jwt";
 import { config } from "../config";
-import crypto from "crypto";
+import * as crypto from "crypto";
 
 const authController = {
   async login(req: Request, res: Response) {
+    const User = getUserModel();
     try {
       const { username, password } = req.body;
 
-      // Busca case-insensitive pelo username
-      const user = await User.findOne({
-        username: username.toLowerCase().trim(),
-      });
+      // Normaliza o valor de login
+      const loginValue = username.toLowerCase().trim();
+      // Busca por username OU email
+      let user;
+      if (process.env.NODE_ENV === "test") {
+        // Função para escapar regex
+        function escapeRegex(str: string) {
+          return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        }
+        const loginRegex = new RegExp(`^${escapeRegex(loginValue)}$`, "i");
+        user = await User.findOne({
+          $or: [{ username: loginRegex }, { email: loginRegex }],
+        });
+      } else {
+        // Busca com collation para produção
+        user = await User.findOne({
+          $or: [{ username: loginValue }, { email: loginValue }],
+        }).collation({ locale: "en", strength: 2 });
+      }
       if (!user) {
         return res.status(401).json({ message: "Usuário ou senha inválidos" });
       }
@@ -62,7 +78,6 @@ const authController = {
         },
       });
     } catch (error) {
-      console.error("[authController.login] Erro:", error);
       res.status(500).json({ message: "Erro ao fazer login" });
     }
   },
@@ -70,8 +85,8 @@ const authController = {
   async register(req: Request, res: Response) {
     try {
       const { name, username, email, password, role, adminCode } = req.body;
-      console.log('[register] role:', role, 'adminCode:', adminCode);
 
+      const User = getUserModel();
       // Verificação case-insensitive para email e username
       const existingUser = await User.findOne({
         $or: [
@@ -89,7 +104,9 @@ const authController = {
       let finalRole: "client" | "admin" = "client";
       if (role === "admin") {
         if (adminCode !== config.auth.adminCode) {
-          return res.status(400).json({ message: "Código de administrador inválido" });
+          return res
+            .status(400)
+            .json({ message: "Código de administrador inválido" });
         }
         finalRole = "admin";
       }
@@ -129,7 +146,6 @@ const authController = {
         },
       });
     } catch (error) {
-      console.error("[authController.register] Erro:", error);
       res.status(500).json({ message: "Erro ao criar usuário" });
     }
   },
@@ -146,6 +162,8 @@ const authController = {
       const decoded = verifyRefreshToken(refreshToken);
 
       // Verificar se o token existe no banco e não foi revogado
+      const { getUserModel } = await import("../models/User");
+      const User = getUserModel();
       const storedToken = await RefreshToken.findOne({
         token: refreshToken,
         isRevoked: false,
@@ -204,7 +222,6 @@ const authController = {
         },
       });
     } catch (error) {
-      console.error("[authController.refresh] Erro:", error);
       res.status(401).json({ message: "Erro ao renovar token" });
     }
   },
@@ -223,7 +240,6 @@ const authController = {
 
       res.json({ message: "Logout realizado com sucesso" });
     } catch (error) {
-      console.error("[authController.logout] Erro:", error);
       res.status(500).json({ message: "Erro ao fazer logout" });
     }
   },
@@ -233,18 +249,14 @@ const authController = {
       if (!req.user?._id) {
         return res.status(401).json({ message: "Usuário não autenticado" });
       }
-
-      // Revogar todos os refresh tokens do usuário
       await RefreshToken.updateMany(
         { userId: req.user._id },
         { isRevoked: true }
       );
-
       res.json({
         message: "Logout de todos os dispositivos realizado com sucesso",
       });
     } catch (error) {
-      console.error("[authController.logoutAll] Erro:", error);
       res
         .status(500)
         .json({ message: "Erro ao fazer logout de todos os dispositivos" });
@@ -253,13 +265,14 @@ const authController = {
 
   async getCurrentUser(req: Request, res: Response) {
     try {
+      const { getUserModel } = await import("../models/User");
+      const User = getUserModel();
       const user = await User.findById(req.user?._id).select("-password");
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
       res.json(user);
     } catch (error) {
-      console.error("[authController.getCurrentUser] Erro:", error);
       res.status(500).json({ message: "Erro ao buscar usuário" });
     }
   },
@@ -282,7 +295,6 @@ const authController = {
 
       res.json({ valid: true, message: "Token válido" });
     } catch (error) {
-      console.error("[authController.validateToken] Erro:", error);
       res.status(401).json({ valid: false, message: "Token inválido" });
     }
   },
@@ -296,6 +308,8 @@ const authController = {
       }
 
       // Buscar usuário pelo email (case-insensitive)
+      const { getUserModel } = await import("../models/User");
+      const User = getUserModel();
       const user = await User.findOne({
         email: email.toLowerCase().trim(),
       });
@@ -335,7 +349,7 @@ const authController = {
       const emailSent = await emailService.sendPasswordResetEmail(
         user.email,
         resetLink,
-        user.name
+        user.username // <-- Agora usa o username único
       );
 
       if (!emailSent) {
@@ -349,7 +363,6 @@ const authController = {
           "Se o email estiver cadastrado, você receberá as instruções de recuperação",
       });
     } catch (error) {
-      console.error("[authController.forgotPassword] Erro:", error);
       res.status(500).json({ message: "Erro interno. Tente novamente." });
     }
   },
@@ -377,6 +390,8 @@ const authController = {
       }
 
       // Buscar usuário
+      const { getUserModel } = await import("../models/User");
+      const User = getUserModel();
       const user = await User.findById(resetToken.userId);
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
@@ -397,7 +412,6 @@ const authController = {
         message: "Senha redefinida com sucesso! Faça login com sua nova senha.",
       });
     } catch (error) {
-      console.error("[authController.resetPassword] Erro:", error);
       res
         .status(500)
         .json({ message: "Erro ao redefinir senha. Tente novamente." });
@@ -434,7 +448,6 @@ const authController = {
         expiresAt: resetToken.expiresAt,
       });
     } catch (error) {
-      console.error("[authController.verifyResetToken] Erro:", error);
       res.status(500).json({
         valid: false,
         message: "Erro ao verificar token",

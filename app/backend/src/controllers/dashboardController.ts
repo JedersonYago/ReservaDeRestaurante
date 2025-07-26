@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Reservation from "../models/Reservation";
 import Table from "../models/Table";
-import User from "../models/User";
+import { getUserModel } from "../models/User";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 
 // Interfaces para dados populados
@@ -147,6 +147,7 @@ export const getAdminStats = async (req: Request, res: Response) => {
     });
 
     // Clientes únicos
+    const User = getUserModel();
     const uniqueClients = await User.countDocuments({ role: "client" });
 
     // Reservas dos últimos 7 dias
