@@ -30,19 +30,23 @@ export const resetPasswordSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório").optional(),
   email: z.string().email("Email inválido").optional(),
-  phone: z.string().optional(),
+  currentPassword: z.string().min(1, "Senha atual é obrigatória").optional(),
 });
 
 // Schema para trocar senha
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Senha atual é obrigatória"),
-  newPassword: z.string().min(8, "A nova senha deve ter no mínimo 8 caracteres"),
+  newPassword: z
+    .string()
+    .min(8, "A nova senha deve ter no mínimo 8 caracteres"),
   confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
 });
 
 // Schema para deletar conta
 export const deleteAccountSchema = z.object({
-  password: z.string().min(1, "Senha é obrigatória para confirmar exclusão"),
+  currentPassword: z
+    .string()
+    .min(1, "Senha atual é obrigatória para deletar a conta"),
   confirmation: z.literal("DELETE", {
     errorMap: () => ({ message: "Digite 'DELETE' para confirmar" }),
   }),
