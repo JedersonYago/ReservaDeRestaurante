@@ -1,0 +1,54 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 30
+      arrivalRate: 1
+      name: "Baseline"
+    - duration: 60
+      arrivalRate: 3
+      name: "Stress leve"
+    - duration: 30
+      arrivalRate: 5
+      name: "Stress moderado"
+    - duration: 30
+      arrivalRate: 1
+      name: "Recuperação"
+  payload:
+    path: "artillery-users.csv"
+    fields:
+      - email
+      - username
+
+scenarios:
+  - name: "Teste de stress - Login + Reserva"
+    weight: 70
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "{{ username }}"
+            password: "Senha123!"
+          capture:
+            - json: $.accessToken
+              as: token
+      - post:
+          url: "/api/reservations"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            tableId: "687fd23cc8e3578291f407fd"
+            customerName: "{{ username }}"
+            customerEmail: "{{ email }}"
+            date: "2025-07-25"
+            time: "19:00"
+            observations: "Stress test MongoDB"
+          expect:
+            - statusCode: [201, 400, 429]
+
+  - name: "Teste de stress - Apenas consultas"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/tables"
+          expect:
+            - statusCode: [200, 429]

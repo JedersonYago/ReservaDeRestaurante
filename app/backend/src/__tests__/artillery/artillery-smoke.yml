@@ -1,0 +1,37 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 30
+      arrivalRate: 2
+      name: "Smoke test"
+  payload:
+    path: "artillery-users.csv"
+    fields:
+      - email
+      - username
+
+scenarios:
+  - name: "Verificação básica do sistema"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "{{ username }}"
+            password: "Senha123!"
+          capture:
+            - json: $.accessToken
+              as: token
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/tables/available?date=2025-07-27&time=19:00&numberOfPeople=4"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/reservations"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200

@@ -1,0 +1,83 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 30
+      arrivalRate: 2
+      name: "Aquecimento suave"
+    - duration: 60
+      arrivalRate: 5
+      name: "Carga realista"
+    - duration: 30
+      arrivalRate: 8
+      name: "Pico moderado"
+  payload:
+    path: "artillery-users.csv"
+    fields:
+      - email
+      - username
+  variables:
+    tables: ["687fd23cc8e3578291f407fd"] # Mesa existente
+    times: ["18:00", "19:00", "20:00", "21:00"]
+    dates: ["2025-07-25", "2025-07-26", "2025-07-27"]
+
+scenarios:
+  - name: "Fluxo de reserva realista"
+    weight: 60
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "{{ username }}"
+            password: "Senha123!"
+          capture:
+            - json: $.accessToken
+              as: token
+      - post:
+          url: "/api/reservations"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            tableId: "{{ $randomString('tables') }}"
+            customerName: "{{ username }}"
+            customerEmail: "{{ email }}"
+            date: "{{ $randomString('dates') }}"
+            time: "{{ $randomString('times') }}"
+            observations: "Teste MongoDB - {{ $randomString('abcdefghijklmnopqrstuvwxyz', 5) }}"
+          expect:
+            - statusCode: [201, 400]
+
+  - name: "Consulta de reservas"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "{{ username }}"
+            password: "Senha123!"
+          capture:
+            - json: $.accessToken
+              as: token
+      - get:
+          url: "/api/reservations"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Consulta de mesas"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            username: "{{ username }}"
+            password: "Senha123!"
+          capture:
+            - json: $.accessToken
+              as: token
+      - get:
+          url: "/api/tables"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
