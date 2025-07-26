@@ -7,7 +7,11 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@shared": path.resolve(__dirname, "../../shared/dist"),
+      "@shared": path.resolve(__dirname, "../shared/dist"),
+      "@restaurant-reservation/shared": path.resolve(
+        __dirname,
+        "../shared/dist"
+      ),
     },
   },
   server: {
