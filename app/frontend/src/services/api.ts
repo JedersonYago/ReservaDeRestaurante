@@ -1,8 +1,32 @@
 import axios from "axios";
 import { authService } from "./authService";
 
+// Função para corrigir URLs malformadas
+function getCorrectedApiUrl() {
+  let apiUrl = import.meta.env.VITE_API_URL || "/api";
+
+  // Detectar e corrigir URLs malformadas (contém múltiplos domínios)
+  if (apiUrl.includes("vercel.app") && apiUrl.includes("railway.app")) {
+    console.warn("⚠️ URL malformada detectada, corrigindo...");
+    console.warn("URL original:", apiUrl);
+
+    // Extrair apenas a parte do Railway
+    const railwayMatch = apiUrl.match(/https:\/\/[^\/]+\.up\.railway\.app/);
+    if (railwayMatch) {
+      apiUrl = railwayMatch[0];
+      console.warn("URL corrigida:", apiUrl);
+    } else {
+      // Fallback para URL padrão
+      apiUrl = "https://reservafacil-production.up.railway.app";
+      console.warn("Usando URL padrão:", apiUrl);
+    }
+  }
+
+  return apiUrl;
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: getCorrectedApiUrl(),
   timeout: 10000, // 10 segundos
   headers: {
     "Content-Type": "application/json",

@@ -6,6 +6,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GlobalStyle } from "./styles/global";
 import { initializeAuthCleanup } from "./utils/authUtils";
+import { debugConfig } from "./utils/debugConfig";
 import { useEffect } from "react";
 import { ConfigProvider } from "./components/ConfigProvider";
 
@@ -22,14 +23,22 @@ const queryClient = new QueryClient({
           return false;
         }
         // Para erros de conexão (backend iniciando), fazer mais tentativas
-        if (error?.code === 'ECONNREFUSED' || error?.code === 'ERR_NETWORK' || error?.message?.includes('Network Error')) {
+        if (
+          error?.code === "ECONNREFUSED" ||
+          error?.code === "ERR_NETWORK" ||
+          error?.message?.includes("Network Error")
+        ) {
           return failureCount < 5;
         }
         return failureCount < 2; // Para outros erros, manter 2 tentativas
       },
       retryDelay: (attemptIndex, error: any) => {
         // Para erros de conexão, delay menor para reconectar mais rápido
-        if (error?.code === 'ECONNREFUSED' || error?.code === 'ERR_NETWORK' || error?.message?.includes('Network Error')) {
+        if (
+          error?.code === "ECONNREFUSED" ||
+          error?.code === "ERR_NETWORK" ||
+          error?.message?.includes("Network Error")
+        ) {
           return Math.min(1000 * attemptIndex, 3000); // 1s, 2s, 3s...
         }
         return Math.min(1000 * 2 ** attemptIndex, 30000); // Delay exponencial para outros erros
@@ -58,6 +67,12 @@ function App() {
   // Inicializar limpeza de dados antigos na primeira execução
   useEffect(() => {
     initializeAuthCleanup();
+
+    // Debug da configuração da API
+    if (import.meta.env.PROD) {
+      debugConfig.logEnvironmentVariables();
+      debugConfig.validateApiUrl();
+    }
   }, []);
 
   return (
