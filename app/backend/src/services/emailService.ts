@@ -1,4 +1,5 @@
-import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
+const nodemailer = require("nodemailer");
 import { config } from "../config";
 
 interface EmailOptions {
@@ -8,21 +9,20 @@ interface EmailOptions {
   text?: string;
 }
 
-class EmailService {
-  private transporter: nodemailer.Transporter;
+export class EmailService {
+  public transporter: any;
 
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.gmail.com",
       port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: process.env.SMTP_SECURE === "true", // true para 465, false para outras portas
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
 
-    // Verificar configuração em desenvolvimento
     if (config.server.nodeEnv === "development") {
       this.verifyConnection();
     }
@@ -34,20 +34,13 @@ class EmailService {
     } catch (error) {}
   }
 
-  async sendEmail(options: EmailOptions): Promise<boolean> {
+  async sendEmail(options: any) {
     try {
-      const info = await this.transporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || "Reserva Fácil"}" <${
-          process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER
-        }>`,
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-        text: options.text,
-      });
-
+      await this.transporter.verify();
+      await this.transporter.sendMail(options);
       return true;
     } catch (error) {
+      console.error("[EmailService.sendEmail] erro:", error);
       return false;
     }
   }
@@ -145,4 +138,7 @@ class EmailService {
   }
 }
 
+export function createEmailService() {
+  return new EmailService();
+}
 export const emailService = new EmailService();
