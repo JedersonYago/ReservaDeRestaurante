@@ -84,7 +84,18 @@ const authController = {
 
   async register(req: Request, res: Response) {
     try {
-      const { name, username, email, password, role, adminCode } = req.body;
+      const {
+        name,
+        username,
+        email,
+        password,
+        confirmPassword,
+        role,
+        adminCode,
+      } = req.body;
+
+      // Remover confirmPassword do body para não interferir na validação
+      delete req.body.confirmPassword;
 
       const User = getUserModel();
       // Verificação case-insensitive para email e username

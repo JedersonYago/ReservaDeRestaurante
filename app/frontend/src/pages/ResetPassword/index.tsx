@@ -14,6 +14,7 @@ const resetPasswordSchema = z.object({
 });
 
 import { Input } from "../../components/Input";
+import { ThemeToggle } from "../../components/ThemeToggle";
 import {
   ArrowLeft,
   Lock,
@@ -192,6 +193,7 @@ export function ResetPassword() {
             </S.FormContainer>
           </S.FormSection>
         </S.ContentWrapper>
+        <ThemeToggle />
       </S.Container>
     );
   }
@@ -248,6 +250,7 @@ export function ResetPassword() {
             </S.FormContainer>
           </S.FormSection>
         </S.ContentWrapper>
+        <ThemeToggle />
       </S.Container>
     );
   }
@@ -271,6 +274,7 @@ export function ResetPassword() {
             </S.FormContainer>
           </S.FormSection>
         </S.ContentWrapper>
+        <ThemeToggle />
       </S.Container>
     );
   }
@@ -314,9 +318,6 @@ export function ResetPassword() {
             <form onSubmit={handleSubmit(handleResetPassword)}>
               <S.InputGroup>
                 <S.InputWrapper>
-                  <S.InputIcon>
-                    <Lock size={18} />
-                  </S.InputIcon>
                   <Input
                     label="Nova Senha"
                     type={showPassword ? "text" : "password"}
@@ -325,7 +326,6 @@ export function ResetPassword() {
                         ? errors.newPassword.message
                         : undefined
                     }
-                    hasIcon
                     autoComplete="new-password"
                     {...register("newPassword")}
                     placeholder="Digite sua nova senha"
@@ -339,9 +339,6 @@ export function ResetPassword() {
                 </S.InputWrapper>
 
                 <S.InputWrapper>
-                  <S.InputIcon>
-                    <Lock size={18} />
-                  </S.InputIcon>
                   <Input
                     label="Confirmar Nova Senha"
                     type={showConfirmPassword ? "text" : "password"}
@@ -350,7 +347,6 @@ export function ResetPassword() {
                         ? errors.confirmPassword.message
                         : undefined
                     }
-                    hasIcon
                     autoComplete="new-password"
                     {...register("confirmPassword")}
                     placeholder="Digite novamente sua nova senha"
@@ -393,6 +389,7 @@ export function ResetPassword() {
           </S.FormContainer>
         </S.FormSection>
       </S.ContentWrapper>
+      <ThemeToggle />
     </S.Container>
   );
 }

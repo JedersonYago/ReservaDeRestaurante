@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../components/Toast";
 
 import { Input } from "../../components/Input";
+import { ThemeToggle } from "../../components/ThemeToggle";
 import { authService } from "../../services/authService";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../hooks/useAuth";
@@ -144,35 +145,23 @@ const Login: React.FC = () => {
                 )}
 
                 <S.InputGroup>
-                  <S.InputWrapper>
-                    <S.InputIcon>
-                      <User size={18} />
-                    </S.InputIcon>
-                    <Input
-                      label="Nome de Usuário"
-                      type="text"
-                      error={errors.username?.message}
-                      hasIcon
-                      autoComplete="username"
-                      {...register("username")}
-                      placeholder="Digite seu nome de usuário"
-                    />
-                  </S.InputWrapper>
+                  <Input
+                    label="Nome de Usuário"
+                    type="text"
+                    error={errors.username?.message}
+                    autoComplete="username"
+                    {...register("username")}
+                    placeholder="Digite seu nome de usuário"
+                  />
 
-                  <S.InputWrapper>
-                    <S.InputIcon>
-                      <Lock size={18} />
-                    </S.InputIcon>
-                    <Input
-                      label="Senha"
-                      type="password"
-                      error={errors.password?.message}
-                      hasIcon
-                      autoComplete="current-password"
-                      {...register("password")}
-                      placeholder="Digite sua senha"
-                    />
-                  </S.InputWrapper>
+                  <Input
+                    label="Senha"
+                    type="password"
+                    error={errors.password?.message}
+                    autoComplete="current-password"
+                    {...register("password")}
+                    placeholder="Digite sua senha"
+                  />
                 </S.InputGroup>
 
                 <S.SubmitButton
@@ -230,6 +219,7 @@ const Login: React.FC = () => {
           </S.HeroContent>
         </S.RightSection>
       </S.ContentWrapper>
+      <ThemeToggle />
     </S.Container>
   );
 };

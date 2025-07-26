@@ -135,13 +135,15 @@ export const InputWrapper = styled.div`
 export const InputIcon = styled.div`
   position: absolute;
   left: ${({ theme }) => theme.spacing[3]};
-  top: 70%;
+  top: 50%;
+  transform: translateY(-50%);
   color: ${({ theme }) => theme.colors.text.secondary};
   z-index: 1;
   pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 20px;
 `;
 
 export const PasswordToggle = styled.button`

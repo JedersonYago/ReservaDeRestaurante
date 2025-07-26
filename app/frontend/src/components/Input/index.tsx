@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes } from "react";
+import { forwardRef, type InputHTMLAttributes } from "react";
 import styled from "styled-components";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -7,15 +7,19 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   hasIcon?: boolean;
 }
 
-export function Input({ label, error, hasIcon, ...props }: InputProps) {
-  return (
-    <InputGroup>
-      {label && <label htmlFor={props.id}>{label}</label>}
-      <StyledInput $hasIcon={hasIcon} {...props} />
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-    </InputGroup>
-  );
-}
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ label, error, hasIcon, ...props }, ref) => {
+    return (
+      <InputGroup>
+        {label && <label htmlFor={props.id}>{label}</label>}
+        <StyledInput ref={ref} $hasIcon={hasIcon} {...props} />
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+      </InputGroup>
+    );
+  }
+);
+
+Input.displayName = "Input";
 
 const InputGroup = styled.div`
   display: flex;

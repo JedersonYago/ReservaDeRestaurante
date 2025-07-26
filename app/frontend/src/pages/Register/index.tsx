@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "../../components/Toast";
 
 import { Input } from "../../components/Input";
+import { ThemeToggle } from "../../components/ThemeToggle";
 import { authService } from "../../services/authService";
 import { useQueryClient } from "@tanstack/react-query";
 import { registerSchema } from "../../schemas/auth";
@@ -38,6 +39,7 @@ export function Register() {
     formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
+    mode: "onBlur",
     defaultValues: {
       name: "",
       username: "",
@@ -123,65 +125,41 @@ export function Register() {
 
               <form onSubmit={handleSubmit(handleRegister)}>
                 <S.InputGroup>
-                  <S.InputWrapper>
-                    <S.InputIcon>
-                      <User size={18} />
-                    </S.InputIcon>
-                    <Input
-                      label="Nome"
-                      type="text"
-                      error={errors.name?.message}
-                      hasIcon
-                      autoComplete="name"
-                      {...register("name")}
-                      placeholder="Digite seu nome completo"
-                    />
-                  </S.InputWrapper>
+                  <Input
+                    label="Nome"
+                    type="text"
+                    error={errors.name?.message}
+                    autoComplete="name"
+                    {...register("name")}
+                    placeholder="Digite seu nome completo"
+                  />
 
-                  <S.InputWrapper>
-                    <S.InputIcon>
-                      <User size={18} />
-                    </S.InputIcon>
-                    <Input
-                      label="Nome de Usuário"
-                      type="text"
-                      error={errors.username?.message}
-                      hasIcon
-                      autoComplete="username"
-                      {...register("username")}
-                      placeholder="Escolha um nome de usuário"
-                    />
-                  </S.InputWrapper>
+                  <Input
+                    label="Nome de Usuário"
+                    type="text"
+                    error={errors.username?.message}
+                    autoComplete="username"
+                    {...register("username")}
+                    placeholder="Escolha um nome de usuário"
+                  />
 
-                  <S.InputWrapper>
-                    <S.InputIcon>
-                      <Mail size={18} />
-                    </S.InputIcon>
-                    <Input
-                      label="Email"
-                      type="email"
-                      error={errors.email?.message}
-                      hasIcon
-                      autoComplete="email"
-                      {...register("email")}
-                      placeholder="Digite seu email"
-                    />
-                  </S.InputWrapper>
+                  <Input
+                    label="Email"
+                    type="email"
+                    error={errors.email?.message}
+                    autoComplete="email"
+                    {...register("email")}
+                    placeholder="Digite seu email"
+                  />
 
-                  <S.InputWrapper>
-                    <S.InputIcon>
-                      <Lock size={18} />
-                    </S.InputIcon>
-                    <Input
-                      label="Senha"
-                      type="password"
-                      error={errors.password?.message}
-                      hasIcon
-                      autoComplete="new-password"
-                      {...register("password")}
-                      placeholder="Crie uma senha segura"
-                    />
-                  </S.InputWrapper>
+                  <Input
+                    label="Senha"
+                    type="password"
+                    error={errors.password?.message}
+                    autoComplete="new-password"
+                    {...register("password")}
+                    placeholder="Crie uma senha segura"
+                  />
                   {passwordValue && (
                     <S.PasswordStrength>
                       {(() => {
@@ -263,20 +241,14 @@ export function Register() {
                     </S.PasswordStrength>
                   )}
 
-                  <S.InputWrapper>
-                    <S.InputIcon>
-                      <Lock size={18} />
-                    </S.InputIcon>
-                    <Input
-                      label="Confirmar Senha"
-                      type="password"
-                      error={errors.confirmPassword?.message}
-                      hasIcon
-                      autoComplete="new-password"
-                      {...register("confirmPassword")}
-                      placeholder="Confirme sua senha"
-                    />
-                  </S.InputWrapper>
+                  <Input
+                    label="Confirmar Senha"
+                    type="password"
+                    error={errors.confirmPassword?.message}
+                    autoComplete="new-password"
+                    {...register("confirmPassword")}
+                    placeholder="Confirme sua senha"
+                  />
                   {confirmPasswordValue && passwordValue && (
                     <S.PasswordMatch>
                       {confirmPasswordValue === passwordValue ? (
@@ -436,6 +408,7 @@ export function Register() {
           </S.HeroContent>
         </S.RightSection>
       </S.ContentWrapper>
+      <ThemeToggle />
     </S.Container>
   );
 }

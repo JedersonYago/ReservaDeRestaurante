@@ -7,6 +7,7 @@ import { forgotPasswordSchema } from "../../schemas/auth";
 import { z } from "zod";
 
 import { Input } from "../../components/Input";
+import { ThemeToggle } from "../../components/ThemeToggle";
 import {
   ArrowLeft,
   Mail,
@@ -128,6 +129,7 @@ export function ForgotPassword() {
             </S.FormContainer>
           </S.FormSection>
         </S.ContentWrapper>
+        <ThemeToggle />
       </S.Container>
     );
   }
@@ -157,20 +159,14 @@ export function ForgotPassword() {
 
             <form onSubmit={handleSubmit(handleForgotPassword)}>
               <S.InputGroup>
-                <S.InputWrapper>
-                  <S.InputIcon>
-                    <Mail size={18} />
-                  </S.InputIcon>
-                  <Input
-                    label="Email"
-                    type="email"
-                    error={errors.email?.message}
-                    hasIcon
-                    autoComplete="email"
-                    {...register("email")}
-                    placeholder="Digite seu email cadastrado"
-                  />
-                </S.InputWrapper>
+                <Input
+                  label="Email"
+                  type="email"
+                  error={errors.email?.message}
+                  autoComplete="email"
+                  {...register("email")}
+                  placeholder="Digite seu email cadastrado"
+                />
               </S.InputGroup>
 
               <S.SubmitButton
@@ -183,20 +179,6 @@ export function ForgotPassword() {
               </S.SubmitButton>
             </form>
 
-            <S.InfoBox>
-              <S.InfoIcon>
-                <Shield size={20} />
-              </S.InfoIcon>
-              <div>
-                <strong>Sobre a Segurança</strong>
-                <p>
-                  Por segurança, sempre mostraremos esta mensagem, mesmo que o
-                  email não esteja cadastrado. Se você possui uma conta conosco,
-                  receberá as instruções.
-                </p>
-              </div>
-            </S.InfoBox>
-
             <S.FooterLinks>
               <S.LoginLink to="/register">
                 Não tem uma conta? <strong>Registre-se</strong>
@@ -205,6 +187,7 @@ export function ForgotPassword() {
           </S.FormContainer>
         </S.FormSection>
       </S.ContentWrapper>
+      <ThemeToggle />
     </S.Container>
   );
 }
