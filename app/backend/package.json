@@ -8,7 +8,7 @@
     "start": "node dist/backend/src/index.js",
     "dev": "nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc && npm run copy-shared && npm run fix-imports",
-    "copy-shared": "xcopy ..\\shared\\dist .\\dist\\shared /E /I /Y",
+    "copy-shared": "node copy-shared.js",
     "fix-imports": "node fix-imports.js",
     "test": "jest --config backend/jest.config.js",
     "test:watch": "jest --config backend/jest.config.js --watch",
