@@ -14,23 +14,20 @@ export default defineConfig({
       ),
     },
   },
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:3001",
-        changeOrigin: true,
-        configure: (proxy) => {
-          proxy.on("error", () => {
-            console.log("⏳ Aguardando backend inicializar...");
-          });
-        },
-      },
+  optimizeDeps: {
+    include: ["@restaurant-reservation/shared"],
+    esbuildOptions: {
+      target: "es2020",
     },
+  },
+  define: {
+    global: "globalThis",
   },
   build: {
     // Aumentar o limite para evitar warnings desnecessários
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      external: [],
       output: {
         manualChunks: {
           // Separar React e suas dependências
@@ -50,5 +47,18 @@ export default defineConfig({
     target: "esnext",
     cssCodeSplit: true,
     reportCompressedSize: false,
+  },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            console.log("⏳ Aguardando backend inicializar...");
+          });
+        },
+      },
+    },
   },
 });

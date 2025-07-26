@@ -3,8 +3,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../components/Toast";
-import { resetPasswordSchema } from "@restaurant-reservation/shared";
 import { z } from "zod";
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Token é obrigatório"),
+  newPassword: z
+    .string()
+    .min(8, "A nova senha deve ter no mínimo 8 caracteres"),
+  confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
+});
 
 import { Input } from "../../components/Input";
 import {
