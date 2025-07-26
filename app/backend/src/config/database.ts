@@ -6,6 +6,15 @@ export const databaseConfig = {
 } as const;
 
 export const connectDB = async () => {
+  // Permite conexão em modo test para testes de performance (Artillery)
+  if (
+    process.env.NODE_ENV === "test" &&
+    !process.env.ALLOW_TEST_DB_CONNECTION
+  ) {
+    throw new Error(
+      "connectDB() should NOT be called in test environment! The test runner is responsible for DB connection."
+    );
+  }
   try {
     // Configurações do Mongoose
     mongoose.set("strictQuery", true);

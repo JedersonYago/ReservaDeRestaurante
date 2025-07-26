@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 
 // IMPORTANTE: Carrega as variáveis de ambiente ANTES de importar outros módulos
 dotenv.config();

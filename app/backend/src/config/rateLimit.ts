@@ -1,23 +1,27 @@
 import rateLimit from "express-rate-limit";
 
 // Configurações baseadas no ambiente
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isTest = process.env.NODE_ENV === 'test';
+const isDevelopment = process.env.NODE_ENV === "development";
+const isTest = process.env.NODE_ENV === "test";
 
 // Configurações mais flexíveis para desenvolvimento/teste
 const authConfig = {
   windowMs: isDevelopment || isTest ? 1 * 60 * 1000 : 5 * 60 * 1000, // 1min dev/test, 5min prod
-  max: isDevelopment || isTest ? 50 : 15, // 50 tentativas dev/test, 15 prod
+  max: isTest ? 100 : isDevelopment ? 1000 : 15, // 100 para test, 1000 dev, 15 prod
   message: {
-    error: `Muitas tentativas de acesso. Tente novamente em ${isDevelopment || isTest ? '1' : '5'} minutos.`,
+    error: `Muitas tentativas de acesso. Tente novamente em ${
+      isDevelopment || isTest ? "1" : "5"
+    } minutos.`,
   },
 };
 
 const apiConfig = {
   windowMs: isDevelopment || isTest ? 5 * 60 * 1000 : 15 * 60 * 1000, // 5min dev/test, 15min prod
-  max: isDevelopment || isTest ? 500 : 100, // 500 dev/test, 100 prod
+  max: isTest ? 500 : isDevelopment ? 10000 : 100, // 500 para test, 10000 dev, 100 prod
   message: {
-    error: `Muitas requisições. Tente novamente em ${isDevelopment || isTest ? '5' : '15'} minutos.`,
+    error: `Muitas requisições. Tente novamente em ${
+      isDevelopment || isTest ? "5" : "15"
+    } minutos.`,
   },
 };
 
@@ -31,9 +35,11 @@ export const authLimiter = rateLimit({
 // Limite para rotas de refresh token
 export const refreshLimiter = rateLimit({
   windowMs: isDevelopment || isTest ? 30 * 60 * 1000 : 60 * 60 * 1000, // 30min dev/test, 1h prod
-  max: isDevelopment || isTest ? 50 : 10, // 50 dev/test, 10 prod
+  max: isDevelopment || isTest ? 200 : 10, // 200 dev/test, 10 prod
   message: {
-    error: `Muitas tentativas de refresh. Tente novamente em ${isDevelopment || isTest ? '30 minutos' : '1 hora'}.`,
+    error: `Muitas tentativas de refresh. Tente novamente em ${
+      isDevelopment || isTest ? "30 minutos" : "1 hora"
+    }.`,
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -57,6 +63,6 @@ export const testBypassLimiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => {
     // Bypass se header especial for enviado (para testes)
-    return req.headers['x-test-bypass'] === 'reservafacil-test-2025';
-  }
+    return req.headers["x-test-bypass"] === "reservafacil-test-2025";
+  },
 });
