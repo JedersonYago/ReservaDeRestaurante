@@ -2,7 +2,7 @@ import axios from "axios";
 import { authService } from "./authService";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 10000, // 10 segundos
   headers: {
     "Content-Type": "application/json",
@@ -52,11 +52,11 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Verificar se é erro de conexão (backend iniciando)
-    const isConnectionError = !error.response && (
-      error.code === 'ECONNREFUSED' || 
-      error.code === 'ERR_NETWORK' || 
-      error.message?.includes('Network Error')
-    );
+    const isConnectionError =
+      !error.response &&
+      (error.code === "ECONNREFUSED" ||
+        error.code === "ERR_NETWORK" ||
+        error.message?.includes("Network Error"));
 
     // Log estruturado do erro (exceto 409 que é parte do fluxo normal e erros de conexão durante inicialização)
     if (error.response?.status !== 409 && !isConnectionError) {

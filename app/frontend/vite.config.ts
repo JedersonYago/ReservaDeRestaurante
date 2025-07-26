@@ -25,7 +25,7 @@ export default defineConfig({
   },
   build: {
     // Aumentar o limite para evitar warnings desnecessários
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -46,6 +46,5 @@ export default defineConfig({
     target: "esnext",
     cssCodeSplit: true,
     reportCompressedSize: false,
-    chunkSizeWarningLimit: 1000,
   },
 });
