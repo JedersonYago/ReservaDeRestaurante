@@ -1,13 +1,13 @@
-import request from 'supertest';
-import express from 'express';
-import reservationRoutes from '../../routes/reservationRoutes';
-import Reservation from '../../models/Reservation';
-import { TestDataFactory, TestCleanup } from '../helpers';
+import request from "supertest";
+import express from "express";
+import reservationRoutes from "../../routes/reservationRoutes";
+import Reservation from "../../models/Reservation";
+import { TestDataFactory, TestCleanup } from "../helpers";
 
-describe('Limpar Reserva (RF13)', () => {
+describe("Limpar Reserva (RF13)", () => {
   const app = express();
   app.use(express.json());
-  app.use('/reservations', reservationRoutes);
+  app.use("/reservations", reservationRoutes);
 
   let user: any;
   let token: string;
@@ -20,22 +20,22 @@ describe('Limpar Reserva (RF13)', () => {
     const table = await TestDataFactory.createTable();
     reservation = await Reservation.create({
       tableId: table._id,
-      customerName: 'Cliente Teste',
-      customerEmail: 'cliente@teste.com',
-      date: '2025-07-25',
-      time: '19:00',
-      status: 'cancelled',
-      userId: user._id
+      customerName: "Cliente Teste",
+      customerEmail: "cliente@teste.com",
+      date: "2025-07-25",
+      time: "19:00",
+      status: "cancelled",
+      userId: user._id,
     });
   });
 
-  it('deve esconder reserva cancelada da visualização do cliente, mas manter para admin', async () => {
+  it("deve esconder reserva cancelada da visualização do cliente, mas manter para admin", async () => {
     // Cliente limpa a reserva
     const res = await request(app)
       .patch(`/reservations/${reservation._id}/clear`)
-      .set('Authorization', `Bearer ${token}`)
+      .set("Authorization", `Bearer ${token}`)
       .expect(200);
-    expect(res.body).toHaveProperty('message');
+    expect(res.body).toHaveProperty("message");
 
     // Reserva deve estar marcada como hiddenFromUser
     const updated = await Reservation.findById(reservation._id);
@@ -43,20 +43,65 @@ describe('Limpar Reserva (RF13)', () => {
 
     // Cliente não vê mais a reserva na listagem
     const listRes = await request(app)
-      .get('/reservations')
-      .set('Authorization', `Bearer ${token}`)
+      .get("/reservations")
+      .set("Authorization", `Bearer ${token}`)
       .expect(200);
     const ids = listRes.body.map((r: any) => r._id);
     expect(ids).not.toContain(reservation._id.toString());
 
     // Admin ainda vê a reserva
-    const admin = await TestDataFactory.createUser({ role: 'admin', email: 'admin@admin.com', username: 'admin' });
+    const admin = await TestDataFactory.createUser({
+      role: "admin",
+      email: "admin@admin.com",
+      username: "admin",
+    });
     const adminToken = TestDataFactory.generateAuthTokens(admin).accessToken;
     const adminList = await request(app)
-      .get('/reservations')
-      .set('Authorization', `Bearer ${adminToken}`)
+      .get("/reservations")
+      .set("Authorization", `Bearer ${adminToken}`)
       .expect(200);
     const adminIds = adminList.body.map((r: any) => r._id);
     expect(adminIds).toContain(reservation._id.toString());
+  });
+
+  it("não deve permitir limpar uma reserva já oculta da lista do usuário", async () => {
+    // Cria uma reserva já oculta
+    const hidden = await Reservation.create({
+      tableId: reservation.tableId,
+      customerName: reservation.customerName,
+      customerEmail: reservation.customerEmail,
+      date: reservation.date,
+      time: reservation.time,
+      status: reservation.status,
+      userId: reservation.userId,
+      hiddenFromUser: true,
+    });
+    await request(app)
+      .patch(`/reservations/${hidden._id}/clear`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(400);
+  });
+
+  it("deve retornar 500 se ocorrer erro inesperado ao limpar reserva", async () => {
+    const spy = jest
+      .spyOn(Reservation.prototype, "save")
+      .mockImplementation(() => {
+        throw new Error("fail");
+      });
+    const reserva = await Reservation.create({
+      tableId: reservation.tableId,
+      customerName: reservation.customerName,
+      customerEmail: reservation.customerEmail,
+      date: reservation.date,
+      time: reservation.time,
+      status: reservation.status,
+      userId: reservation.userId,
+      hiddenFromUser: false,
+    });
+    await request(app)
+      .patch(`/reservations/${reserva._id}/clear`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(500);
+    spy.mockRestore();
   });
 });

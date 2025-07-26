@@ -81,6 +81,23 @@ describe("Cancelar Reserva (RF12)", () => {
     expect(stillExists!.status).not.toBe("cancelled");
   });
 
+  it("não deve permitir cancelar uma reserva já cancelada", async () => {
+    // Cria uma reserva já cancelada
+    const cancelled = await Reservation.create({
+      tableId: table._id,
+      customerName: "Cliente Teste",
+      customerEmail: "cliente@teste.com",
+      date: "2025-07-25",
+      time: "19:00",
+      status: "cancelled",
+      userId: user._id,
+    });
+    await request(app)
+      .put(`/reservations/${cancelled._id}/cancel`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .expect(400);
+  });
+
   it("ao cancelar, a mesa deve ser liberada (se necessário)", async () => {
     // Simula mesa ocupada pela reserva
     table.reservations = [reservation._id];
