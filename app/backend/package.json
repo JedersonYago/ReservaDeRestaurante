@@ -8,7 +8,6 @@
     "start": "node dist/backend/src/index.js",
     "dev": "nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc",
-    "postinstall": "npm run build",
     "test": "jest --config backend/jest.config.js",
     "test:watch": "jest --config backend/jest.config.js --watch",
     "test:coverage": "jest --config backend/jest.config.js --coverage",
