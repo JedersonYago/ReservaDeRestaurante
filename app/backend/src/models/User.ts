@@ -1,5 +1,5 @@
 import { Schema, model, Document } from "mongoose";
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
   _id: string;
@@ -28,8 +28,8 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true },
+    username: { type: String, required: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["client", "admin"], default: "client" },
     // Controle de mudanças de email
@@ -46,6 +46,16 @@ const UserSchema = new Schema<IUser>(
     },
   },
   { timestamps: true }
+);
+
+// Índices case-insensitive para username e email
+UserSchema.index(
+  { email: 1 },
+  { unique: true, collation: { locale: "en", strength: 2 } }
+);
+UserSchema.index(
+  { username: 1 },
+  { unique: true, collation: { locale: "en", strength: 2 } }
 );
 
 // Middleware para normalizar username/email e hash da senha antes de salvar
@@ -82,4 +92,16 @@ UserSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-export default model<IUser>("User", UserSchema);
+import mongoose from "mongoose";
+// Força singleton absoluto do modelo User, mesmo em ambiente de teste/hot reload
+const globalAny = global as any;
+function getUserModel() {
+  if (!globalAny.User) {
+    globalAny.User = mongoose.models.User || mongoose.model("User", UserSchema);
+  }
+  return globalAny.User;
+}
+export { getUserModel };
+
+const User = getUserModel();
+export default User;

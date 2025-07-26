@@ -18,19 +18,33 @@ export interface ITable extends Document {
 const tableSchema = new Schema<ITable>(
   {
     name: { type: String, required: true, unique: true },
-    capacity: { type: Number, required: true },
+    capacity: { type: Number, required: true, min: 1 },
     status: {
       type: String,
       enum: ["available", "reserved", "maintenance", "expired"],
       default: "available",
     },
     reservations: [{ type: Schema.Types.ObjectId, ref: "Reservation" }],
-    availability: [
-      {
-        date: { type: String, required: true },
-        times: [{ type: String, required: true }],
-      },
-    ],
+    availability: {
+      type: [
+        {
+          date: { type: String, required: true },
+          times: {
+            type: [String],
+            required: true,
+            validate: [
+              (arr: string[]) => Array.isArray(arr) && arr.length > 0,
+              'Pelo menos um horário deve ser informado'
+            ]
+          },
+        }
+      ],
+      required: true,
+      validate: [
+        (arr: any[]) => Array.isArray(arr) && arr.length > 0,
+        'Pelo menos um bloco de disponibilidade deve ser informado'
+      ]
+    },
   },
   { timestamps: true }
 );
