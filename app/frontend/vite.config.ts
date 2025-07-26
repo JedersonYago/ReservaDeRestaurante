@@ -16,11 +16,11 @@ export default defineConfig({
         target: "http://localhost:3001",
         changeOrigin: true,
         configure: (proxy) => {
-          proxy.on('error', () => {
-            console.log('⏳ Aguardando backend inicializar...');
+          proxy.on("error", () => {
+            console.log("⏳ Aguardando backend inicializar...");
           });
-        }
-      }
+        },
+      },
     },
   },
   build: {
@@ -39,8 +39,13 @@ export default defineConfig({
       },
     },
     // Otimizações para produção
-    minify: true, // Usa esbuild (padrão do Vite)
+    minify: "esbuild",
     // Sourcemaps apenas em desenvolvimento
     sourcemap: false,
+    // Otimizações adicionais
+    target: "esnext",
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
   },
 });
