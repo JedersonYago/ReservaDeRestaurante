@@ -1,0 +1,25 @@
+# Arquivos de teste
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+**/__tests__/**
+**/__mocks__/**
+
+# Arquivos de desenvolvimento
+**/.env.local
+**/.env.development
+**/coverage/**
+
+# Arquivos temporários
+**/.DS_Store
+**/Thumbs.db
+**/*.log
+
+# Arquivos de build
+**/dist/**
+**/build/**
+**/.next/**
+
+# Dependências
+**/node_modules/** 

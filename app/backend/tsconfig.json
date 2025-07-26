@@ -10,14 +10,32 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "typeRoots": ["../node_modules/@types", "./node_modules/@types", "./src/types"],
+    "typeRoots": [
+      "../node_modules/@types",
+      "./node_modules/@types",
+      "./src/types"
+    ],
     "types": ["node", "express", "jest"],
     "baseUrl": "../",
     "paths": {
-      "*": ["../node_modules/*", "backend/node_modules/*", "backend/src/types/*"],
-      "@shared/*": ["shared/*"]
-    }
+      "*": [
+        "../node_modules/*",
+        "backend/node_modules/*",
+        "backend/src/types/*"
+      ],
+      "@shared/*": ["shared/dist/*"]
+    },
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "removeComments": true,
+    "noEmitOnError": false
   },
-  "include": ["src/**/*", "../shared/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "__tests__/**/*"
+  ]
 }

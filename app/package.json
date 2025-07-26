@@ -9,17 +9,19 @@
   ],
   "scripts": {
     "install:clean": "npm run clean && npm install",
-    "clean": "rimraf node_modules package-lock.json frontend/node_modules frontend/package-lock.json backend/node_modules backend/package-lock.json shared/node_modules shared/package-lock.json",
+    "clean": "rimraf node_modules package-lock.json frontend/node_modules frontend/package-lock.json backend/node_modules backend/package-lock.json shared/node_modules shared/package-lock.json .turbo",
     "build": "turbo run build",
     "build:frontend": "turbo run build --filter=reserva-facil-frontend",
     "build:backend": "turbo run build --filter=reserva-facil-backend",
     "build:shared": "turbo run build --filter=@restaurant-reservation/shared",
+    "build:fast": "turbo run build --parallel",
     "dev": "turbo run dev",
     "dev:backend": "turbo run dev --filter=reserva-facil-backend",
     "dev:frontend": "turbo run dev --filter=reserva-facil-frontend",
     "dev:sequential": "npm run dev:backend & timeout /t 3 /nobreak >nul & npm run dev:frontend",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "cache:clean": "turbo clean"
   },
   "devDependencies": {
     "rimraf": "^6.0.1",
