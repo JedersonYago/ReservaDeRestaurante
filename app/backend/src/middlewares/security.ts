@@ -1,6 +1,7 @@
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import compression from "compression";
+import { Request, Response } from "express";
+const compression = require("compression");
 import { config } from "../config";
 
 // Configuração do rate limiter
@@ -17,7 +18,7 @@ export const rateLimiter = rateLimit({
 
 // Configuração de compressão
 export const compressionConfig = compression({
-  filter: (req, res) => {
+  filter: (req: Request, res: Response) => {
     // Não comprimir se o cliente não suporta
     if (req.headers["x-no-compression"]) {
       return false;

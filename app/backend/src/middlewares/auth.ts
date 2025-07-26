@@ -31,7 +31,13 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ message: "Token não fornecido ou formato inválido" });
+    }
+    const token = authHeader.substring(7).trim(); // Remove "Bearer " e espaços
 
     if (!token) {
       return res.status(401).json({ message: "Token não fornecido" });
@@ -44,6 +50,13 @@ export const authenticate = async (
 
     // Verificar e decodificar o token
     const decoded = verifyToken(token) as JwtPayload;
+
+    // Verificar campos obrigatórios
+    if (!decoded._id || !decoded.role || !decoded.username) {
+      return res
+        .status(401)
+        .json({ message: "Token inválido (payload incompleto)" });
+    }
 
     // Verificar se é um access token
     if (decoded.type !== "access") {
