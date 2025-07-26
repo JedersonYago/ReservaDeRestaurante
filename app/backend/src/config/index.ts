@@ -27,9 +27,6 @@ export function validateConfig() {
   const requiredEnvVars = [
     "MONGODB_URI",
     "JWT_SECRET",
-    "NODE_ENV",
-    "PORT",
-    "CORS_ORIGIN",
   ];
 
   const missingEnvVars = requiredEnvVars.filter(
@@ -41,4 +38,12 @@ export function validateConfig() {
       `Missing required environment variables: ${missingEnvVars.join(", ")}`
     );
   }
+
+  // Log das configurações (sem valores sensíveis)
+  console.log("📋 Configurações carregadas:");
+  console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`   PORT: ${process.env.PORT || 3000}`);
+  console.log(`   CORS_ORIGIN: ${process.env.CORS_ORIGIN || 'http://localhost:3000'}`);
+  console.log(`   MONGODB_URI: ${process.env.MONGODB_URI ? '✅ Configurado' : '❌ Não configurado'}`);
+  console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? '✅ Configurado' : '❌ Não configurado'}`);
 }
