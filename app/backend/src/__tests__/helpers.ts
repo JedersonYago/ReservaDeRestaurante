@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import User, { IUser } from '../models/User';
-import Table from '../models/Table';
-import Reservation from '../models/Reservation';
-import { generateTokenPair } from '../utils/jwt';
+import { Request, Response } from "express";
+import User, { IUser } from "../models/User";
+import Table from "../models/Table";
+import Reservation from "../models/Reservation";
+import { generateTokenPair } from "../utils/jwt";
 
 /**
  * Helpers para criação de dados de teste
@@ -12,12 +12,13 @@ export class TestDataFactory {
    * Cria um usuário de teste
    */
   static async createUser(data: Partial<IUser> = {}): Promise<IUser> {
+    const unique = Date.now() + Math.random();
     const defaultUser = {
-      name: 'Test User',
-      email: 'test@example.com',
-      username: 'testuser',
-      password: 'Password123!',
-      role: 'client' as const,
+      name: "Test User",
+      email: `test+${unique}@example.com`,
+      username: `testuser${unique}`,
+      password: "Password123!",
+      role: "client" as const,
     };
 
     const userData = { ...defaultUser, ...data };
@@ -29,10 +30,10 @@ export class TestDataFactory {
    */
   static async createAdmin(data: Partial<IUser> = {}): Promise<IUser> {
     return await this.createUser({
-      name: 'Admin User',
-      email: 'admin@example.com',
-      username: 'admin',
-      role: 'admin',
+      name: "Admin User",
+      email: "admin@example.com",
+      username: "admin",
+      role: "admin",
       ...data,
     });
   }
@@ -42,17 +43,17 @@ export class TestDataFactory {
    */
   static async createTable(data: any = {}) {
     const defaultTable = {
-      name: 'Mesa Test',
+      name: "Mesa Test",
       capacity: 4,
       availability: [
         {
-          date: '2025-07-25',
-          times: ['18:00', '19:00', '20:00', '21:00']
+          date: "2025-07-25",
+          times: ["18:00", "19:00", "20:00", "21:00"],
         },
         {
-          date: '2025-07-26',
-          times: ['18:00', '19:00', '20:00', '21:00']
-        }
+          date: "2025-07-26",
+          times: ["18:00", "19:00", "20:00", "21:00"],
+        },
       ],
     };
 
@@ -77,11 +78,11 @@ export class TestDataFactory {
     }
 
     const defaultReservation = {
-      date: '2025-07-25',
-      time: '19:00',
-      customerName: 'Test Customer',
-      customerEmail: 'test@example.com',
-      status: 'pending',
+      date: "2025-07-25",
+      time: "19:00",
+      customerName: "Test Customer",
+      customerEmail: "test@example.com",
+      status: "pending",
       ...data,
     };
 
@@ -130,7 +131,10 @@ export class MockHelpers {
   /**
    * Cria um mock de Request autenticado
    */
-  static mockAuthenticatedRequest(user: IUser, data: any = {}): Partial<Request> {
+  static mockAuthenticatedRequest(
+    user: IUser,
+    data: any = {}
+  ): Partial<Request> {
     return this.mockRequest({
       user,
       headers: {
@@ -164,8 +168,8 @@ export class TestValidators {
    * Verifica se um token JWT tem estrutura válida
    */
   static isValidJWT(token: any): boolean {
-    if (typeof token !== 'string') return false;
-    const parts = token.split('.');
+    if (typeof token !== "string") return false;
+    const parts = token.split(".");
     return parts.length === 3;
   }
 
@@ -175,7 +179,7 @@ export class TestValidators {
   static hasErrorStructure(response: any): boolean {
     return (
       response &&
-      typeof response.message === 'string' &&
+      typeof response.message === "string" &&
       (response.errors === undefined || Array.isArray(response.errors))
     );
   }
