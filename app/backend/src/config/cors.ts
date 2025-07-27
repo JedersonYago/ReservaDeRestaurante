@@ -31,50 +31,8 @@ const getCorsOrigins = () => {
 };
 
 export const corsConfig = {
-  origin: function (
-    origin: string | undefined,
-    callback: (err: Error | null, allow?: boolean) => void
-  ) {
-    // Permitir requisições sem origin (como mobile apps ou Postman)
-    if (!origin) {
-      console.log("🌐 CORS: Requisição sem origin permitida");
-      return callback(null, true);
-    }
-
-    const allowedOrigins = getCorsOrigins();
-
-    // Log para debug
-    console.log(`🌐 CORS: Origin recebida: ${origin}`);
-    console.log(`🌐 CORS: Origins permitidas:`, allowedOrigins);
-
-    // Verificar se a origin está na lista de permitidas
-    const isAllowed = allowedOrigins.some((allowedOrigin) => {
-      // Suporte para wildcards
-      if (allowedOrigin.includes("*")) {
-        const pattern = allowedOrigin.replace("*", ".*");
-        const matches = new RegExp(pattern).test(origin);
-        console.log(
-          `🌐 CORS: Testando wildcard ${allowedOrigin} -> ${pattern} -> ${matches}`
-        );
-        return matches;
-      }
-      const matches = allowedOrigin === origin;
-      console.log(
-        `🌐 CORS: Testando exact match ${allowedOrigin} -> ${matches}`
-      );
-      return matches;
-    });
-
-    if (isAllowed) {
-      console.log(`✅ CORS: Origin ${origin} permitida`);
-      callback(null, true);
-    } else {
-      console.log(`🚫 CORS bloqueado para origin: ${origin}`);
-      console.log(`✅ Origins permitidas:`, allowedOrigins);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
+  origin: true, // Permitir TODAS as origens temporariamente
+  credentials: false, // Desabilitar credentials para evitar problemas
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: [
     "Origin",

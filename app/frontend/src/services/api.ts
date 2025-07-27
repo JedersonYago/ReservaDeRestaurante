@@ -32,6 +32,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: false, // Desabilitar credentials para evitar problemas de CORS
 });
 
 // Flag para evitar múltiplas requisições de refresh simultâneas
@@ -52,14 +53,14 @@ const processQueue = (error: any, token: string | null = null) => {
 // Interceptor para adicionar o token em todas as requisições
 api.interceptors.request.use(
   async (config: any) => {
-    // Log para debug
-    console.log("🔧 API Request:", {
-      url: config.url,
-      method: config.method,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
-      headers: config.headers,
-    });
+    // Log apenas para debug em desenvolvimento
+    if (import.meta.env.DEV) {
+      console.log("🔧 API Request:", {
+        url: config.url,
+        method: config.method,
+        fullURL: `${config.baseURL}${config.url}`,
+      });
+    }
 
     const token = authService.getToken();
     if (token) {
