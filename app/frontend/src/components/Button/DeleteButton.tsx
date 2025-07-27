@@ -9,6 +9,7 @@ interface DeleteButtonProps
   disabled?: boolean;
   loading?: boolean;
   type?: "button" | "submit" | "reset";
+  compact?: boolean;
 }
 
 export function DeleteButton({
@@ -17,13 +18,19 @@ export function DeleteButton({
   disabled = false,
   loading = false,
   type = "button",
+  compact = false,
   ...props
 }: DeleteButtonProps) {
   const defaultIcon = <Trash2 size={16} />;
   const iconToShow = leftIcon || defaultIcon;
 
   return (
-    <StyledDeleteButton disabled={disabled || loading} type={type} {...props}>
+    <StyledDeleteButton
+      disabled={disabled || loading}
+      type={type}
+      $compact={compact}
+      {...props}
+    >
       {loading && <LoadingSpinner />}
       {!loading && <IconWrapper>{iconToShow}</IconWrapper>}
       <span>{children}</span>
@@ -49,42 +56,45 @@ const LoadingSpinner = styled.div`
   }
 `;
 
-const StyledDeleteButton = styled.button`
+const StyledDeleteButton = styled.button<{ $compact?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 24px;
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  min-height: 44px;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing[2]};
+  justify-content: center;
+  border: none;
+
+  /* Flex behavior baseado na prop compact */
+  flex: ${({ $compact }) => ($compact ? "none" : "1")};
 
   /* Estilo danger - vermelho para ações destrutivas */
   background: ${({ theme }) => theme.colors.semantic.error};
   color: ${({ theme }) => theme.colors.primary.contrast};
-  border: 1px solid ${({ theme }) => theme.colors.semantic.error};
 
   /* Garantir que ícones SVG sejam brancos */
   svg {
     color: ${({ theme }) => theme.colors.primary.contrast} !important;
+    flex-shrink: 0;
   }
 
   &:hover:not(:disabled) {
-    background: #B71C1C;
-    border-color: #B71C1C;
+    background: #b71c1c;
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.shadows.md};
-    
+
     svg {
       color: ${({ theme }) => theme.colors.primary.contrast} !important;
     }
   }
 
   &:active:not(:disabled) {
-    background: #8B0000;
+    background: #8b0000;
     transform: translateY(0);
     box-shadow: ${({ theme }) => theme.shadows.sm};
   }
@@ -94,11 +104,16 @@ const StyledDeleteButton = styled.button`
     cursor: not-allowed;
   }
 
-  @media (max-width: 768px) {
-    padding: 12px 16px;
+  &:focus {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    flex: ${({ $compact }) => ($compact ? "none" : "1")};
+    padding: ${({ theme }) => theme.spacing[2]}
+      ${({ theme }) => theme.spacing[2]};
     font-size: ${({ theme }) => theme.typography.fontSize.sm};
-    min-height: 48px;
-    flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -719,9 +719,7 @@ export function NewTable() {
         >
           Criar Mesa
         </SubmitButton>
-        <BackButton onClick={() => navigate("/tables")}>
-          Voltar
-        </BackButton>
+        <BackButton onClick={() => navigate("/tables")}>Voltar</BackButton>
       </FixedActionBar>
     </PageWrapper>
   );

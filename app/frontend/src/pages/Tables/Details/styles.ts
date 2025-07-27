@@ -39,9 +39,9 @@ export const HeaderContent = styled.div`
   gap: ${({ theme }) => theme.spacing[6]};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: ${({ theme }) => theme.spacing[4]};
+    flex-direction: row;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing[3]};
   }
 `;
 
@@ -637,7 +637,7 @@ export const ReservationActions = styled.div`
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     /* Em telas menores, ajusta gap e fonte */
     gap: ${({ theme }) => theme.spacing[1]};
-    
+
     > * {
       font-size: ${({ theme }) => theme.typography.fontSize.xs};
       padding: ${({ theme }) => theme.spacing[2]};
@@ -649,10 +649,11 @@ export const ReservationActions = styled.div`
     /* Em mobile, mantém grid 2x2 mas com melhor espaçamento */
     gap: ${({ theme }) => theme.spacing[2]};
     padding-top: ${({ theme }) => theme.spacing[4]};
-    
+
     > * {
       font-size: ${({ theme }) => theme.typography.fontSize.sm};
-      padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[2]};
+      padding: ${({ theme }) => theme.spacing[3]}
+        ${({ theme }) => theme.spacing[2]};
       min-height: 44px;
       white-space: normal;
       overflow: visible;

@@ -15,7 +15,10 @@ import { StatusBadge, type BadgeStatus } from "../../../components/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
 import { useReservations } from "../../../hooks/useReservations";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
-import { PageWrapper, PageWrapperWithFixedActionBar } from "../../../components/Layout/PageWrapper";
+import {
+  PageWrapper,
+  PageWrapperWithFixedActionBar,
+} from "../../../components/Layout/PageWrapper";
 import { FixedActionBar } from "../../../components/Layout/FixedActionBar";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import {
@@ -867,18 +870,14 @@ export function TableDetails() {
             >
               Editar Mesa
             </Button>
-            <DeleteButton
-              onClick={handleDeleteTableClick}
-            >
+            <DeleteButton onClick={handleDeleteTableClick} compact>
               Excluir Mesa
             </DeleteButton>
           </>
         ) : (
           <Button
             variant="primary"
-            onClick={() =>
-              navigate(`/reservations/new?tableId=${table._id}`)
-            }
+            onClick={() => navigate(`/reservations/new?tableId=${table._id}`)}
             leftIcon={<Calendar size={16} />}
             disabled={table.status !== "available"}
           >

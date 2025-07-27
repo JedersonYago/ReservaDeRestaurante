@@ -9,7 +9,10 @@ import { DeleteButton } from "../../../components/Button/DeleteButton";
 import { useToast } from "../../../components/Toast";
 import { formatDate, formatTime } from "../../../utils/dateUtils";
 import { Container as LayoutContainer } from "../../../components/Layout/Container";
-import { PageWrapper, PageWrapperWithFixedActionBar } from "../../../components/Layout/PageWrapper";
+import {
+  PageWrapper,
+  PageWrapperWithFixedActionBar,
+} from "../../../components/Layout/PageWrapper";
 import { FixedActionBar } from "../../../components/Layout/FixedActionBar";
 import { ConfirmationModal } from "../../../components/Modal/ConfirmationModal";
 import { StatusBadge } from "../../../components/StatusBadge";
@@ -415,6 +418,7 @@ export function ReservationDetails() {
             disabled={isDeleting}
             loading={isDeleting}
             leftIcon={<Trash2 size={16} />}
+            compact
           >
             {isDeleting ? "Excluindo..." : "Excluir"}
           </DeleteButton>
