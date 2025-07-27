@@ -3,26 +3,16 @@ import { authService } from "./authService";
 
 // Função para obter a URL correta da API
 function getCorrectedApiUrl() {
-  // Em desenvolvimento, usar o proxy do Vite
   if (import.meta.env.DEV) {
     return "/api";
   }
 
-  // Em produção, usar a URL definida no build ou fallback + /api
   const baseUrl =
     (globalThis as any).__API_URL__ ||
     import.meta.env.VITE_API_URL ||
     "https://reservafacil-production.up.railway.app";
 
   const apiUrl = `${baseUrl}/api`;
-
-  // Log apenas em desenvolvimento
-  if (import.meta.env.DEV) {
-    console.log("🔧 Configuração da API:", {
-      env: import.meta.env.MODE,
-      apiUrl: apiUrl,
-    });
-  }
 
   return apiUrl;
 }
@@ -54,15 +44,6 @@ const processQueue = (error: any, token: string | null = null) => {
 // Interceptor para adicionar o token em todas as requisições
 api.interceptors.request.use(
   async (config: any) => {
-    // Log apenas para debug em desenvolvimento
-    if (import.meta.env.DEV) {
-      console.log("🔧 API Request:", {
-        url: config.url,
-        method: config.method,
-        fullURL: `${config.baseURL}${config.url}`,
-      });
-    }
-
     const token = authService.getToken();
     if (token) {
       config.headers = config.headers || {};
@@ -71,12 +52,6 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error("[API Request Error]", {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      message: error.message,
-    });
     return Promise.reject(error);
   }
 );
@@ -93,20 +68,6 @@ api.interceptors.response.use(
       (error.code === "ECONNREFUSED" ||
         error.code === "ERR_NETWORK" ||
         error.message?.includes("Network Error"));
-
-    // Log apenas para erros críticos em desenvolvimento
-    if (
-      import.meta.env.DEV &&
-      error.response?.status !== 409 &&
-      !isConnectionError
-    ) {
-      console.error("[API Response Error]", {
-        url: error.config?.url,
-        method: error.config?.method,
-        status: error.response?.status,
-        message: error.message,
-      });
-    }
 
     // Tratar erros específicos
     if (error.code === "ECONNABORTED") {

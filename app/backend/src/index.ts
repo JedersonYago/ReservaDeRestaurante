@@ -3,7 +3,7 @@ import { connectDB } from "./config/database";
 import { config, validateConfig } from "./config";
 import {
   startPeriodicCheck,
-  startDailyCleanup,
+  startExpirationCheck,
 } from "./services/schedulerService";
 import { initializeDefaultConfig } from "./utils/initUtils";
 
@@ -25,7 +25,7 @@ const startServer = async () => {
 
     console.log("⏰ Iniciando serviços agendados...");
     startPeriodicCheck();
-    startDailyCleanup();
+    startExpirationCheck();
 
     console.log("🌐 Criando aplicação...");
     const app = createApp();

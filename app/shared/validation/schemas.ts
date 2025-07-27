@@ -72,7 +72,9 @@ export type ConfigSchema = z.infer<typeof configSchema>;
 export const tableSchema = z.object({
   name: z.string().min(1, "O nome da mesa é obrigatório"),
   capacity: z.number().min(1, "A capacidade deve ser maior que zero"),
-  status: z.enum(["available", "reserved", "maintenance"]).default("available"),
+  status: z
+    .enum(["available", "reserved", "maintenance", "expired"])
+    .default("available"),
   availability: z
     .array(
       z.object({
