@@ -76,6 +76,8 @@ export function Reservations() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("");
+  const [timeFilter, setTimeFilter] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
     type: "delete" | "clear" | "cancel";
@@ -85,11 +87,17 @@ export function Reservations() {
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const hasActiveFilters = searchTerm !== "" || statusFilter !== "all";
+  const hasActiveFilters =
+    searchTerm !== "" ||
+    statusFilter !== "all" ||
+    dateFilter !== "" ||
+    timeFilter !== "";
 
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
+    setDateFilter("");
+    setTimeFilter("");
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -135,7 +143,13 @@ export function Reservations() {
         const matchesStatus =
           statusFilter === "all" || reservation.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        const matchesDate =
+          dateFilter === "" || reservation.date === dateFilter;
+
+        const matchesTime =
+          timeFilter === "" || reservation.time === timeFilter;
+
+        return matchesSearch && matchesStatus && matchesDate && matchesTime;
       })
       .sort((a, b) => {
         // Ordenar por prioridade de status (menor número = maior prioridade)
@@ -152,7 +166,7 @@ export function Reservations() {
 
         return dateTimeB.getTime() - dateTimeA.getTime();
       });
-  }, [reservations, searchTerm, statusFilter]);
+  }, [reservations, searchTerm, statusFilter, dateFilter, timeFilter]);
 
   const handleDeleteClick = (id: string) => {
     setModalConfig({
@@ -306,6 +320,35 @@ export function Reservations() {
                 <option value="cancelled">Cancelada</option>
                 <option value="expired">Expirada</option>
               </Select>
+            </FilterContainer>
+
+            <FilterContainer>
+              <label htmlFor="reservation-date-filter">
+                <Calendar size={16} />
+                Data
+              </label>
+              <Input
+                id="reservation-date-filter"
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                placeholder="Filtrar por data"
+                min={new Date().toISOString().split("T")[0]}
+              />
+            </FilterContainer>
+
+            <FilterContainer>
+              <label htmlFor="reservation-time-filter">
+                <Clock size={16} />
+                Horário
+              </label>
+              <Input
+                id="reservation-time-filter"
+                type="time"
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                placeholder="Filtrar por horário"
+              />
             </FilterContainer>
 
             <ClearFiltersButton

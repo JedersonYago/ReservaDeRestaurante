@@ -326,7 +326,7 @@ export function Tables() {
                           >
                             Detalhes
                           </ActionButton>
-                          
+
                           {isAdmin ? (
                             <>
                               <ActionButton

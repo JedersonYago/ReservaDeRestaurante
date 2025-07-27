@@ -132,6 +132,7 @@ export const SearchContainer = styled.div`
     input {
       padding-left: ${({ theme }) => theme.spacing[10]};
       width: 100%;
+      min-height: 44px;
     }
   }
 `;
@@ -173,6 +174,7 @@ export const Select = styled.select`
   transition: all ${({ theme }) => theme.transitions.duration[200]}
     ${({ theme }) => theme.transitions.timing.out};
   width: 100%;
+  min-height: 44px;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary.main};
@@ -209,6 +211,7 @@ export const ClearFiltersButton = styled.button`
   transition: all ${({ theme }) => theme.transitions.duration[200]}
     ${({ theme }) => theme.transitions.timing.out};
   white-space: nowrap;
+  min-height: 44px;
 
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.semantic.error}15;
@@ -418,23 +421,25 @@ export const CardActions = styled.div`
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     /* Em telas menores, reduz gap e padding dos botões */
     gap: ${({ theme }) => theme.spacing[1]};
-    
+
     > * {
       font-size: ${({ theme }) => theme.typography.fontSize.xs};
-      padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[2]};
+      padding: ${({ theme }) => theme.spacing[2]}
+        ${({ theme }) => theme.spacing[2]};
     }
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
     gap: ${({ theme }) => theme.spacing[2]};
-    
+
     /* Em mobile, empilha os botões verticalmente */
     > * {
       flex: none;
       width: 100%;
       font-size: ${({ theme }) => theme.typography.fontSize.sm};
-      padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+      padding: ${({ theme }) => theme.spacing[3]}
+        ${({ theme }) => theme.spacing[4]};
       white-space: normal;
       overflow: visible;
       text-overflow: initial;

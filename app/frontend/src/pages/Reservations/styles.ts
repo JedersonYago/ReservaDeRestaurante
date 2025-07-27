@@ -94,9 +94,14 @@ export const FiltersTitle = styled.h3`
 
 export const FiltersGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   gap: ${({ theme }) => theme.spacing[4]};
   align-items: end;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    grid-template-columns: 1fr 1fr;
+    gap: ${({ theme }) => theme.spacing[4]};
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     grid-template-columns: 1fr;
@@ -138,6 +143,7 @@ export const SearchContainer = styled.div`
     input {
       padding-left: ${({ theme }) => theme.spacing[10]};
       width: 100%;
+      min-height: 44px;
     }
   }
 `;
@@ -147,7 +153,7 @@ export const FilterContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing[2]};
-  min-width: 200px;
+  min-width: 160px;
 
   label {
     font-size: ${({ theme }) => theme.typography.fontSize.sm};
@@ -179,6 +185,7 @@ export const Select = styled.select`
   transition: all ${({ theme }) => theme.transitions.duration[200]}
     ${({ theme }) => theme.transitions.timing.out};
   width: 100%;
+  min-height: 44px;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary.main};
