@@ -312,24 +312,13 @@ const authController = {
 
   async forgotPassword(req: Request, res: Response) {
     try {
-      console.log("[forgotPassword] Requisição recebida:", {
-        method: req.method,
-        url: req.url,
-        body: req.body,
-        headers: req.headers,
-      });
-
       const { email } = req.body;
 
       if (!email) {
-        console.log("[forgotPassword] Email não fornecido");
         return res.status(400).json({ message: "Email é obrigatório" });
       }
 
-      console.log("[forgotPassword] Processando email:", email);
-
       // Buscar usuário pelo email (case-insensitive)
-      console.log("[forgotPassword] Buscando usuário no banco...");
       const { getUserModel } = await import("../models/User");
       const User = getUserModel();
       const user = await User.findOne({
@@ -337,10 +326,6 @@ const authController = {
       });
 
       if (!user) {
-        console.log(
-          "[forgotPassword] Usuário não encontrado para o email:",
-          email
-        );
         // Por segurança, sempre retorna sucesso mesmo se o email não existir
         return res.json({
           message:
@@ -449,8 +434,10 @@ const authController = {
   async verifyResetToken(req: Request, res: Response) {
     try {
       const { token } = req.query;
+      console.log("[verifyResetToken] Token recebido:", token);
 
       if (!token) {
+        console.log("[verifyResetToken] Token não fornecido");
         return res.status(400).json({
           valid: false,
           message: "Token não fornecido",
@@ -463,19 +450,40 @@ const authController = {
         used: false,
       });
 
+      console.log(
+        "[verifyResetToken] Token encontrado no banco:",
+        resetToken ? "SIM" : "NÃO"
+      );
+
+      if (resetToken) {
+        console.log("[verifyResetToken] Token usado:", resetToken.used);
+        console.log(
+          "[verifyResetToken] Token expira em:",
+          resetToken.expiresAt
+        );
+        console.log("[verifyResetToken] Data atual:", new Date());
+        console.log(
+          "[verifyResetToken] Token expirado:",
+          new Date() > resetToken.expiresAt
+        );
+      }
+
       if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
+        console.log("[verifyResetToken] Token inválido ou expirado");
         return res.status(400).json({
           valid: false,
           message: "Token inválido ou expirado",
         });
       }
 
+      console.log("[verifyResetToken] Token válido");
       res.json({
         valid: true,
         message: "Token válido",
         expiresAt: resetToken.expiresAt,
       });
     } catch (error) {
+      console.error("[verifyResetToken] Erro:", error);
       res.status(500).json({
         valid: false,
         message: "Erro ao verificar token",
