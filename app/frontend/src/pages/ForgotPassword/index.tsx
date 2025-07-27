@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "../../components/Toast";
 import { forgotPasswordSchema } from "../../schemas/auth";
 import { z } from "zod";
+import api from "../../services/api";
 
 import { Input } from "../../components/Input";
 import { ThemeToggle } from "../../components/ThemeToggle";
@@ -39,26 +40,18 @@ export function ForgotPassword() {
 
   async function handleForgotPassword(data: ForgotPasswordFormData) {
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await api.post("/auth/forgot-password", data);
 
-      const result = await response.json();
-
-      if (response.ok) {
+      if (response.status === 200) {
         setIsEmailSent(true);
         setSentEmail(data.email);
         toast.success("Instruções enviadas para seu email!");
-      } else {
-        toast.error(result.message || "Erro ao solicitar recuperação");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao solicitar recuperação:", error);
-      toast.error("Erro de conexão. Tente novamente.");
+      const errorMessage =
+        error.response?.data?.message || "Erro de conexão. Tente novamente.";
+      toast.error(errorMessage);
     }
   }
 
