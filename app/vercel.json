@@ -9,6 +9,7 @@
       "destination": "/index.html"
     }
   ],
+  "redirects": [],
   "env": {
     "VITE_API_URL": "https://reservafacil-production.up.railway.app"
   }
