@@ -348,8 +348,6 @@ const authController = {
         });
       }
 
-      console.log("[forgotPassword] Usuário encontrado:", user.username);
-
       // Gerar token único de recuperação
       const resetToken = crypto.randomBytes(32).toString("hex");
 
@@ -371,7 +369,8 @@ const authController = {
       });
 
       // Gerar link de recuperação
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const frontendUrl =
+        process.env.FRONTEND_URL || "https://suareservafacil.vercel.app";
       const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
       // Enviar email
@@ -387,13 +386,11 @@ const authController = {
         });
       }
 
-      console.log("[forgotPassword] Resposta de sucesso enviada");
       res.json({
         message:
           "Se o email estiver cadastrado, você receberá as instruções de recuperação",
       });
     } catch (error) {
-      console.error("[forgotPassword] Erro:", error);
       res.status(500).json({ message: "Erro interno. Tente novamente." });
     }
   },

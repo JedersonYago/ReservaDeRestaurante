@@ -9,20 +9,15 @@ function getCorrectedApiUrl() {
 
   // Verificar se há uma URL específica definida
   const envApiUrl = import.meta.env.VITE_API_URL;
-  console.log("[API] VITE_API_URL from env:", envApiUrl);
 
   // Em produção, SEMPRE usar URL completa para evitar proxy do Vercel
   const baseUrl = envApiUrl || "https://reservafacil-production.up.railway.app";
   const apiUrl = `${baseUrl}/api`;
 
-  console.log("[API] URL da API:", apiUrl);
-  console.log("[API] Base URL final:", baseUrl);
-  console.log("[API] Ambiente:", import.meta.env.MODE);
   return apiUrl;
 }
 
 const apiUrl = getCorrectedApiUrl();
-console.log("[API] Configurando axios com baseURL:", apiUrl);
 
 const api = axios.create({
   baseURL: apiUrl,
@@ -51,9 +46,6 @@ const processQueue = (error: any, token: string | null = null) => {
 // Interceptor para adicionar o token em todas as requisições
 api.interceptors.request.use(
   async (config: any) => {
-    console.log("[API] Requisição sendo feita para:", config.url);
-    console.log("[API] URL completa:", config.baseURL + config.url);
-
     const token = authService.getToken();
     if (token) {
       config.headers = config.headers || {};
