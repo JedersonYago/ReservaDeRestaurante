@@ -9,6 +9,8 @@
     "restartPolicyMaxRetries": 10
   },
   "variables": {
-    "NPM_CONFIG_OMIT": "dev"
+    "NPM_CONFIG_OMIT": "dev",
+    "PORT": "8080",
+    "NODE_ENV": "production"
   }
 }

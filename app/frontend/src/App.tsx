@@ -6,7 +6,6 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GlobalStyle } from "./styles/global";
 import { initializeAuthCleanup } from "./utils/authUtils";
-import { debugConfig } from "./utils/debugConfig";
 import { useEffect } from "react";
 import { ConfigProvider } from "./components/ConfigProvider";
 
@@ -70,8 +69,6 @@ function App() {
 
     // Debug da configuração da API
     if (import.meta.env.PROD) {
-      debugConfig.logEnvironmentVariables();
-      debugConfig.validateApiUrl();
     }
   }, []);
 
