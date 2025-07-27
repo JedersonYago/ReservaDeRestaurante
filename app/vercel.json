@@ -12,5 +12,10 @@
   "redirects": [],
   "env": {
     "VITE_API_URL": "https://reservafacil-production.up.railway.app"
+  },
+  "functions": {
+    "frontend/src/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
   }
 }
