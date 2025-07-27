@@ -7,11 +7,17 @@ function getCorrectedApiUrl() {
     return "/api";
   }
 
-  // Em produção, sempre usar o Railway
-  const baseUrl = "https://reservafacil-production.up.railway.app";
+  // Verificar se há uma URL específica definida
+  const envApiUrl = import.meta.env.VITE_API_URL;
+  console.log("[API] VITE_API_URL from env:", envApiUrl);
+
+  // Em produção, SEMPRE usar URL completa para evitar proxy do Vercel
+  const baseUrl = envApiUrl || "https://reservafacil-production.up.railway.app";
   const apiUrl = `${baseUrl}/api`;
 
   console.log("[API] URL da API:", apiUrl);
+  console.log("[API] Base URL final:", baseUrl);
+  console.log("[API] Ambiente:", import.meta.env.MODE);
   return apiUrl;
 }
 
