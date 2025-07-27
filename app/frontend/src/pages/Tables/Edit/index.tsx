@@ -12,6 +12,7 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  Trash2,
 } from "lucide-react";
 import { useTables, useTableById } from "../../../hooks/useTables";
 import {
@@ -58,6 +59,7 @@ import {
   TimeSlotItem,
   TimeSlotInfo,
   TimeSlotActions,
+  TimeSlotRemoveButton,
   TimeInputContainer,
   TimeInputGroup,
   AddTimeButton,
@@ -174,13 +176,13 @@ export function EditTable() {
       setCapacity(table.capacity.toString());
       setStatus(table.status);
       setAvailability(table.availability || [{ date: "", times: [] }]);
-      
+
       // Armazenar valores originais
       setOriginalName(table.name);
       setOriginalCapacity(table.capacity.toString());
       setOriginalStatus(table.status);
       setOriginalAvailability(table.availability || [{ date: "", times: [] }]);
-      
+
       setTimeInputs(
         table.availability
           ? table.availability.map(() => ({ start: "", end: "" }))
@@ -816,7 +818,7 @@ export function EditTable() {
                                           </div>
                                         </TimeSlotInfo>
                                         <TimeSlotActions>
-                                          <DeleteButton
+                                          <TimeSlotRemoveButton
                                             type="button"
                                             onClick={() =>
                                               handleRemoveTime(idx, tIdx)
@@ -827,8 +829,8 @@ export function EditTable() {
                                                 : "Remover horário"
                                             }
                                           >
-                                            Remover
-                                          </DeleteButton>
+                                            <Trash2 size={14} />
+                                          </TimeSlotRemoveButton>
                                         </TimeSlotActions>
                                       </TimeSlotItem>
                                     );
@@ -947,7 +949,8 @@ export function EditTable() {
               (name === originalName &&
                 capacity === originalCapacity &&
                 status === originalStatus &&
-                JSON.stringify(availability) === JSON.stringify(originalAvailability))
+                JSON.stringify(availability) ===
+                  JSON.stringify(originalAvailability))
             }
             loading={isSaving}
             leftIcon={<Save size={18} />}
@@ -955,10 +958,7 @@ export function EditTable() {
           >
             Salvar Alterações
           </SubmitButton>
-          <BackButton
-            type="button"
-            onClick={() => navigate("/tables")}
-          >
+          <BackButton type="button" onClick={() => navigate("/tables")}>
             Voltar
           </BackButton>
         </FixedActionBar>

@@ -387,6 +387,61 @@ export const TimeSlotActions = styled.div`
   }
 `;
 
+export const TimeSlotRemoveButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: ${({ theme }) => theme.colors.semantic.error};
+  color: ${({ theme }) => theme.colors.primary.contrast};
+  border: 1px solid ${({ theme }) => theme.colors.semantic.error};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.duration[200]} ease;
+  flex-shrink: 0;
+
+  /* Garantir que ícones SVG sejam brancos */
+  svg {
+    color: ${({ theme }) => theme.colors.primary.contrast} !important;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover:not(:disabled) {
+    background: #B71C1C;
+    border-color: #B71C1C;
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+    
+    svg {
+      color: ${({ theme }) => theme.colors.primary.contrast} !important;
+    }
+  }
+
+  &:active:not(:disabled) {
+    background: #8B0000;
+    transform: translateY(0);
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 480px) {
+    width: 28px;
+    height: 28px;
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+`;
+
 export const TimeInputContainer = styled.div`
   margin-top: 12px;
   padding: 16px;
