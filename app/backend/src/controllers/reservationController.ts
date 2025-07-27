@@ -189,8 +189,9 @@ export async function updateTableStatus(tableId: string | null) {
   const table = await Table.findById(tableId);
   if (!table) return;
 
-  // Não alterar status se a mesa estiver em manutenção ou expirada (controlado pelo admin)
-  if (table.status === "maintenance" || table.status === "expired") {
+  // Não alterar status se a mesa estiver em manutenção (controlado pelo admin)
+  // Permitir alteração se estiver expirada (pode ser reativada)
+  if (table.status === "maintenance") {
     return;
   }
 

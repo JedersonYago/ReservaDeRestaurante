@@ -118,17 +118,17 @@ export const tableController = {
         }
       }
 
-      // Impedir que o status "expired" seja definido manualmente
-      if (req.body.status === "expired") {
+      const currentTable = await Table.findById(req.params.id);
+      if (!currentTable) {
+        return res.status(404).json({ message: "Mesa não encontrada" });
+      }
+
+      // Impedir que o status "expired" seja definido manualmente (exceto quando já estava expirada)
+      if (req.body.status === "expired" && currentTable.status !== "expired") {
         return res.status(400).json({
           message:
             "O status 'expired' é controlado automaticamente pelo sistema",
         });
-      }
-
-      const currentTable = await Table.findById(req.params.id);
-      if (!currentTable) {
-        return res.status(404).json({ message: "Mesa não encontrada" });
       }
 
       // Se mesa estava expirada e admin está adicionando availability, reativar mesa
@@ -170,8 +170,11 @@ export const tableController = {
         return res.status(404).json({ message: "Mesa não encontrada" });
       }
 
-      // Atualizar o status da mesa após a edição
-      await updateTableStatus(table._id.toString());
+      // Atualizar o status da mesa após a edição apenas se o admin não definiu explicitamente
+      // (manutenção e outros status definidos pelo admin devem ser preservados)
+      if (!req.body.status) {
+        await updateTableStatus(table._id.toString());
+      }
 
       res.json(table);
     } catch (error: any) {
