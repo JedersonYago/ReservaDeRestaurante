@@ -148,8 +148,9 @@ export function Profile() {
 
       if (formData.name !== user.name) updateData.name = formData.name;
       if (formData.email !== user.email) updateData.email = formData.email;
-      if (formData.username !== user.username)
-        updateData.username = formData.username;
+      if (formData.username !== user.username) {
+        updateData.update = { newUsername: formData.username };
+      }
       if (isChangingEmailOrUsername)
         updateData.currentPassword = formData.currentPassword;
 
@@ -162,10 +163,17 @@ export function Profile() {
         return;
       }
 
+      console.log("Dados para atualização:", {
+        username: user.username,
+        updateData: { ...updateData, currentPassword: "***" }
+      });
+
       const response = await profileService.updateProfile(
         user.username,
         updateData
       );
+
+      console.log("Resposta da API:", response);
 
       // Atualizar dados do usuário no contexto com os dados retornados pelo servidor
       if (response.user) {
@@ -176,7 +184,7 @@ export function Profile() {
           name: response.user.name || updateData.name || user.name,
           email: response.user.email || updateData.email || user.email,
           username:
-            response.user.username || updateData.username || user.username,
+            response.user.username || updateData.update?.newUsername || user.username,
         };
 
         updateUser(updatedUser);
@@ -199,7 +207,7 @@ export function Profile() {
           ...user,
           name: updateData.name || user.name,
           email: updateData.email || user.email,
-          username: updateData.username || user.username,
+          username: updateData.update?.newUsername || user.username,
         };
         updateUser(updatedUser);
       }
@@ -208,7 +216,9 @@ export function Profile() {
       setFormData((prev) => ({ ...prev, currentPassword: "" }));
       setIsEditing(false);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erro ao atualizar perfil");
+      console.error("Erro ao atualizar perfil:", error);
+      const errorMessage = error.response?.data?.message || "Erro ao atualizar perfil";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -240,19 +250,8 @@ export function Profile() {
 
     setPasswordLoading(true);
     try {
-      console.log("Dados para alteração de senha:", {
-        username: user.username,
-        passwordData: {
-          ...passwordData,
-          currentPassword: "***",
-          newPassword: "***",
-          confirmPassword: "***",
-        },
-      });
-
       // Validação completa usando Zod
       const validatedData = changePasswordSchema.parse(passwordData);
-      console.log("Dados validados com sucesso");
 
       // Verificação adicional de senha atual não pode ser igual à nova
       if (passwordData.currentPassword === passwordData.newPassword) {
@@ -261,9 +260,7 @@ export function Profile() {
         return;
       }
 
-      console.log("Chamando API para alterar senha...");
       await profileService.changePassword(user.username, validatedData);
-      console.log("Senha alterada com sucesso na API");
 
       setPasswordData({
         currentPassword: "",
@@ -273,18 +270,14 @@ export function Profile() {
       setIsChangingPassword(false);
       toast.success("Senha alterada com sucesso!");
     } catch (error: any) {
-      console.error("Erro ao alterar senha:", error);
-
       if (error.name === "ZodError") {
         // Erros de validação do Zod
         const firstError = error.errors[0];
-        console.log("Erro de validação Zod:", firstError);
         toast.error(firstError.message);
       } else {
         // Erros da API
         const errorMessage =
           error.response?.data?.message || "Erro ao alterar senha";
-        console.log("Erro da API:", error.response?.data);
         toast.error(errorMessage);
       }
     } finally {

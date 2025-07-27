@@ -1,12 +1,13 @@
 import api from "./api";
 import type { User } from "../types";
-
-const TOKEN_KEY = "token";
+import { authService } from "./authService";
 
 export interface UpdateProfileData {
   name?: string;
   email?: string;
-  username?: string;
+  update?: {
+    newUsername?: string;
+  };
   currentPassword?: string;
 }
 
@@ -22,7 +23,7 @@ export interface DeleteAccountData {
 
 export const profileService = {
   async getProfile(username: string): Promise<User> {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = authService.getToken();
     if (!token) {
       throw new Error("Token não encontrado");
     }
@@ -39,7 +40,7 @@ export const profileService = {
     username: string,
     data: UpdateProfileData
   ): Promise<{ message: string; user?: any }> {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = authService.getToken();
     if (!token) {
       throw new Error("Token não encontrado");
     }
@@ -60,7 +61,7 @@ export const profileService = {
     username: string,
     data: ChangePasswordData
   ): Promise<{ message: string }> {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = authService.getToken();
     if (!token) {
       throw new Error("Token não encontrado");
     }
@@ -78,7 +79,7 @@ export const profileService = {
   },
 
   async deleteAccount(username: string, data: DeleteAccountData): Promise<any> {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = authService.getToken();
     if (!token) {
       throw new Error("Token não encontrado");
     }

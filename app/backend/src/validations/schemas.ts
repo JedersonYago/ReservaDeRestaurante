@@ -56,6 +56,18 @@ export const resetPasswordSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório").optional(),
   email: z.string().email("Email inválido").optional(),
+  update: z
+    .object({
+      newUsername: z
+        .string()
+        .min(3, "O nome de usuário deve ter no mínimo 3 caracteres")
+        .max(30, "O nome de usuário deve ter no máximo 30 caracteres")
+        .regex(
+          /^[a-zA-Z0-9_]+$/,
+          "O nome de usuário deve conter apenas letras, números e underscore"
+        ),
+    })
+    .optional(),
   currentPassword: z.string().min(1, "Senha atual é obrigatória").optional(),
 });
 
