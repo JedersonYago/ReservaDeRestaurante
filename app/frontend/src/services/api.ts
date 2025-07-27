@@ -99,6 +99,8 @@ api.interceptors.response.use(
         method: error.config?.method,
         status: error.response?.status,
         message: error.message,
+        fullURL: `${error.config?.baseURL}${error.config?.url}`,
+        headers: error.config?.headers,
       });
     } else if (isConnectionError) {
       // Log mais amigável para erros de conexão
@@ -178,6 +180,11 @@ api.interceptors.response.use(
       case 403:
         return Promise.reject(new Error("Acesso não autorizado"));
       case 404:
+        console.error("🔧 Erro 404 detectado:", {
+          url: error.config?.url,
+          fullURL: `${error.config?.baseURL}${error.config?.url}`,
+          method: error.config?.method,
+        });
         return Promise.reject(new Error("Recurso não encontrado"));
       case 429:
         return Promise.reject(

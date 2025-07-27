@@ -7,7 +7,7 @@ const isTest = process.env.NODE_ENV === "test";
 // Configurações mais flexíveis para desenvolvimento/teste
 const authConfig = {
   windowMs: isDevelopment || isTest ? 1 * 60 * 1000 : 5 * 60 * 1000, // 1min dev/test, 5min prod
-  max: isTest ? 100 : isDevelopment ? 1000 : 15, // 100 para test, 1000 dev, 15 prod
+  max: isTest ? 100 : isDevelopment ? 1000 : 100, // 100 para test, 1000 dev, 100 prod (aumentado)
   message: {
     error: `Muitas tentativas de acesso. Tente novamente em ${
       isDevelopment || isTest ? "1" : "5"
