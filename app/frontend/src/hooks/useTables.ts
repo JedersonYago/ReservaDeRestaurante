@@ -16,6 +16,8 @@ export function useTables() {
     queryKey: ["tables"],
     queryFn: () => tableService.list(),
     retry: false,
+    staleTime: 30 * 1000, // 30 segundos para dados mais frescos
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -52,8 +54,11 @@ export function useTables() {
   const updateTable = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTableData }) =>
       tableService.update(id, data),
-    onSuccess: () => {
+    onSuccess: (updatedTable, variables) => {
+      // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["table", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
       toast.success("Mesa atualizada com sucesso!");
     },
     onError: (error: any) => {
@@ -102,5 +107,7 @@ export function useTableById(id: string | undefined) {
     queryKey: ["table", id],
     queryFn: () => tableService.getById(id!),
     enabled: !!id,
+    staleTime: 30 * 1000, // 30 segundos para dados mais frescos
+    refetchOnWindowFocus: false,
   });
 }

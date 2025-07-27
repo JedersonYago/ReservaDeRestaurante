@@ -22,8 +22,8 @@ export const useReservations = () => {
   } = useQuery({
     queryKey: ["reservations", user?._id], // Adiciona o ID do usuário como dependência
     queryFn: reservationService.list,
-    staleTime: 30000, // 30 segundos para reduzir requisições
-    refetchInterval: 60000, // Atualiza a cada 1 minuto automaticamente
+    staleTime: 30 * 1000, // 30 segundos para dados mais frescos
+    refetchInterval: 60 * 1000, // Atualiza a cada 1 minuto automaticamente
     refetchOnWindowFocus: false, // Desabilita refetch automático no foco
     refetchOnMount: true,
     enabled: !!user, // Só executa se houver um usuário logado
@@ -31,8 +31,10 @@ export const useReservations = () => {
 
   const createReservation = useMutation({
     mutationFn: reservationService.create,
-    onSuccess: () => {
+    onSuccess: (newReservation) => {
+      // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast.success("Reserva criada com sucesso!");
     },
     onError: (error: any) => {
@@ -42,8 +44,11 @@ export const useReservations = () => {
 
   const deleteReservation = useMutation({
     mutationFn: reservationService.delete,
-    onSuccess: () => {
+    onSuccess: (deletedReservation, id) => {
+      // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["reservation", id] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast.success("Reserva excluída com sucesso!");
     },
     onError: (error: any) => {
@@ -53,8 +58,11 @@ export const useReservations = () => {
 
   const clearReservation = useMutation({
     mutationFn: reservationService.clear,
-    onSuccess: () => {
+    onSuccess: (clearedReservation, id) => {
+      // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["reservation", id] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast.success("Reserva removida da sua lista!");
     },
     onError: (error: any) => {
@@ -64,8 +72,11 @@ export const useReservations = () => {
 
   const cancelReservation = useMutation({
     mutationFn: reservationService.cancel,
-    onSuccess: () => {
+    onSuccess: (updatedReservation, variables) => {
+      // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["reservation", variables] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast.success("Reserva cancelada com sucesso!");
     },
     onError: (error: any) => {
@@ -77,8 +88,11 @@ export const useReservations = () => {
     mutationFn: async (id: string) => {
       return await reservationService.confirm(id);
     },
-    onSuccess: () => {
+    onSuccess: (updatedReservation, id) => {
+      // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["reservation", id] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
       toast.success("Reserva confirmada com sucesso!");
     },
     onError: (error: any) => {
@@ -115,6 +129,8 @@ export function useReservationById(id: string | undefined) {
     queryKey: ["reservation", id],
     queryFn: () => reservationService.getById(id!),
     enabled: !!id,
+    staleTime: 30 * 1000, // 30 segundos para dados mais frescos
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -127,10 +143,10 @@ export function useReservationsByTable(tableId: string) {
   } = useQuery({
     queryKey: ["reservations"],
     queryFn: reservationService.list,
-    staleTime: 30000, // 30 segundos para reduzir requisições
+    staleTime: 30 * 1000, // 30 segundos para dados mais frescos
     refetchInterval: false, // Desabilita refetch automático
     refetchOnWindowFocus: false, // Desabilita refetch automático no foco
-    refetchOnMount: false, // Não refetch no mount, usa cache
+    refetchOnMount: true, // Refetch no mount para garantir dados atualizados
   });
 
   const reservations = allReservations.filter((res: PopulatedReservation) => {

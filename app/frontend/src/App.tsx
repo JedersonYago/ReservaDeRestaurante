@@ -42,7 +42,7 @@ const queryClient = new QueryClient({
         }
         return Math.min(1000 * 2 ** attemptIndex, 30000); // Delay exponencial para outros erros
       },
-      staleTime: 5 * 60 * 1000, // 5 minutos padrão
+      staleTime: 30 * 1000, // 30 segundos padrão para dados mais frescos
       refetchOnWindowFocus: false, // Desabilita refetch automático no foco
       refetchOnReconnect: true, // Habilita refetch quando reconectar (útil quando backend volta)
     },
