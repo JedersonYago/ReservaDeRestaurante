@@ -7,13 +7,11 @@ function getCorrectedApiUrl() {
     return "/api";
   }
 
-  const baseUrl =
-    (globalThis as any).__API_URL__ ||
-    import.meta.env.VITE_API_URL ||
-    "https://reservafacil-production.up.railway.app";
-
+  // Em produção, sempre usar o Railway
+  const baseUrl = "https://reservafacil-production.up.railway.app";
   const apiUrl = `${baseUrl}/api`;
 
+  console.log("[API] URL da API:", apiUrl);
   return apiUrl;
 }
 

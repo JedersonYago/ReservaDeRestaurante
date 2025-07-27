@@ -312,25 +312,43 @@ const authController = {
 
   async forgotPassword(req: Request, res: Response) {
     try {
+      console.log("[forgotPassword] Requisição recebida:", {
+        method: req.method,
+        url: req.url,
+        body: req.body,
+        headers: req.headers,
+      });
+
       const { email } = req.body;
 
       if (!email) {
+        console.log("[forgotPassword] Email não fornecido");
         return res.status(400).json({ message: "Email é obrigatório" });
       }
 
+      console.log("[forgotPassword] Processando email:", email);
+
       // Buscar usuário pelo email (case-insensitive)
+      console.log("[forgotPassword] Buscando usuário no banco...");
       const { getUserModel } = await import("../models/User");
       const User = getUserModel();
       const user = await User.findOne({
         email: email.toLowerCase().trim(),
       });
+
       if (!user) {
+        console.log(
+          "[forgotPassword] Usuário não encontrado para o email:",
+          email
+        );
         // Por segurança, sempre retorna sucesso mesmo se o email não existir
         return res.json({
           message:
             "Se o email estiver cadastrado, você receberá as instruções de recuperação",
         });
       }
+
+      console.log("[forgotPassword] Usuário encontrado:", user.username);
 
       // Gerar token único de recuperação
       const resetToken = crypto.randomBytes(32).toString("hex");
@@ -369,11 +387,13 @@ const authController = {
         });
       }
 
+      console.log("[forgotPassword] Resposta de sucesso enviada");
       res.json({
         message:
           "Se o email estiver cadastrado, você receberá as instruções de recuperação",
       });
     } catch (error) {
+      console.error("[forgotPassword] Erro:", error);
       res.status(500).json({ message: "Erro interno. Tente novamente." });
     }
   },
