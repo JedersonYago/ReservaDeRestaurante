@@ -182,8 +182,6 @@ export const InfoBox = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing[6]};
 
   div {
-    flex: 1;
-
     strong {
       display: block;
       color: ${({ theme }) => theme.colors.primary.main};
@@ -271,8 +269,6 @@ export const ErrorBox = styled.div`
   max-width: 400px;
 
   div {
-    flex: 1;
-
     strong {
       display: block;
       color: ${({ theme }) => theme.colors.text.primary};

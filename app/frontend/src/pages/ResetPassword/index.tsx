@@ -1,23 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../components/Toast";
 import { z } from "zod";
-
-const resetPasswordSchema = z.object({
-  token: z.string().min(1, "Token é obrigatório"),
-  newPassword: z
-    .string()
-    .min(8, "A nova senha deve ter no mínimo 8 caracteres"),
-  confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
-});
-
+import api from "../../services/api";
 import { Input } from "../../components/Input";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import {
   ArrowLeft,
-  Lock,
   CheckCircle,
   Shield,
   AlertTriangle,
@@ -28,6 +19,13 @@ import {
 } from "lucide-react";
 import { Logo } from "../../components/Logo";
 import * as S from "./styles";
+
+const resetPasswordSchema = z.object({
+  newPassword: z
+    .string()
+    .min(8, "A nova senha deve ter no mínimo 8 caracteres"),
+  confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
+});
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
@@ -58,8 +56,29 @@ export function ResetPassword() {
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { newPassword: "", confirmPassword: "", token: "" },
+    defaultValues: { newPassword: "", confirmPassword: "" },
   });
+
+  const verifyToken = useCallback(async () => {
+    try {
+      const response = await api.get(`/auth/verify-reset-token?token=${token}`);
+
+      setIsTokenValid(response.data.valid);
+      setTokenInfo(response.data);
+
+      if (response.data.valid && response.data.expiresAt) {
+        setExpiresAt(response.data.expiresAt);
+      }
+    } catch (error) {
+      console.error("Erro ao verificar token:", error);
+      setIsTokenValid(false);
+      setTokenInfo({
+        valid: false,
+        message:
+          (error as any)?.response?.data?.message || "Erro ao verificar token",
+      });
+    }
+  }, [token]);
 
   // Verificar token ao carregar a página
   useEffect(() => {
@@ -73,60 +92,24 @@ export function ResetPassword() {
     }
 
     verifyToken();
-  }, [token]);
-
-  async function verifyToken() {
-    try {
-      const response = await fetch(
-        `/api/auth/verify-reset-token?token=${token}`,
-        {
-          method: "GET",
-        }
-      );
-
-      const result = await response.json();
-
-      setIsTokenValid(result.valid);
-      setTokenInfo(result);
-
-      if (result.valid && result.expiresAt) {
-        setExpiresAt(result.expiresAt);
-      }
-    } catch (error) {
-      console.error("Erro ao verificar token:", error);
-      setIsTokenValid(false);
-      setTokenInfo({
-        valid: false,
-        message: "Erro ao verificar token",
-      });
-    }
-  }
+  }, [token, verifyToken]);
 
   async function handleResetPassword(data: ResetPasswordFormData) {
     try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          newPassword: data.newPassword,
-          confirmPassword: data.confirmPassword,
-        }),
+      await api.post("/auth/reset-password", {
+        token,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        setIsPasswordReset(true);
-        toast.success("Senha redefinida com sucesso!");
-      } else {
-        toast.error(result.message || "Erro ao redefinir senha");
-      }
+      setIsPasswordReset(true);
+      toast.success("Senha redefinida com sucesso!");
     } catch (error) {
       console.error("Erro ao redefinir senha:", error);
-      toast.error("Erro de conexão. Tente novamente.");
+      const errorMessage =
+        (error as any)?.response?.data?.message ||
+        "Erro de conexão. Tente novamente.";
+      toast.error(errorMessage);
     }
   }
 
