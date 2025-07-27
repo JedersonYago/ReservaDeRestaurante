@@ -2,7 +2,7 @@ import Reservation from "../models/Reservation";
 import Table from "../models/Table";
 import Config from "../models/Config";
 import { AUTO_APPROVAL_MINUTES } from "../config/constants";
-import { format } from "date-fns";
+import { format, parseISO, isAfter, isBefore, addMinutes } from "date-fns";
 import { logger } from "../utils/logger";
 
 // Sistema de backup para confirmar reservas pendentes
@@ -40,57 +40,137 @@ export const checkPendingReservations = async () => {
   }
 };
 
-// Limpeza diária de mesas e reservas expiradas
+// Função para extrair horário final de um timeRange (ex: "19:00-20:00" -> "20:00")
+const getEndTimeFromRange = (timeRange: string): string => {
+  const parts = timeRange.split("-");
+  return parts.length === 2 ? parts[1] : parts[0];
+};
+
+// Função para verificar se um horário já passou
+const isTimePassed = (date: string, time: string): boolean => {
+  const now = new Date();
+  const reservationDateTime = parseISO(`${date}T${time}`);
+  return isBefore(reservationDateTime, now);
+};
+
+// Função para verificar se o último horário de disponibilidade de uma mesa passou
+const isTableLastTimePassed = (table: any): boolean => {
+  const now = new Date();
+  const today = format(now, "yyyy-MM-dd");
+
+  // Encontrar blocos de disponibilidade para hoje
+  const todayBlocks = table.availability.filter(
+    (block: any) => block.date === today
+  );
+
+  if (todayBlocks.length === 0) {
+    // Se não há disponibilidade para hoje, verificar se a última data já passou
+    const lastAvailableDate = table.availability.reduce(
+      (latest: string, block: any) =>
+        block.date > latest ? block.date : latest,
+      table.availability[0].date
+    );
+    return lastAvailableDate < today;
+  }
+
+  // Encontrar o último horário de hoje
+  const lastTimeRange = todayBlocks[0].times[todayBlocks[0].times.length - 1];
+  const lastEndTime = getEndTimeFromRange(lastTimeRange);
+
+  // Verificar se o último horário já passou (adicionar 1 minuto para ser mais preciso)
+  const lastEndDateTime = parseISO(`${today}T${lastEndTime}`);
+  const cutoffTime = addMinutes(lastEndDateTime, 1);
+
+  return isBefore(cutoffTime, now);
+};
+
+// Nova função de limpeza baseada em horário real
 export const cleanExpiredTablesAndReservations = async () => {
   try {
-    // Usar format do date-fns para garantir formato correto
-    const today = format(new Date(), "yyyy-MM-dd");
+    const now = new Date();
+    const today = format(now, "yyyy-MM-dd");
+    const currentTime = format(now, "HH:mm");
 
     logger.debug(
-      `Iniciando limpeza para data: ${today}`
+      `[cleanExpiredTablesAndReservations] Verificando expirações - Data: ${today}, Hora: ${currentTime}`
     );
 
-    // Buscar todas as mesas que podem ter availability expirada
+    // 1. EXPIRAR RESERVAS BASEADO NO HORÁRIO FINAL
+    logger.debug(
+      "[cleanExpiredTablesAndReservations] Verificando reservas expiradas por horário..."
+    );
+
+    const activeReservations = await Reservation.find({
+      status: { $in: ["pending", "confirmed"] },
+    }).populate("tableId");
+
+    let expiredReservationsCount = 0;
+
+    for (const reservation of activeReservations) {
+      // Calcular horário final da reserva
+      const reservationTime = reservation.time; // ex: "19:00"
+      const table = reservation.tableId as any;
+
+      if (!table) continue;
+
+      // Encontrar o timeRange que contém este horário
+      const availabilityBlock = table.availability.find(
+        (block: any) => block.date === reservation.date
+      );
+      if (!availabilityBlock) continue;
+
+      const timeRange = availabilityBlock.times.find((range: string) => {
+        const [startTime] = range.split("-");
+        return startTime === reservationTime;
+      });
+
+      if (!timeRange) continue;
+
+      // Extrair horário final do timeRange
+      const endTime = getEndTimeFromRange(timeRange);
+
+      // Verificar se o horário final já passou
+      if (isTimePassed(reservation.date, endTime)) {
+        logger.debug(
+          `[cleanExpiredTablesAndReservations] Reserva ${reservation._id} expirada: ${reservation.date} ${endTime}`
+        );
+
+        await Reservation.findByIdAndUpdate(reservation._id, {
+          status: "expired",
+        });
+
+        expiredReservationsCount++;
+      }
+    }
+
+    // 2. EXPIRAR MESAS BASEADO NO ÚLTIMO HORÁRIO DE DISPONIBILIDADE
+    logger.debug(
+      "[cleanExpiredTablesAndReservations] Verificando mesas expiradas por horário..."
+    );
+
     const tables = await Table.find({
       "availability.date": { $exists: true },
+      status: { $ne: "expired" }, // Só verificar mesas não expiradas
     });
 
     let expiredTablesCount = 0;
-    let expiredReservationsCount = 0;
-
-    // Debug apenas se houver mesas para verificar
-    if (tables.length > 0) {
-      logger.debug(`Verificando ${tables.length} mesas`);
-    }
 
     for (const table of tables) {
-      if (table.availability.length === 0) {
-        continue; // Mesa já não tem availability
-      }
+      if (table.availability.length === 0) continue;
 
-      // Encontrar última data de availability
-      const lastAvailableDate = table.availability.reduce(
-        (latest, block) => (block.date > latest ? block.date : latest),
-        table.availability[0].date
-      );
-
-      logger.debug(
-        `[cleanExpiredTablesAndReservations] Mesa ${table.name}: última data = ${lastAvailableDate}, hoje = ${today}`
-      );
-
-      // Usar comparação de strings mais robusta
-      if (lastAvailableDate < today) {
+      // Verificar se o último horário de disponibilidade passou
+      if (isTableLastTimePassed(table)) {
         logger.debug(
-          `[cleanExpiredTablesAndReservations] Mesa ${table.name} expirada, atualizando status`
+          `[cleanExpiredTablesAndReservations] Mesa ${table.name} expirada por horário`
         );
 
-        // Mesa expirou completamente - limpar toda availability
+        // Mesa expirou - limpar toda availability e marcar como expired
         await Table.findByIdAndUpdate(table._id, {
           availability: [],
           status: "expired",
         });
 
-        // Marcar todas as reservas dessa mesa como expiradas
+        // Marcar todas as reservas ativas dessa mesa como expiradas
         const result = await Reservation.updateMany(
           {
             tableId: table._id,
@@ -106,26 +186,44 @@ export const cleanExpiredTablesAndReservations = async () => {
           `[cleanExpiredTablesAndReservations] Mesa ${table.name} expirada: ${result.modifiedCount} reservas atualizadas`
         );
       } else {
-        // Mesa ainda válida - limpar apenas datas passadas
-        const validAvailability = table.availability.filter(
-          (block) => block.date >= today
-        );
+        // Mesa ainda válida - limpar apenas horários passados
+        const updatedAvailability = table.availability
+          .map((block: any) => {
+            if (block.date < today) {
+              return null; // Remover blocos de datas passadas
+            }
 
-        if (validAvailability.length !== table.availability.length) {
+            if (block.date === today) {
+              // Para hoje, filtrar apenas horários que ainda não passaram
+              const validTimes = block.times.filter((timeRange: string) => {
+                const endTime = getEndTimeFromRange(timeRange);
+                return !isTimePassed(block.date, endTime);
+              });
+
+              return validTimes.length > 0
+                ? { ...block, times: validTimes }
+                : null;
+            }
+
+            return block; // Manter blocos futuros
+          })
+          .filter(Boolean); // Remover nulls
+
+        if (updatedAvailability.length !== table.availability.length) {
           logger.debug(
-            `[cleanExpiredTablesAndReservations] Mesa ${table.name}: removendo datas passadas`
+            `[cleanExpiredTablesAndReservations] Mesa ${table.name}: removendo horários passados`
           );
 
           await Table.findByIdAndUpdate(table._id, {
-            availability: validAvailability,
+            availability: updatedAvailability,
           });
         }
       }
     }
 
-    // Marcar reservas passadas como expiradas (independente das mesas)
+    // 3. LIMPEZA DE RESERVAS DE DATAS PASSADAS (fallback)
     logger.debug(
-      `[cleanExpiredTablesAndReservations] Verificando reservas passadas antes de ${today}`
+      "[cleanExpiredTablesAndReservations] Verificando reservas de datas passadas..."
     );
 
     const pastReservationsResult = await Reservation.updateMany(
@@ -138,57 +236,51 @@ export const cleanExpiredTablesAndReservations = async () => {
 
     expiredReservationsCount += pastReservationsResult.modifiedCount;
 
-    // Só mostrar resumo se houver limpeza
+    // Log do resumo
     if (expiredTablesCount > 0 || expiredReservationsCount > 0) {
-      logger.debug(`Limpeza concluída: ${expiredTablesCount} mesas, ${expiredReservationsCount} reservas expiradas`);
+      logger.debug(
+        `[cleanExpiredTablesAndReservations] Limpeza concluída: ${expiredTablesCount} mesas, ${expiredReservationsCount} reservas expiradas`
+      );
+    } else {
+      logger.debug(
+        "[cleanExpiredTablesAndReservations] Nenhuma expiração encontrada"
+      );
     }
   } catch (error) {
-    console.error("Erro na limpeza diária de mesas e reservas:", error);
+    console.error("Erro na limpeza de mesas e reservas expiradas:", error);
   }
 };
 
-// Iniciar verificação periódica (a cada 30 segundos)
+// Iniciar verificação periódica (a cada 30 segundos para reservas pendentes)
 export const startPeriodicCheck = () => {
   logger.debug(
-    "[startPeriodicCheck] Iniciando verificação periódica de reservas"
+    "[startPeriodicCheck] Iniciando verificação periódica de reservas pendentes"
   );
   setInterval(checkPendingReservations, 30 * 1000);
 };
 
-// Iniciar limpeza diária (todo dia às 00:01)
-export const startDailyCleanup = () => {
-  logger.debug("Configurando limpeza diária");
-
-  // Calcular tempo até próxima meia-noite + 1 minuto
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 1, 0, 0); // 00:01:00
-
-  const timeUntilMidnight = tomorrow.getTime() - now.getTime();
-
+// Iniciar verificação de expiração baseada em horário (a cada 1 minuto)
+export const startExpirationCheck = () => {
   logger.debug(
-    `Próxima limpeza em: ${Math.round(
-      timeUntilMidnight / 1000 / 60
-    )} minutos`
+    "[startExpirationCheck] Iniciando verificação de expiração por horário"
   );
 
-  // Executar primeira limpeza após tempo calculado
-  setTimeout(() => {
-    logger.debug("[startDailyCleanup] Executando primeira limpeza");
-    cleanExpiredTablesAndReservations();
-
-    // Depois executar diariamente (24 horas)
-    setInterval(() => {
-      logger.debug("[startDailyCleanup] Executando limpeza diária programada");
-      cleanExpiredTablesAndReservations();
-    }, 24 * 60 * 60 * 1000);
-  }, timeUntilMidnight);
-
-  // ADICIONAR: Executar limpeza imediatamente na inicialização se necessário
-  // Isso garante que dados já expirados sejam limpos imediatamente
-  logger.debug("[startDailyCleanup] Executando limpeza inicial");
+  // Executar imediatamente na inicialização
   cleanExpiredTablesAndReservations();
+
+  // Depois executar a cada 1 minuto
+  setInterval(() => {
+    logger.debug("[startExpirationCheck] Executando verificação de expiração");
+    cleanExpiredTablesAndReservations();
+  }, 1 * 60 * 1000); // 1 minuto
+};
+
+// Função legada para compatibilidade (mantida para não quebrar código existente)
+export const startDailyCleanup = () => {
+  logger.debug(
+    "[startDailyCleanup] Função legada - usando startExpirationCheck"
+  );
+  startExpirationCheck();
 };
 
 export const scheduleAutoApproval = async (reservationId: string) => {
