@@ -5,6 +5,7 @@ import {
   startPeriodicCheck,
   startDailyCleanup,
 } from "./services/schedulerService";
+import { initializeDefaultConfig } from "./utils/initUtils";
 
 // Inicialização do servidor
 const startServer = async () => {
@@ -13,23 +14,27 @@ const startServer = async () => {
     console.log("📋 Validando configurações...");
     validateConfig();
     console.log("✅ Configurações validadas");
-    
+
     console.log("🔌 Conectando ao banco de dados...");
     await connectDB();
     console.log("✅ MongoDB conectado");
-    
+
+    console.log("🔧 Inicializando configurações padrão...");
+    await initializeDefaultConfig();
+    console.log("✅ Configurações inicializadas");
+
     console.log("⏰ Iniciando serviços agendados...");
     startPeriodicCheck();
     startDailyCleanup();
-    
+
     console.log("🌐 Criando aplicação...");
     const app = createApp();
-    
+
     console.log(`🚀 Servidor iniciando na porta ${config.server.port}...`);
     const server = app.listen(config.server.port, () => {
       console.log(`✅ Servidor rodando na porta ${config.server.port}`);
     });
-    
+
     process.on("SIGTERM", () => {
       console.log("🛑 Recebido SIGTERM, encerrando servidor...");
       server.close(() => {
