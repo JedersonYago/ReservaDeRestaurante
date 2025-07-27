@@ -52,6 +52,15 @@ const processQueue = (error: any, token: string | null = null) => {
 // Interceptor para adicionar o token em todas as requisições
 api.interceptors.request.use(
   async (config: any) => {
+    // Log para debug
+    console.log("🔧 API Request:", {
+      url: config.url,
+      method: config.method,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      headers: config.headers,
+    });
+
     const token = authService.getToken();
     if (token) {
       config.headers = config.headers || {};
