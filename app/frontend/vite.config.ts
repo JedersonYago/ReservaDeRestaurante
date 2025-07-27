@@ -22,6 +22,11 @@ export default defineConfig({
   },
   define: {
     global: "globalThis",
+    // Definir variáveis de ambiente em tempo de build
+    __API_URL__: JSON.stringify(
+      process.env.VITE_API_URL ||
+        "https://reservafacil-production.up.railway.app"
+    ),
   },
   build: {
     // Aumentar o limite para evitar warnings desnecessários

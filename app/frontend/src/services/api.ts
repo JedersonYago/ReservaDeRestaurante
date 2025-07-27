@@ -1,26 +1,27 @@
 import axios from "axios";
 import { authService } from "./authService";
 
-// Função para corrigir URLs malformadas
+// Função para obter a URL correta da API
 function getCorrectedApiUrl() {
-  let apiUrl = import.meta.env.VITE_API_URL || "/api";
-
-  // Detectar e corrigir URLs malformadas (contém múltiplos domínios)
-  if (apiUrl.includes("vercel.app") && apiUrl.includes("railway.app")) {
-    console.warn("⚠️ URL malformada detectada, corrigindo...");
-    console.warn("URL original:", apiUrl);
-
-    // Extrair apenas a parte do Railway
-    const railwayMatch = apiUrl.match(/https:\/\/[^\/]+\.up\.railway\.app/);
-    if (railwayMatch) {
-      apiUrl = railwayMatch[0];
-      console.warn("URL corrigida:", apiUrl);
-    } else {
-      // Fallback para URL padrão
-      apiUrl = "https://reservafacil-production.up.railway.app";
-      console.warn("Usando URL padrão:", apiUrl);
-    }
+  // Em desenvolvimento, usar o proxy do Vite
+  if (import.meta.env.DEV) {
+    return "/api";
   }
+
+  // Em produção, usar a URL definida no build ou fallback
+  const apiUrl =
+    (globalThis as any).__API_URL__ ||
+    import.meta.env.VITE_API_URL ||
+    "https://reservafacil-production.up.railway.app";
+
+  // Log para debug
+  console.log("🔧 Configuração da API:", {
+    env: import.meta.env.MODE,
+    apiUrl: apiUrl,
+    isDev: import.meta.env.DEV,
+    isProd: import.meta.env.PROD,
+    buildUrl: (globalThis as any).__API_URL__,
+  });
 
   return apiUrl;
 }
