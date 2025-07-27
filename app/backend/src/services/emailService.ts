@@ -21,6 +21,12 @@ export class EmailService {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
+      // Configurações adicionais para maior compatibilidade
+      tls: {
+        rejectUnauthorized: false,
+      },
+      debug: config.server.nodeEnv === "development",
+      logger: config.server.nodeEnv === "development",
     });
 
     if (config.server.nodeEnv === "development") {
@@ -36,11 +42,31 @@ export class EmailService {
 
   async sendEmail(options: any) {
     try {
+      console.log("[EmailService] Tentando enviar email para:", options.to);
+      console.log("[EmailService] Configurações SMTP:", {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: process.env.SMTP_SECURE,
+        user: process.env.SMTP_USER ? "✅ Configurado" : "❌ Não configurado",
+        pass: process.env.SMTP_PASS ? "✅ Configurado" : "❌ Não configurado",
+      });
+
       await this.transporter.verify();
+      console.log("[EmailService] Conexão SMTP verificada com sucesso");
+
       await this.transporter.sendMail(options);
+      console.log("[EmailService] Email enviado com sucesso para:", options.to);
       return true;
     } catch (error) {
       console.error("[EmailService.sendEmail] erro:", error);
+
+      // Type casting para acessar propriedades do erro
+      const emailError = error as any;
+      console.error("[EmailService] Detalhes do erro:", {
+        message: emailError.message,
+        code: emailError.code,
+        command: emailError.command,
+      });
       return false;
     }
   }
