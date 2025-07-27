@@ -24,7 +24,11 @@ export const registerSchema = z
     password: z
       .string()
       .min(1, "A senha é obrigatória")
-      .min(8, "A senha deve ter no mínimo 8 caracteres"),
+      .min(8, "A senha deve ter no mínimo 8 caracteres")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial"
+      ),
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.enum(["client", "admin"]).default("client"),
     adminCode: z.string().optional(),
@@ -46,13 +50,11 @@ export const changePasswordSchema = z
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
         "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial"
       ),
-    confirmNewPassword: z
-      .string()
-      .min(1, "Confirmação da nova senha é obrigatória"),
+    confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
+  .refine((data) => data.newPassword === data.confirmPassword, {
     message: "As senhas não conferem",
-    path: ["confirmNewPassword"],
+    path: ["confirmPassword"],
   });
 
 export const forgotPasswordSchema = z.object({

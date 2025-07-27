@@ -87,7 +87,7 @@ export function Profile() {
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmNewPassword: "",
+    confirmPassword: "",
   });
   const [showLogoutAllModal, setShowLogoutAllModal] = useState(false);
 
@@ -240,8 +240,19 @@ export function Profile() {
 
     setPasswordLoading(true);
     try {
+      console.log("Dados para alteração de senha:", {
+        username: user.username,
+        passwordData: {
+          ...passwordData,
+          currentPassword: "***",
+          newPassword: "***",
+          confirmPassword: "***",
+        },
+      });
+
       // Validação completa usando Zod
-      changePasswordSchema.parse(passwordData);
+      const validatedData = changePasswordSchema.parse(passwordData);
+      console.log("Dados validados com sucesso");
 
       // Verificação adicional de senha atual não pode ser igual à nova
       if (passwordData.currentPassword === passwordData.newPassword) {
@@ -250,23 +261,31 @@ export function Profile() {
         return;
       }
 
-      await profileService.changePassword(user.username, passwordData);
+      console.log("Chamando API para alterar senha...");
+      await profileService.changePassword(user.username, validatedData);
+      console.log("Senha alterada com sucesso na API");
 
       setPasswordData({
         currentPassword: "",
         newPassword: "",
-        confirmNewPassword: "",
+        confirmPassword: "",
       });
       setIsChangingPassword(false);
       toast.success("Senha alterada com sucesso!");
     } catch (error: any) {
+      console.error("Erro ao alterar senha:", error);
+
       if (error.name === "ZodError") {
         // Erros de validação do Zod
         const firstError = error.errors[0];
-        toast.error(firstError);
+        console.log("Erro de validação Zod:", firstError);
+        toast.error(firstError.message);
       } else {
         // Erros da API
-        toast.error(error.response?.data?.message || "Erro ao alterar senha");
+        const errorMessage =
+          error.response?.data?.message || "Erro ao alterar senha";
+        console.log("Erro da API:", error.response?.data);
+        toast.error(errorMessage);
       }
     } finally {
       setPasswordLoading(false);
@@ -277,7 +296,7 @@ export function Profile() {
     setPasswordData({
       currentPassword: "",
       newPassword: "",
-      confirmNewPassword: "",
+      confirmPassword: "",
     });
     setIsChangingPassword(false);
   };
@@ -490,9 +509,9 @@ export function Profile() {
                     <FormGroup>
                       <Input
                         label="Confirmar Nova Senha"
-                        name="confirmNewPassword"
+                        name="confirmPassword"
                         type="password"
-                        value={passwordData.confirmNewPassword}
+                        value={passwordData.confirmPassword}
                         onChange={handlePasswordInputChange}
                         required
                         autoComplete="new-password"
@@ -507,8 +526,9 @@ export function Profile() {
                         passwordLoading ||
                         !passwordData.currentPassword.trim() ||
                         !passwordData.newPassword.trim() ||
-                        !passwordData.confirmNewPassword.trim() ||
-                        passwordData.newPassword !== passwordData.confirmNewPassword ||
+                        !passwordData.confirmPassword.trim() ||
+                        passwordData.newPassword !==
+                          passwordData.confirmPassword ||
                         passwordData.newPassword.length < 8
                       }
                       loading={passwordLoading}
@@ -644,7 +664,8 @@ export function Profile() {
                         (formData.name === user?.name &&
                           formData.email === user?.email &&
                           formData.username === user?.username) ||
-                        ((formData.email !== user?.email || formData.username !== user?.username) &&
+                        ((formData.email !== user?.email ||
+                          formData.username !== user?.username) &&
                           !formData.currentPassword.trim())
                       }
                       loading={loading}

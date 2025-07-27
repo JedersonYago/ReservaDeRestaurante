@@ -190,7 +190,7 @@ export const InfoBox = styled.div`
     }
 
     p {
-      color: ${({ theme }) => theme.colors.text.secondary};
+      color: ${({ theme }) => theme.colors.text.primary};
       font-size: ${({ theme }) => theme.typography.fontSize.sm};
       line-height: 1.5;
     }
@@ -224,7 +224,7 @@ export const SuccessTitle = styled.h1`
 `;
 
 export const SuccessSubtitle = styled.p`
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: ${({ theme }) => theme.colors.text.primary};
   font-size: ${({ theme }) => theme.typography.fontSize.md};
   line-height: 1.6;
   max-width: 400px;
@@ -251,7 +251,7 @@ export const ErrorTitle = styled.h1`
 `;
 
 export const ErrorSubtitle = styled.p`
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: ${({ theme }) => theme.colors.text.primary};
   font-size: ${({ theme }) => theme.typography.fontSize.md};
   line-height: 1.6;
   max-width: 400px;
@@ -279,7 +279,7 @@ export const ErrorBox = styled.div`
     ul {
       margin: 0;
       padding-left: ${({ theme }) => theme.spacing[4]};
-      color: ${({ theme }) => theme.colors.text.secondary};
+      color: ${({ theme }) => theme.colors.text.primary};
       font-size: ${({ theme }) => theme.typography.fontSize.sm};
       line-height: 1.5;
 

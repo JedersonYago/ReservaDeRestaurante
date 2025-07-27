@@ -17,7 +17,13 @@ export const userSchema = z.object({
       /^[a-zA-Z0-9_]+$/,
       "O nome de usuário deve conter apenas letras, números e underscore"
     ),
-  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+  password: z
+    .string()
+    .min(8, "A senha deve ter no mínimo 8 caracteres")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial"
+    ),
   role: z.enum(["client", "admin"]).default("client"),
   adminCode: z.string().optional(),
 });
@@ -38,7 +44,11 @@ export const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token é obrigatório"),
   newPassword: z
     .string()
-    .min(8, "A nova senha deve ter no mínimo 8 caracteres"),
+    .min(8, "A nova senha deve ter no mínimo 8 caracteres")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial"
+    ),
   confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
 });
 
@@ -54,7 +64,11 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Senha atual é obrigatória"),
   newPassword: z
     .string()
-    .min(8, "A nova senha deve ter no mínimo 8 caracteres"),
+    .min(8, "A nova senha deve ter no mínimo 8 caracteres")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial"
+    ),
   confirmPassword: z.string().min(8, "Confirmação de senha é obrigatória"),
 });
 
