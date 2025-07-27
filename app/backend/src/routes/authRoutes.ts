@@ -15,6 +15,14 @@ const router = Router();
 // Rotas públicas
 router.post(
   "/login",
+  (req, res, next) => {
+    console.log("[ROUTE] login route hit:", {
+      method: req.method,
+      url: req.url,
+      body: req.body,
+    });
+    next();
+  },
   authLimiter,
   validateSchema(loginSchema),
   authController.login
@@ -32,6 +40,14 @@ router.post("/logout-all", authenticate, authController.logoutAll);
 // Rotas de recuperação de senha (públicas)
 router.post(
   "/forgot-password",
+  (req, res, next) => {
+    console.log("[ROUTE] forgot-password route hit:", {
+      method: req.method,
+      url: req.url,
+      body: req.body,
+    });
+    next();
+  },
   authLimiter,
   validateSchema(forgotPasswordSchema),
   authController.forgotPassword

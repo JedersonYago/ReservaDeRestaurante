@@ -15,8 +15,11 @@ function getCorrectedApiUrl() {
   return apiUrl;
 }
 
+const apiUrl = getCorrectedApiUrl();
+console.log("[API] Configurando axios com baseURL:", apiUrl);
+
 const api = axios.create({
-  baseURL: getCorrectedApiUrl(),
+  baseURL: apiUrl,
   timeout: 10000, // 10 segundos
   headers: {
     "Content-Type": "application/json",
@@ -42,6 +45,9 @@ const processQueue = (error: any, token: string | null = null) => {
 // Interceptor para adicionar o token em todas as requisições
 api.interceptors.request.use(
   async (config: any) => {
+    console.log("[API] Requisição sendo feita para:", config.url);
+    console.log("[API] URL completa:", config.baseURL + config.url);
+
     const token = authService.getToken();
     if (token) {
       config.headers = config.headers || {};
