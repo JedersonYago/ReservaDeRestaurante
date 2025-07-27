@@ -19,6 +19,11 @@ export function createApp() {
 
   const app = express();
 
+  // Configurar trust proxy para funcionar com rate limit em produção
+  if (config.server.nodeEnv === "production") {
+    app.set("trust proxy", 1);
+  }
+
   // Middlewares de segurança e performance
   app.use(cors(config.cors));
   app.use(express.json());
