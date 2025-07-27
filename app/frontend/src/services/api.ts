@@ -14,14 +14,13 @@ function getCorrectedApiUrl() {
     import.meta.env.VITE_API_URL ||
     "https://reservafacil-production.up.railway.app";
 
-  // Log para debug
-  console.log("🔧 Configuração da API:", {
-    env: import.meta.env.MODE,
-    apiUrl: apiUrl,
-    isDev: import.meta.env.DEV,
-    isProd: import.meta.env.PROD,
-    buildUrl: (globalThis as any).__API_URL__,
-  });
+  // Log apenas em desenvolvimento
+  if (import.meta.env.DEV) {
+    console.log("🔧 Configuração da API:", {
+      env: import.meta.env.MODE,
+      apiUrl: apiUrl,
+    });
+  }
 
   return apiUrl;
 }
@@ -93,19 +92,18 @@ api.interceptors.response.use(
         error.code === "ERR_NETWORK" ||
         error.message?.includes("Network Error"));
 
-    // Log estruturado do erro (exceto 409 que é parte do fluxo normal e erros de conexão durante inicialização)
-    if (error.response?.status !== 409 && !isConnectionError) {
+    // Log apenas para erros críticos em desenvolvimento
+    if (
+      import.meta.env.DEV &&
+      error.response?.status !== 409 &&
+      !isConnectionError
+    ) {
       console.error("[API Response Error]", {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
         message: error.message,
-        fullURL: `${error.config?.baseURL}${error.config?.url}`,
-        headers: error.config?.headers,
       });
-    } else if (isConnectionError) {
-      // Log mais amigável para erros de conexão
-      console.log(`⏳ Tentando conectar ao backend (${error.config?.url})...`);
     }
 
     // Tratar erros específicos
@@ -181,11 +179,6 @@ api.interceptors.response.use(
       case 403:
         return Promise.reject(new Error("Acesso não autorizado"));
       case 404:
-        console.error("🔧 Erro 404 detectado:", {
-          url: error.config?.url,
-          fullURL: `${error.config?.baseURL}${error.config?.url}`,
-          method: error.config?.method,
-        });
         return Promise.reject(new Error("Recurso não encontrado"));
       case 429:
         return Promise.reject(
