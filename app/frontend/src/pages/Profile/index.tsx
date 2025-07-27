@@ -163,17 +163,10 @@ export function Profile() {
         return;
       }
 
-      console.log("Dados para atualização:", {
-        username: user.username,
-        updateData: { ...updateData, currentPassword: "***" }
-      });
-
       const response = await profileService.updateProfile(
         user.username,
         updateData
       );
-
-      console.log("Resposta da API:", response);
 
       // Atualizar dados do usuário no contexto com os dados retornados pelo servidor
       if (response.user) {
@@ -184,7 +177,9 @@ export function Profile() {
           name: response.user.name || updateData.name || user.name,
           email: response.user.email || updateData.email || user.email,
           username:
-            response.user.username || updateData.update?.newUsername || user.username,
+            response.user.username ||
+            updateData.update?.newUsername ||
+            user.username,
         };
 
         updateUser(updatedUser);
@@ -216,8 +211,8 @@ export function Profile() {
       setFormData((prev) => ({ ...prev, currentPassword: "" }));
       setIsEditing(false);
     } catch (error: any) {
-      console.error("Erro ao atualizar perfil:", error);
-      const errorMessage = error.response?.data?.message || "Erro ao atualizar perfil";
+      const errorMessage =
+        error.response?.data?.message || "Erro ao atualizar perfil";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

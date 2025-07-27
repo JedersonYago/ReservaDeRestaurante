@@ -25,8 +25,6 @@ export class EmailService {
       tls: {
         rejectUnauthorized: false,
       },
-      debug: config.server.nodeEnv === "development",
-      logger: config.server.nodeEnv === "development",
     });
 
     if (config.server.nodeEnv === "development") {

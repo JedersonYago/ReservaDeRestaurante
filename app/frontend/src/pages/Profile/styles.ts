@@ -214,15 +214,15 @@ export const FieldNote = styled.div`
 export const PasswordStrength = styled.div`
   margin-top: 12px;
   padding: 12px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  border: 1px solid ${({ theme }) => theme.colors.neutral[300]};
   border-radius: 8px;
 `;
 
 export const StrengthBar = styled.div<{ level: string }>`
   width: 100%;
   height: 6px;
-  background: #e5e7eb;
+  background: ${({ theme }) => theme.colors.neutral[200]};
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -233,10 +233,10 @@ export const StrengthFill = styled.div<{ level: string; score: number }>`
   width: ${(props) => (props.score / 5) * 100}%;
   background: ${(props) =>
     props.level === "strong"
-      ? "#10b981"
+      ? props.theme.colors.semantic.success
       : props.level === "medium"
-      ? "#f59e0b"
-      : "#ef4444"};
+      ? props.theme.colors.semantic.warning
+      : props.theme.colors.semantic.error};
   transition: all 0.3s ease;
   border-radius: 3px;
 `;
@@ -250,10 +250,10 @@ export const StrengthText = styled.div<{ level: string }>`
   margin-bottom: 12px;
   color: ${(props) =>
     props.level === "strong"
-      ? "#059669"
+      ? props.theme.colors.semantic.success
       : props.level === "medium"
-      ? "#d97706"
-      : "#dc2626"};
+      ? props.theme.colors.semantic.warning
+      : props.theme.colors.semantic.error};
 
   svg {
     color: currentColor;
@@ -268,7 +268,10 @@ export const CheckList = styled.div`
 
 export const CheckItem = styled.div<{ valid: boolean }>`
   font-size: 0.75rem;
-  color: ${(props) => (props.valid ? "#059669" : "#6b7280")};
+  color: ${(props) =>
+    props.valid
+      ? props.theme.colors.semantic.success
+      : props.theme.colors.text.secondary};
   display: flex;
   align-items: center;
   gap: 6px;
@@ -284,7 +287,6 @@ export const ActionButtons = styled.div`
   display: flex;
   gap: 12px;
   padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -297,23 +299,23 @@ export const LoadingContainer = styled.div`
   align-items: center;
   justify-content: center;
   padding: 64px 24px;
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 export const LoadingSpinner = styled.div`
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top: 3px solid #fa761f;
+  border: 3px solid ${({ theme }) => theme.colors.neutral[200]};
+  border-top: 3px solid ${({ theme }) => theme.colors.primary.main};
   border-radius: 50%;
   animation: ${spin} 1s linear infinite;
   margin-bottom: 16px;
 `;
 
 export const LoadingText = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 1rem;
   margin: 0;
 `;
@@ -324,15 +326,15 @@ export const NotFoundContainer = styled.div`
   align-items: center;
   justify-content: center;
   padding: 64px 24px;
-  background: white;
+  background: ${({ theme }) => theme.colors.background.primary};
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: ${({ theme }) => theme.shadows.sm};
   text-align: center;
 `;
 
 export const NotFoundIcon = styled.div`
   margin-bottom: 24px;
-  color: #d1d5db;
+  color: ${({ theme }) => theme.colors.neutral[400]};
 `;
 
 export const NotFoundContent = styled.div`
@@ -342,12 +344,12 @@ export const NotFoundContent = styled.div`
 export const NotFoundTitle = styled.h2`
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 0 8px 0;
 `;
 
 export const NotFoundDescription = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-size: 1rem;
   margin: 0 0 24px 0;
   line-height: 1.5;
