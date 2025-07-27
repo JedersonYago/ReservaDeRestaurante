@@ -8,11 +8,13 @@ function getCorrectedApiUrl() {
     return "/api";
   }
 
-  // Em produção, usar a URL definida no build ou fallback
-  const apiUrl =
+  // Em produção, usar a URL definida no build ou fallback + /api
+  const baseUrl =
     (globalThis as any).__API_URL__ ||
     import.meta.env.VITE_API_URL ||
     "https://reservafacil-production.up.railway.app";
+
+  const apiUrl = `${baseUrl}/api`;
 
   // Log apenas em desenvolvimento
   if (import.meta.env.DEV) {

@@ -1,22 +1,33 @@
+import { useQuery } from "@tanstack/react-query";
+import { configApi } from "../services/api";
 import type { Config } from "../types/config";
 
 export function useConfig() {
-  // Configuração padrão para evitar erros 404
-  const defaultConfig: Config = {
-    maxReservationsPerUser: 5,
-    reservationLimitHours: 24,
-    minIntervalBetweenReservations: 30,
-    openingHour: "11:00",
-    closingHour: "23:00",
-    isReservationLimitEnabled: true,
-    isIntervalEnabled: true,
-    isOpeningHoursEnabled: true,
-  };
+  const {
+    data: config,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["config", "public"],
+    queryFn: configApi.getPublicConfig,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
+    retry: (failureCount, error: any) => {
+      // Para erro 404, não fazer retry (rota não existe)
+      if (error?.response?.status === 404) {
+        return false;
+      }
+      // Para outros erros, retry normal
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+  });
 
   return {
-    config: defaultConfig,
-    isLoading: false,
-    error: null,
-    refetch: () => {},
+    config: config as Config | undefined,
+    isLoading,
+    error,
+    refetch,
   };
 }
