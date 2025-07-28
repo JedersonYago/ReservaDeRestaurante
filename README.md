@@ -189,11 +189,11 @@ npm run install:clean
 
 ### 3. Configuração do Backend
 
-Crie o arquivo `.env` na pasta `backend/` baseado no `example.env`:
+Crie o arquivo `.env` na pasta `backend/`:
 
 ```bash
 cd backend
-cp example.env .env
+cp .env
 ```
 
 Configure as variáveis no arquivo `.env`:
