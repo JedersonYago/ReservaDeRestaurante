@@ -1,12 +1,17 @@
 # 🍽️ ReservaFácil - Sistema de Reservas de Restaurante
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18%2B-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-blue.svg)](https://www.typescriptlang.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green.svg)](https://www.mongodb.com/)
+[![Vite](https://img.shields.io/badge/Vite-6%2B-purple.svg)](https://vitejs.dev/)
+[![Turbo](https://img.shields.io/badge/Turbo-2%2B-orange.svg)](https://turbo.build/)
 
 **ReservaFácil** é um sistema completo de gerenciamento de reservas para restaurantes, desenvolvido com tecnologias modernas e focado na experiência do usuário. O sistema permite que clientes façam reservas online facilmente e que administradores gerenciem mesas, horários e configurações de forma eficiente.
+
+## 🌐 Demo Online
+
+[https://suareservafacil.vercel.app](https://suareservafacil.vercel.app)
 
 ## 📸 Demonstração
 
@@ -21,6 +26,7 @@ O sistema oferece uma interface intuitiva e responsiva:
 ## 🚀 Funcionalidades Principais
 
 ### 👤 Para Clientes
+
 - ✅ **Registro e Login** com validação segura
 - ✅ **Criação de Reservas** com seleção de mesa, data e horário
 - ✅ **Gestão de Reservas** - visualizar, cancelar ou limpar histórico
@@ -30,6 +36,7 @@ O sistema oferece uma interface intuitiva e responsiva:
 - ✅ **Interface Responsiva** adaptada para todos os dispositivos
 
 ### 👨‍💼 Para Administradores
+
 - ✅ **Dashboard Administrativo** com métricas completas
 - ✅ **Gerenciamento de Mesas** - criar, editar, definir capacidade e disponibilidade
 - ✅ **Controle de Reservas** - confirmar, cancelar, reagendar
@@ -39,6 +46,7 @@ O sistema oferece uma interface intuitiva e responsiva:
 - ✅ **Limpeza Automática** de dados expirados
 
 ### 🛡️ Segurança e Performance
+
 - ✅ **Autenticação JWT** com access e refresh tokens
 - ✅ **Rate Limiting** para proteção contra ataques
 - ✅ **Helmet** para cabeçalhos de segurança
@@ -46,48 +54,65 @@ O sistema oferece uma interface intuitiva e responsiva:
 - ✅ **Sanitização** de dados de entrada
 - ✅ **Cache Control** para recursos estáticos
 
+### 🧪 Testes e Qualidade
+
+- ✅ **Testes Unitários** com Jest (70%+ cobertura)
+- ✅ **Testes de Integração** para fluxos completos
+- ✅ **Testes de Performance** com Artillery
+- ✅ **Testes de Stress** para validação de limites
+- ✅ **Vitest** configurado para testes frontend
+- ✅ **MSW** para mock de APIs
+
 ## 🏗️ Arquitetura Técnica
 
 ### Estrutura do Monorepo
+
 ```
 ReservaFácil/
-├── 📁 backend/               # API Node.js + TypeScript
-│   ├── 📁 src/
-│   │   ├── 📁 config/        # Configurações do sistema
-│   │   ├── 📁 controllers/   # Controladores da API
-│   │   ├── 📁 middlewares/   # Middlewares de segurança e validação
-│   │   ├── 📁 models/        # Modelos MongoDB/Mongoose
-│   │   ├── 📁 routes/        # Definição de rotas
-│   │   ├── 📁 services/      # Serviços (email, scheduler)
-│   │   ├── 📁 types/         # Tipagem do sistema
-│   │   ├── 📁 utils/         # Utilitários (JWT, datas)
-│   │   └── 📁 validations/   # Schemas de validação
-│   ├── package.json
-│   └── tsconfig.json
-├── 📁 frontend/              # SPA React + TypeScript
-│   ├── 📁 src/
-│   │   ├── 📁 components/    # Componentes reutilizáveis
-│   │   ├── 📁 pages/         # Páginas da aplicação
-│   │   ├── 📁 hooks/         # Custom hooks
-│   │   ├── 📁 services/      # Serviços de API
-│   │   ├── 📁 utils/         # Utilitários
-│   │   ├── 📁 types/         # Tipos TypeScript
-│   │   └── 📁 styles/        # Estilos globais
-│   ├── package.json
-│   └── vite.config.ts
-├── 📁 shared/                # Biblioteca compartilhada
-│   ├── 📁 types/             # Tipos compartilhados
-│   ├── 📁 utils/             # Utilitários compartilhados
-│   ├── 📁 constants/         # Constantes
-│   └── 📁 validation/        # Schemas de validação
-├── package.json              # Workspace root
-├── turbo.json               # Configuração Turborepo
+├── 📁 app/                    # Aplicação principal
+│   ├── 📁 backend/            # API Node.js + TypeScript
+│   │   ├── 📁 src/
+│   │   │   ├── 📁 config/     # Configurações do sistema
+│   │   │   ├── 📁 controllers/# Controladores da API
+│   │   │   ├── 📁 middlewares/# Middlewares de segurança e validação
+│   │   │   ├── 📁 models/     # Modelos MongoDB/Mongoose
+│   │   │   ├── 📁 routes/     # Definição de rotas
+│   │   │   ├── 📁 services/   # Serviços (email, scheduler)
+│   │   │   ├── 📁 types/      # Tipagem do sistema
+│   │   │   ├── 📁 utils/      # Utilitários (JWT, datas)
+│   │   │   ├── 📁 validations/# Schemas de validação
+│   │   │   └── 📁 __tests__/  # Suíte completa de testes
+│   │   ├── 📁 scripts/        # Scripts de automação
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── 📁 frontend/           # SPA React + TypeScript
+│   │   ├── 📁 src/
+│   │   │   ├── 📁 components/ # Componentes reutilizáveis
+│   │   │   ├── 📁 pages/      # Páginas da aplicação
+│   │   │   ├── 📁 hooks/      # Custom hooks
+│   │   │   ├── 📁 services/   # Serviços de API
+│   │   │   ├── 📁 utils/      # Utilitários
+│   │   │   ├── 📁 types/      # Tipos TypeScript
+│   │   │   └── 📁 styles/     # Estilos globais
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   ├── 📁 shared/             # Biblioteca compartilhada
+│   │   ├── 📁 types/          # Tipos compartilhados
+│   │   ├── 📁 utils/          # Utilitários compartilhados
+│   │   ├── 📁 constants/      # Constantes
+│   │   └── 📁 validation/     # Schemas de validação
+│   ├── package.json           # Workspace root
+│   ├── turbo.json            # Configuração Turborepo
+│   ├── railway.json          # Configuração Railway (Backend)
+│   └── vercel.json           # Configuração Vercel (Frontend)
+├── 📁 docs/                   # Documentação do projeto
 └── README.md
 ```
 
 ### Stack Tecnológica
 
 #### Backend
+
 - **Node.js** 18+ - Runtime JavaScript
 - **Express.js** - Framework web minimalista
 - **TypeScript** - Tipagem estática
@@ -101,8 +126,11 @@ ReservaFácil/
 - **Nodemailer** - Envio de emails
 - **Date-fns** - Manipulação de datas
 - **Zod** - Validação de dados
+- **Jest** - Framework de testes
+- **Artillery** - Testes de performance
 
 #### Frontend
+
 - **React** 18+ - Biblioteca UI
 - **TypeScript** - Tipagem estática
 - **Vite** - Build tool e dev server
@@ -114,16 +142,22 @@ ReservaFácil/
 - **Axios** - Cliente HTTP
 - **Lucide React** - Ícones
 - **Date-fns** - Manipulação de datas
+- **Vitest** - Framework de testes
+- **MSW** - Mock Service Worker
 
 #### Shared
+
 - **TypeScript** - Tipos compartilhados
 - **Zod** - Schemas de validação
 - **Date-fns** - Utilitários de data
 
 #### DevOps e Ferramentas
+
 - **Turborepo** - Monorepo management
 - **ESLint** - Linting
 - **NPM Workspaces** - Gerenciamento de dependências
+- **Railway** - Deploy do backend
+- **Vercel** - Deploy do frontend
 
 ## 📋 Pré-requisitos
 
@@ -155,11 +189,14 @@ npm run install:clean
 
 ### 3. Configuração do Backend
 
-Crie o arquivo `.env` na pasta `backend/`:
+Crie o arquivo `.env` na pasta `backend/` baseado no `example.env`:
 
 ```bash
 cd backend
+cp example.env .env
 ```
+
+Configure as variáveis no arquivo `.env`:
 
 ```env
 # Banco de Dados
@@ -168,22 +205,34 @@ MONGODB_URI=mongodb+srv://seu-usuario:sua-senha@cluster.mongodb.net/reserva-faci
 # Servidor
 PORT=3001
 NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
+
+# Rate Limit
+RATE_LIMIT_MAX=10000
+RATE_LIMIT_WINDOW_MS=60000
 
 # Autenticação JWT
-JWT_SECRET=sua-chave-secreta-muito-segura-aqui
-JWT_EXPIRES_IN=1h
-REFRESH_TOKEN_EXPIRES_IN=7d
+JWT_SECRET=seu-jwt-secret-muito-seguro-aqui
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=seu-refresh-secret-muito-seguro-aqui
+JWT_REFRESH_EXPIRES_IN=7d
 
 # Código Admin (para criar contas admin)
-ADMIN_CODE=ADMIN@12345
+ADMIN_CODE=admin123
 
 # Email (opcional - para recuperação de senha)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=seu-email@gmail.com
-EMAIL_PASS=sua-senha-de-app
-EMAIL_FROM=seu-email@gmail.com
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=seu-email@gmail.com
+SMTP_PASS=sua-senha-de-app
+SMTP_FROM_NAME=Reserva Fácil
+SMTP_FROM_EMAIL=seu-email@gmail.com
+
+# URL do frontend
+FRONTEND_URL=http://localhost:5173
+
+# CORS
+CORS_ORIGIN=http://localhost:5173
 ```
 
 > ⚠️ **Importante**: Em produção, use variáveis de ambiente seguras e nunca commite o arquivo `.env`!
@@ -201,6 +250,9 @@ npm run dev:backend
 
 # Ou executar apenas frontend
 npm run dev:frontend
+
+# Ou executar sequencialmente (Windows)
+npm run dev:sequential
 ```
 
 #### Opção 2: Manual (desenvolvimento/debug)
@@ -228,17 +280,20 @@ npm run dev
 ## 🎯 Primeiro Acesso
 
 ### 1. Criar Conta de Cliente
+
 1. Acesse [http://localhost:5173](http://localhost:5173)
 2. Clique em "Registrar"
 3. Preencha os dados e selecione "Cliente"
 4. Faça login com suas credenciais
 
 ### 2. Criar Conta de Administrador
+
 1. Na página de registro, selecione "Administrador"
-2. Digite o código admin: `ADMIN@12345` (ou o valor do seu `.env`)
+2. Digite o código admin: `admin123` (ou o valor do seu `.env`)
 3. Complete o cadastro
 
 ### 3. Configuração Inicial (Admin)
+
 1. Acesse o painel administrativo
 2. Vá em "Configurações" para definir:
    - Horários de funcionamento
@@ -251,6 +306,7 @@ npm run dev
 ### Modelos Principais
 
 #### User (Usuário)
+
 ```typescript
 interface User {
   _id: ObjectId;
@@ -258,7 +314,7 @@ interface User {
   email: string;
   username: string;
   password: string; // Hash bcrypt
-  role: 'client' | 'admin';
+  role: "client" | "admin";
   emailChanges?: ChangeControl;
   usernameChanges?: ChangeControl;
   createdAt: Date;
@@ -267,12 +323,13 @@ interface User {
 ```
 
 #### Table (Mesa)
+
 ```typescript
 interface Table {
   _id: ObjectId;
   name: string;
   capacity: number;
-  status: 'available' | 'reserved' | 'maintenance' | 'expired';
+  status: "available" | "reserved" | "maintenance" | "expired";
   availability: AvailabilityBlock[];
   createdAt: Date;
   updatedAt: Date;
@@ -285,6 +342,7 @@ interface AvailabilityBlock {
 ```
 
 #### Reservation (Reserva)
+
 ```typescript
 interface Reservation {
   _id: ObjectId;
@@ -295,7 +353,7 @@ interface Reservation {
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
   observations?: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'expired';
+  status: "pending" | "confirmed" | "cancelled" | "expired";
   hiddenFromUser: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -303,6 +361,7 @@ interface Reservation {
 ```
 
 #### Config (Configuração)
+
 ```typescript
 interface Config {
   _id: ObjectId;
@@ -323,6 +382,7 @@ interface Config {
 ## 🔗 API Endpoints
 
 ### Autenticação (`/api/auth`)
+
 ```
 POST   /login              # Login do usuário
 POST   /register           # Registro de usuário
@@ -337,6 +397,7 @@ GET    /validate           # Validar token
 ```
 
 ### Reservas (`/api/reservations`)
+
 ```
 GET    /                   # Listar reservas do usuário
 GET    /:id                # Obter reserva por ID
@@ -350,6 +411,7 @@ GET    /available-times/:date # Obter horários disponíveis
 ```
 
 ### Mesas (`/api/tables`)
+
 ```
 GET    /                   # Listar todas as mesas
 GET    /:id                # Obter mesa por ID
@@ -362,18 +424,21 @@ GET    /:id/status         # Status da mesa para uma data
 ```
 
 ### Dashboard (`/api/dashboard`)
+
 ```
 GET    /client-stats       # Estatísticas do cliente
 GET    /admin-stats        # Estatísticas do administrador
 ```
 
 ### Configurações (`/api/config`)
+
 ```
 GET    /                   # Obter configurações atuais
 POST   /                   # Atualizar configurações (admin)
 ```
 
 ### Perfil (`/api/profile`)
+
 ```
 GET    /:username          # Obter perfil do usuário
 PUT    /:username          # Atualizar perfil
@@ -384,34 +449,58 @@ DELETE /:username          # Deletar conta
 ## 🛠️ Scripts Disponíveis
 
 ### Root (Monorepo)
+
 ```bash
 npm run dev              # Executar frontend + backend
 npm run dev:backend      # Executar apenas backend
 npm run dev:frontend     # Executar apenas frontend
+npm run dev:sequential   # Executar sequencialmente (Windows)
 npm run build            # Build de todos os pacotes
+npm run build:frontend   # Build apenas frontend
+npm run build:backend    # Build apenas backend
+npm run build:shared     # Build apenas shared
+npm run build:fast       # Build paralelo
 npm run lint             # Lint de todos os pacotes
+npm run test             # Testes de todos os pacotes
 npm run clean            # Limpar node_modules e locks
 npm run install:clean    # Limpeza + instalação completa
+npm run cache:clean      # Limpar cache do Turbo
 ```
 
 ### Backend
+
 ```bash
 npm run dev              # Modo desenvolvimento (nodemon)
 npm run build            # Compilar TypeScript
 npm run start            # Executar versão compilada
 npm test                 # Executar testes
+npm run test:watch       # Testes com watch
+npm run test:coverage    # Testes com cobertura
+npm run test:models      # Testes de modelos
+npm run test:controllers # Testes de controladores
+npm run test:integration # Testes de integração
+npm run test:unit        # Testes unitários
+npm run test:smoke       # Teste de smoke
+npm run test:performance # Teste de performance
+npm run test:stress      # Teste de stress
 npm run lint             # ESLint
 ```
 
 ### Frontend
+
 ```bash
 npm run dev              # Servidor de desenvolvimento (Vite)
 npm run build            # Build para produção
 npm run preview          # Preview da build
+npm test                 # Executar testes (Vitest)
+npm run test:watch       # Testes com watch
+npm run test:coverage    # Testes com cobertura
+npm run test:ui          # Interface de testes
 npm run lint             # ESLint
 ```
 
 ### Shared
+
 ```bash
 npm run build            # Compilar tipos TypeScript
 npm run dev              # Watch mode
@@ -421,40 +510,55 @@ npm run clean            # Limpar dist/
 ## 🔧 Funcionalidades Avançadas
 
 ### Sistema de Reservas Inteligente
+
 - **Validação de Conflitos**: Verificação automática de disponibilidade
 - **Limites Configuráveis**: Controle de quantas reservas por usuário/período
 - **Confirmação Automática**: Reservas pendentes confirmadas automaticamente
 - **Remanejamento**: Transferência automática quando mesa sai de operação
 
 ### Gestão de Mesas Dinâmica
+
 - **Disponibilidade por Data**: Configuração específica para cada dia
 - **Status Automático**: Atualização baseada em reservas ativas
 - **Manutenção Programada**: Sistema para colocar mesas fora de operação
 
 ### Sistema de Configurações
+
 - **Horários de Funcionamento**: Definição flexível de abertura/fechamento
 - **Intervalos Entre Reservas**: Controle de tempo mínimo entre agendamentos
 - **Limites por Usuário**: Prevenção de spam de reservas
 
 ### Scheduler Automático
+
 - **Limpeza Diária**: Remoção de dados expirados
 - **Verificação Periódica**: Monitoramento contínuo do sistema
 - **Atualização de Status**: Sincronização automática de estados
 
+### Sistema de Testes
+
+- **Testes Unitários**: Cobertura de 70%+ com Jest
+- **Testes de Integração**: Fluxos completos de usuário e admin
+- **Testes de Performance**: Validação com Artillery
+- **Testes de Stress**: Identificação de limites do sistema
+- **Mock Service Worker**: Testes frontend isolados
+
 ## 🔒 Segurança
 
 ### Autenticação e Autorização
+
 - **JWT com Refresh Tokens**: Sistema seguro de autenticação
 - **Bcrypt**: Hash seguro de senhas
 - **Role-based Access**: Controle de acesso por função (client/admin)
 
 ### Proteções Implementadas
+
 - **Rate Limiting**: Proteção contra ataques de força bruta
 - **Helmet**: Cabeçalhos de segurança HTTP
 - **Data Sanitization**: Limpeza de dados de entrada
 - **CORS**: Configuração adequada para cross-origin
 
 ### Validação de Dados
+
 - **Schema Validation**: Validação rigorosa com Zod
 - **Input Sanitization**: Prevenção de injeção de código
 - **Type Safety**: TypeScript em todo o stack
@@ -462,11 +566,13 @@ npm run clean            # Limpar dist/
 ## 📱 Design e UX
 
 ### Interface Responsiva
+
 - **Mobile-First**: Design otimizado para dispositivos móveis
 - **Styled Components**: CSS-in-JS para componentes consistentes
 - **Acessibilidade**: Componentes acessíveis (ARIA labels, navegação por teclado)
 
 ### Experiência do Usuário
+
 - **Loading States**: Feedback visual durante operações
 - **Error Handling**: Tratamento gracioso de erros
 - **Toast Notifications**: Notificações não intrusivas
@@ -475,136 +581,17 @@ npm run clean            # Limpar dist/
 ## 🔄 Estado e Cache
 
 ### TanStack Query
+
 - **Cache Inteligente**: Redução de requisições desnecessárias
 - **Invalidação Automática**: Atualização baseada em mutações
 - **Background Updates**: Sincronização automática de dados
 - **Optimistic Updates**: Atualizações otimistas para melhor UX
 
 ### Gestão de Estado
+
 - **React Hook Form**: Formulários performáticos
 - **Local Storage**: Persistência de dados do usuário
 - **Session Storage**: Tokens de acesso temporários
-
-## 🚀 Deploy e Produção
-
-### Variáveis de Ambiente (Produção)
-```env
-# Database
-MONGODB_URI=mongodb+srv://...
-
-# Server
-PORT=3001
-NODE_ENV=production
-FRONTEND_URL=https://seu-dominio.com
-
-# JWT (CRÍTICO: Use valores seguros!)
-JWT_SECRET=sua-chave-ultra-secreta-256-bits
-JWT_EXPIRES_IN=15m
-REFRESH_TOKEN_EXPIRES_IN=7d
-
-# Admin
-ADMIN_CODE=codigo-ultra-secreto
-
-# Email (Produção)
-EMAIL_HOST=seu-smtp.com
-EMAIL_PORT=587
-EMAIL_USER=noreply@seu-dominio.com
-EMAIL_PASS=senha-do-email
-```
-
-### Build para Produção
-```bash
-# Build completo
-npm run build
-
-# Build apenas backend
-cd backend && npm run build
-
-# Build apenas frontend
-cd frontend && npm run build
-```
-
-### Monitoramento Recomendado
-- **Logs**: Implementar sistema de logs estruturados
-- **Metrics**: Monitoramento de performance e erros
-- **Health Checks**: Endpoints para verificação de saúde
-- **Database Monitoring**: Acompanhamento de performance do MongoDB
-
-## 🐛 Debugging e Troubleshooting
-
-### Problemas Comuns
-
-#### Erro de Conexão com MongoDB
-```bash
-# Verificar string de conexão
-echo $MONGODB_URI
-
-# Testar conectividade
-mongo "mongodb+srv://cluster..."
-```
-
-#### Problemas de CORS
-```typescript
-// Verificar configuração no backend/src/config/cors.ts
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true
-};
-```
-
-#### Erro "Cannot find module"
-```bash
-# Limpeza completa
-npm run clean
-npm install
-
-# Rebuild shared library
-cd shared && npm run build
-```
-
-#### Token JWT Expirado
-```bash
-# Verificar configuração de tempo
-JWT_EXPIRES_IN=1h
-REFRESH_TOKEN_EXPIRES_IN=7d
-```
-
-### Logs Úteis
-```bash
-# Backend logs
-cd backend && npm run dev
-
-# Frontend com debug
-cd frontend && DEBUG=true npm run dev
-
-# MongoDB logs (se local)
-tail -f /var/log/mongodb/mongod.log
-```
-
-## 🤝 Contribuindo
-
-### Configuração do Ambiente de Desenvolvimento
-1. Fork do repositório
-2. Clone seu fork
-3. Instale dependências: `npm install`
-4. Configure `.env` baseado no `.env.example`
-5. Execute testes: `npm test`
-
-### Padrões de Código
-- **ESLint**: Seguir regras definidas
-- **TypeScript**: Tipagem obrigatória
-- **Conventional Commits**: Formato padronizado de commits
-- **Tests**: Testes para novas funcionalidades
-
-### Pull Request
-1. Crie branch feature: `git checkout -b feature/nova-funcionalidade`
-2. Commit suas mudanças: `git commit -m 'feat: adiciona nova funcionalidade'`
-3. Push para branch: `git push origin feature/nova-funcionalidade`
-4. Abra Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ## 👥 Equipe
 
@@ -615,5 +602,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ## 📚 Documentação Adicional
 
 - [Documento de Requisitos](https://docs.google.com/document/d/1oG-CTwgIwojWTciv3wOayO93IBMtrgLJLyYWWCGYM74/edit?tab=t.0#heading=h.h7rdjbvzkuzw)
+- [Testes do Backend](app/backend/src/__tests__/TESTES_BACKEND.md)
 
 ---
