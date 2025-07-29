@@ -3,7 +3,11 @@ import Table, { ITable } from "../models/Table";
 import Reservation from "../models/Reservation";
 import { IReservation } from "../models/Reservation";
 import { tableSchema } from "../validations/schemas";
-import { isDateInRange, isTimeInRange } from "../utils/dateUtils";
+import {
+  isDateInRange,
+  isTimeInRange,
+  validateTableAvailabilityNotPast,
+} from "../utils/dateUtils";
 import { parseISO, getDay } from "date-fns";
 import mongoose from "mongoose";
 import { formatToYMD } from "../../../shared/utils/dateFormat";
@@ -75,6 +79,16 @@ export const tableController = {
         });
       }
 
+      // Validar se os horários não estão no passado
+      if (req.body.availability && req.body.availability.length > 0) {
+        const pastValidation = validateTableAvailabilityNotPast(
+          req.body.availability
+        );
+        if (!pastValidation.isValid) {
+          return res.status(400).json({ message: pastValidation.error });
+        }
+      }
+
       // Validar sobreposições de horários na disponibilidade
       if (req.body.availability && req.body.availability.length > 0) {
         const overlapValidation = validateTableAvailabilityOverlaps(
@@ -106,6 +120,16 @@ export const tableController = {
         return res.status(400).json({
           message: result.error.errors[0].message,
         });
+      }
+
+      // Validar se os horários não estão no passado
+      if (req.body.availability && req.body.availability.length > 0) {
+        const pastValidation = validateTableAvailabilityNotPast(
+          req.body.availability
+        );
+        if (!pastValidation.isValid) {
+          return res.status(400).json({ message: pastValidation.error });
+        }
       }
 
       // Validar sobreposições de horários na disponibilidade
