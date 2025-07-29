@@ -46,5 +46,14 @@ router.get("/verify-reset-token", authLimiter, authController.verifyResetToken);
 
 // Rotas autenticadas
 router.get("/me", authenticate, authController.getCurrentUser);
+router.get("/validate", authenticate, authController.validateToken);
+
+// Rotas de gerenciamento de sessões
+router.get("/sessions", authenticate, authController.getActiveSessions);
+router.delete(
+  "/sessions/:sessionId",
+  authenticate,
+  authController.revokeSession
+);
 
 export default router;

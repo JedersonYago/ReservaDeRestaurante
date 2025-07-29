@@ -34,6 +34,7 @@ import { Input } from "../../components/Input";
 import { Container as LayoutContainer } from "../../components/Layout/Container";
 import { ConfirmationModal } from "../../components/Modal/ConfirmationModal";
 import { PageWrapper } from "../../components/Layout/PageWrapper";
+import { SessionManager } from "../../components/SessionManager";
 import {
   Header,
   HeaderContent,
@@ -67,9 +68,111 @@ import {
   NotFoundTitle,
   NotFoundDescription,
 } from "./styles";
+import styled from "styled-components";
+
+const DeleteAccountContainer = styled.div`
+  margin-top: 8px;
+  padding: 16px;
+  background: ${({ theme }) =>
+    theme.colors.background.primary === "#0A0A0A"
+      ? "#1a1a1a"
+      : theme.colors.error.light};
+  border: 1px solid
+    ${({ theme }) =>
+      theme.colors.background.primary === "#0A0A0A"
+        ? theme.colors.error.main
+        : theme.colors.error.main}40;
+  border-radius: 8px;
+  border-left: 4px solid ${({ theme }) => theme.colors.error.main};
+`;
+
+const WarningHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const WarningIcon = styled.div`
+  width: 24px;
+  height: 24px;
+  background: ${({ theme }) => theme.colors.error.main};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const WarningLabel = styled.span`
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.error.main};
+`;
+
+const WarningText = styled.p`
+  font-size: 0.85rem;
+  color: ${({ theme }) =>
+    theme.colors.background.primary === "#0A0A0A"
+      ? theme.colors.text.primary
+      : theme.colors.text.secondary};
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+`;
+
+const WarningList = styled.ul`
+  font-size: 0.85rem;
+  color: ${({ theme }) =>
+    theme.colors.background.primary === "#0A0A0A"
+      ? theme.colors.text.primary
+      : theme.colors.text.secondary};
+  margin: 0 0 16px 0;
+  padding-left: 20px;
+  line-height: 1.5;
+`;
+
+const StyledDeleteButton = styled.button`
+  background: ${({ theme }) => theme.colors.error.main};
+  color: white;
+  border: 1px solid ${({ theme }) => theme.colors.error.main};
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.error.dark};
+    border-color: ${({ theme }) => theme.colors.error.dark};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const DangerSectionTitle = styled(SectionTitle)`
+  color: ${({ theme }) => theme.colors.error.main} !important;
+
+  svg {
+    color: ${({ theme }) => theme.colors.error.main} !important;
+  }
+`;
+
+const DangerSectionDescription = styled(SectionDescription)`
+  color: ${({ theme }) =>
+    theme.colors.background.primary === "#0A0A0A"
+      ? theme.colors.text.primary
+      : theme.colors.text.secondary};
+  margin-bottom: 20px;
+`;
 
 export function Profile() {
-  const { user, updateUser, signOut, logoutAll, isLoading } = useAuth();
+  const { user, updateUser, signOut, isLoading } = useAuth();
   const toast = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -722,7 +825,7 @@ export function Profile() {
                       </InfoValue>
                     </InfoItem>
 
-                    <InfoItem style={{ gridColumn: "1 / -1" }}>
+                    <InfoItem>
                       <InfoLabel>
                         <Calendar size={16} />
                         Membro desde
@@ -751,6 +854,10 @@ export function Profile() {
                     Útil caso você tenha perdido acesso a algum dispositivo ou
                     queira garantir sua segurança.
                   </SectionDescription>
+
+                  {/* Gerenciador de Sessões */}
+                  <SessionManager />
+
                   <Button
                     variant="danger"
                     leftIcon={<Monitor size={18} />}
@@ -769,27 +876,41 @@ export function Profile() {
           {!isEditing && !isChangingPassword && user.role !== "admin" && (
             <ProfileCard>
               <ProfileSection>
-                <SectionTitle style={{ color: "#dc3545" }}>
+                <DangerSectionTitle>
                   <Trash2 size={20} />
                   Deletar Conta
-                </SectionTitle>
-                <SectionDescription>
+                </DangerSectionTitle>
+                <DangerSectionDescription>
                   Esta ação é irreversível. Todas as suas reservas serão
                   canceladas e seus dados serão permanentemente excluídos.
-                </SectionDescription>
+                </DangerSectionDescription>
 
-                <ActionButtons>
-                  <DeleteButton
+                <DeleteAccountContainer>
+                  <WarningHeader>
+                    <WarningIcon>
+                      <Trash2 size={14} style={{ color: "white" }} />
+                    </WarningIcon>
+                    <WarningLabel>Ação Destrutiva</WarningLabel>
+                  </WarningHeader>
+
+                  <WarningText>
+                    Ao excluir sua conta, você perderá permanentemente:
+                  </WarningText>
+
+                  <WarningList>
+                    <li>Todos os seus dados pessoais</li>
+                    <li>Histórico de reservas</li>
+                    <li>Configurações de conta</li>
+                    <li>Acesso ao sistema</li>
+                  </WarningList>
+
+                  <StyledDeleteButton
                     onClick={() => setShowDeleteModal(true)}
-                    style={{
-                      backgroundColor: "transparent",
-                      color: "#dc3545",
-                      border: "1px solid #dc3545",
-                    }}
+                    disabled={deleteLoading}
                   >
-                    Excluir Conta
-                  </DeleteButton>
-                </ActionButtons>
+                    <Trash2 size={18} /> Excluir Conta Permanentemente
+                  </StyledDeleteButton>
+                </DeleteAccountContainer>
               </ProfileSection>
             </ProfileCard>
           )}
@@ -828,7 +949,7 @@ export function Profile() {
           onClose={() => setShowLogoutAllModal(false)}
           onConfirm={() => {
             setShowLogoutAllModal(false);
-            logoutAll();
+            signOut(true);
           }}
           title="Sair de todos os dispositivos?"
           message="Isso irá encerrar sua sessão em todos os dispositivos conectados. Você precisará fazer login novamente em todos eles. Deseja continuar?"

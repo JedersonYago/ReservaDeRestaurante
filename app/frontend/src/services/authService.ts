@@ -112,6 +112,25 @@ export const authService = {
     }
   },
 
+  async getActiveSessions(): Promise<any> {
+    try {
+      const response = await api.get("/auth/sessions");
+      return response.data;
+    } catch (error) {
+      console.error("[authService.getActiveSessions] Erro:", error);
+      throw error;
+    }
+  },
+
+  async revokeSession(sessionId: string): Promise<void> {
+    try {
+      await api.delete(`/auth/sessions/${sessionId}`);
+    } catch (error) {
+      console.error("[authService.revokeSession] Erro:", error);
+      throw error;
+    }
+  },
+
   // Métodos auxiliares para gerenciar tokens e usuário
   setTokens(accessToken: string, refreshToken: string): void {
     // Access token em memória ou sessionStorage para maior segurança

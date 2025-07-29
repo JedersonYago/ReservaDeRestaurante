@@ -1,4 +1,3 @@
-
 import type { Secret, SignOptions } from "jsonwebtoken";
 import { config } from "../config";
 import { IUser } from "../models/User";
@@ -9,6 +8,7 @@ export interface TokenPayload {
   role: string;
   username: string;
   type: "access" | "refresh";
+  refreshTokenId?: string;
 }
 
 export interface TokenPair {
@@ -22,10 +22,7 @@ if (!config.auth.jwtSecret) {
 
 export function verifyToken(token: string): TokenPayload {
   try {
-    return jwt.verify(
-      token,
-      config.auth.jwtSecret as Secret
-    ) as TokenPayload;
+    return jwt.verify(token, config.auth.jwtSecret as Secret) as TokenPayload;
   } catch (error: any) {
     if (error instanceof jwt.TokenExpiredError) {
       throw new Error("Token expirado");
@@ -48,12 +45,16 @@ export function generateToken(user: IUser): string {
   });
 }
 
-export function generateTokenPair(user: IUser): TokenPair {
-  const accessPayload: TokenPayload = {
+export function generateTokenPair(
+  user: IUser,
+  refreshTokenId?: string
+): TokenPair {
+  const accessPayload: TokenPayload & { refreshTokenId?: string } = {
     _id: user._id,
     role: user.role,
     username: user.username,
     type: "access",
+    refreshTokenId, // ID do refresh token associado
   };
   const refreshPayload: TokenPayload & { jti: string } = {
     _id: user._id,
@@ -62,13 +63,9 @@ export function generateTokenPair(user: IUser): TokenPair {
     type: "refresh",
     jti: Math.random().toString(36).substring(2) + Date.now().toString(36),
   };
-  const accessToken = jwt.sign(
-    accessPayload,
-    config.auth.jwtSecret as Secret,
-    {
-      expiresIn: config.auth.jwtExpiresIn as SignOptions["expiresIn"],
-    }
-  );
+  const accessToken = jwt.sign(accessPayload, config.auth.jwtSecret as Secret, {
+    expiresIn: config.auth.jwtExpiresIn as SignOptions["expiresIn"],
+  });
   const refreshToken = jwt.sign(
     refreshPayload,
     config.auth.jwtSecret as Secret,

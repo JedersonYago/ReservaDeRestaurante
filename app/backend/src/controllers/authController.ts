@@ -45,27 +45,38 @@ const authController = {
         return res.status(401).json({ message: "Usuário ou senha inválidos" });
       }
 
-      // Gerar par de tokens
+      // Gerar tokens
       const { accessToken, refreshToken } = generateTokenPair(user);
 
-      // Revogar todos os refresh tokens anteriores do usuário
-      await RefreshToken.updateMany(
-        { userId: user._id, isRevoked: false },
-        { isRevoked: true }
-      );
-
-      // Salvar novo refresh token no banco
+      // Salvar refresh token no banco
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // 7 dias
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
-      await RefreshToken.create({
+      const savedToken = await RefreshToken.create({
         userId: user._id,
         token: refreshToken,
         expiresAt,
       });
 
+      // Gerar novo access token com o ID do refresh token
+      const { accessToken: finalAccessToken } = generateTokenPair(
+        user,
+        savedToken._id.toString()
+      );
+
+      // NÃO revogar tokens anteriores - permitir múltiplas sessões
+      // Apenas limpar tokens expirados para manter o banco limpo
+      await RefreshToken.updateMany(
+        {
+          userId: user._id,
+          isRevoked: false,
+          expiresAt: { $lt: new Date() }, // Apenas tokens expirados
+        },
+        { isRevoked: true }
+      );
+
       res.json({
-        accessToken,
+        accessToken: finalAccessToken,
         refreshToken,
         user: {
           _id: user._id,
@@ -137,14 +148,20 @@ const authController = {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 dias
 
-      await RefreshToken.create({
+      const savedToken = await RefreshToken.create({
         userId: user._id,
         token: refreshToken,
         expiresAt,
       });
 
+      // Gerar novo access token com o ID do refresh token
+      const { accessToken: finalAccessToken } = generateTokenPair(
+        user,
+        savedToken._id.toString()
+      );
+
       res.status(201).json({
-        accessToken,
+        accessToken: finalAccessToken,
         refreshToken,
         user: {
           _id: user._id,
@@ -213,14 +230,20 @@ const authController = {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
 
-      await RefreshToken.create({
+      const savedToken = await RefreshToken.create({
         userId: user._id,
         token: newRefreshToken,
         expiresAt,
       });
 
+      // Gerar novo access token com o ID do refresh token
+      const { accessToken: finalAccessToken } = generateTokenPair(
+        user,
+        savedToken._id.toString()
+      );
+
       res.json({
-        accessToken: newAccessToken,
+        accessToken: finalAccessToken,
         refreshToken: newRefreshToken,
         user: {
           _id: user._id,
@@ -271,6 +294,64 @@ const authController = {
       res
         .status(500)
         .json({ message: "Erro ao fazer logout de todos os dispositivos" });
+    }
+  },
+
+  async getActiveSessions(req: Request, res: Response) {
+    try {
+      if (!req.user?._id) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+
+      const activeTokens = await RefreshToken.find({
+        userId: req.user._id,
+        isRevoked: false,
+        expiresAt: { $gt: new Date() },
+      }).sort({ createdAt: -1 });
+
+      // Não podemos identificar a sessão atual sem o refresh token
+      // Vamos retornar todas as sessões ativas
+      const sessions = activeTokens.map((token) => ({
+        id: token._id,
+        createdAt: token.createdAt,
+        expiresAt: token.expiresAt,
+        isCurrent: false, // Por enquanto, não identificamos a sessão atual
+      }));
+
+      res.json({
+        sessions,
+        totalActive: sessions.length,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar sessões ativas" });
+    }
+  },
+
+  async revokeSession(req: Request, res: Response) {
+    try {
+      if (!req.user?._id) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+
+      const { sessionId } = req.params;
+
+      const token = await RefreshToken.findOne({
+        _id: sessionId,
+        userId: req.user._id,
+        isRevoked: false,
+      });
+
+      if (!token) {
+        return res.status(404).json({ message: "Sessão não encontrada" });
+      }
+
+      await RefreshToken.findByIdAndUpdate(sessionId, { isRevoked: true });
+
+      res.json({
+        message: "Sessão revogada com sucesso",
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao revogar sessão" });
     }
   },
 

@@ -79,10 +79,10 @@ const baseTheme = {
   },
   breakpoints: {
     xs: "0px",
-    sm: "540px",   // Reduzido de 576px
-    md: "720px",   // Reduzido de 768px
-    lg: "940px",   // Reduzido de 992px
-    xl: "1140px",  // Reduzido de 1200px
+    sm: "540px", // Reduzido de 576px
+    md: "720px", // Reduzido de 768px
+    lg: "940px", // Reduzido de 992px
+    xl: "1140px", // Reduzido de 1200px
     "2xl": "1320px", // Reduzido de 1400px
   },
   shadows: {
@@ -205,6 +205,12 @@ export const lightTheme = {
       error: "#D32F2F",
       info: "#1976D2",
     },
+    error: {
+      main: "#D32F2F",
+      light: "#FFCDD2",
+      dark: "#B71C1C",
+    },
+    border: "#E0E0E0",
     background: {
       primary: "#FFFFFF",
       secondary: "#FAFAFA",
@@ -273,6 +279,12 @@ export const darkTheme = {
       error: "#EF4444",
       info: "#3B82F6",
     },
+    error: {
+      main: "#EF4444",
+      light: "#FEE2E2",
+      dark: "#DC2626",
+    },
+    border: "#3F3F46",
     background: {
       primary: "#0A0A0A",
       secondary: "#0f0f0fff",

@@ -3,12 +3,14 @@ import jwt from "jsonwebtoken";
 import { config } from "../config";
 import User from "../models/User";
 import { verifyToken, isTokenExpired } from "../utils/jwt";
+import RefreshToken from "../models/RefreshToken";
 
 interface JwtPayload {
   _id: string;
   role: string;
   username: string;
   type: "access" | "refresh";
+  refreshTokenId?: string; // ID do refresh token associado
   iat: number;
   exp: number;
 }
@@ -61,6 +63,14 @@ export const authenticate = async (
     // Verificar se é um access token
     if (decoded.type !== "access") {
       return res.status(401).json({ message: "Tipo de token inválido" });
+    }
+
+    // Verificar se o refresh token associado foi revogado
+    if (decoded.refreshTokenId) {
+      const refreshToken = await RefreshToken.findById(decoded.refreshTokenId);
+      if (!refreshToken || refreshToken.isRevoked) {
+        return res.status(401).json({ message: "Sessão revogada" });
+      }
     }
 
     // Buscar usuário no banco

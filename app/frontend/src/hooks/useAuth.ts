@@ -111,16 +111,37 @@ export function useAuth() {
     refetch();
   };
 
+  // Query para buscar sessões ativas
+  const {
+    data: sessions,
+    isLoading: sessionsLoading,
+    refetch: refetchSessions,
+  } = useQuery({
+    queryKey: ["sessions"],
+    queryFn: authService.getActiveSessions,
+    enabled: !!user, // Só buscar se estiver autenticado
+    staleTime: 30 * 1000, // 30 segundos
+  });
+
+  // Mutation para revogar sessão
+  const revokeSessionMutation = useMutation({
+    mutationFn: authService.revokeSession,
+    onSuccess: () => {
+      refetchSessions();
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    },
+  });
+
   return {
     user,
-    isLoading:
-      isLoading || logoutMutation.isPending || refreshMutation.isPending,
+    isLoading,
     isAuthenticated: !!user,
-    error,
     signOut,
     updateUser,
     refreshUser,
-    logoutAll: () => signOut(true),
-    isRefreshing: refreshMutation.isPending,
+    sessions: sessions?.sessions || [],
+    sessionsLoading,
+    revokeSession: revokeSessionMutation.mutate,
+    isRevokingSession: revokeSessionMutation.isPending,
   };
 }
