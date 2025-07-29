@@ -147,9 +147,15 @@ const ToastCloseButton = styled.button`
   flex-shrink: 0;
   margin-top: 2px;
   transition: all 0.2s ease;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.neutral[100]};
+    background: ${({ theme }) =>
+      theme.colors.background.primary === "#0A0A0A"
+        ? theme.colors.background.tertiary
+        : theme.colors.neutral[100]};
     color: ${({ theme }) => theme.colors.text.primary};
   }
 
@@ -254,7 +260,7 @@ function ToastComponent({
       </ToastContent>
 
       <ToastCloseButton onClick={handleRemove} aria-label="Fechar notificação">
-        <X size={16} />
+        ✕
       </ToastCloseButton>
     </ToastItem>
   );
