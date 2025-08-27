@@ -3,13 +3,9 @@ const getCorsOrigins = () => {
   const corsOrigin = process.env.CORS_ORIGIN;
   const nodeEnv = process.env.NODE_ENV || "development";
 
-  // Em produção, sempre incluir o domínio do Vercel
-  const productionOrigins = [
-    "https://suareservafacil.vercel.app",
-    "https://reservafacil.vercel.app",
-    "https://*.vercel.app", // Permitir subdomínios do Vercel
-    "https://reserva-de-restaurante-git-main-jedersons-projects-2f854022.vercel.app",
-    "https://reserva-de-restaurante-eo26xtgwz-jedersons-projects-2f854022.vercel.app",
+  // Origens para produção (se necessário)
+  const productionOrigins: string[] = [
+    // Adicione aqui domínios de produção quando necessário
   ];
 
   if (corsOrigin) {

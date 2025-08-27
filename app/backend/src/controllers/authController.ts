@@ -435,8 +435,7 @@ const authController = {
       });
 
       // Gerar link de recuperação
-      const frontendUrl =
-        process.env.FRONTEND_URL || "https://suareservafacil.vercel.app";
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
       const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
       // Enviar email

@@ -24,8 +24,7 @@ export default defineConfig({
     global: "globalThis",
     // Definir variáveis de ambiente em tempo de build
     __API_URL__: JSON.stringify(
-      process.env.VITE_API_URL ||
-        "https://reservafacil-production.up.railway.app"
+      process.env.VITE_API_URL || "http://localhost:3001"
     ),
   },
   build: {
@@ -56,7 +55,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://localhost:3001",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", () => {

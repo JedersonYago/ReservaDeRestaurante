@@ -10,8 +10,8 @@ function getCorrectedApiUrl() {
   // Verificar se há uma URL específica definida
   const envApiUrl = import.meta.env.VITE_API_URL;
 
-  // Em produção, SEMPRE usar URL completa para evitar proxy do Vercel
-  const baseUrl = envApiUrl || "https://reservafacil-production.up.railway.app";
+  // Em produção, usar URL do ambiente ou localhost
+  const baseUrl = envApiUrl || "http://localhost:3001";
   const apiUrl = `${baseUrl}/api`;
 
   return apiUrl;
